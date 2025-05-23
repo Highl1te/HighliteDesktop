@@ -64,6 +64,8 @@ async function createWindow() {
         return { action: 'deny' };
     });
 
+    mainWindow.webContents.setVisualZoomLevelLimits(0.25, 5);
+
     if (!app.isPackaged) {
         mainWindow.webContents.openDevTools();
     }
