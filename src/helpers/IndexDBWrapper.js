@@ -1,3 +1,5 @@
+const { ipcRenderer } = require('electron');
+
 export class IndexDBWrapper {
   dbName = "Highlite";
   storeName = "Resources";
@@ -7,6 +9,10 @@ export class IndexDBWrapper {
     this.db = null;
   }
   async init() {
+    document.highliteProfile = await ipcRenderer.invoke('get-profile');
+
+    this.dbName = document.highliteProfile;
+
     const openRequest = window.indexedDB.open(this.dbName);
     return new Promise((resolve, reject) => {
       openRequest.onsuccess = (event) => {

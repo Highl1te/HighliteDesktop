@@ -1,10 +1,19 @@
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, shell, webFrame, session } = require('electron');
 const { ipcMain, dialog } = require('electron');
 const { autoUpdater } = require('electron-updater');
 const log = require('electron-log');
 const path = require('path');
 
 log.initialize();
+
+try {
+    require('electron-reloader')(module)
+} catch (_) {
+    console.log('electron-reloader not available in production');
+}
+
+console.log('test');
+console.log('test2');
 
 autoUpdater.autoDownload = false;
 autoUpdater.logger = log;
@@ -19,6 +28,25 @@ app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 log.info('App version:', app.getVersion());
 
 let windows = new Set();
+
+/**
+ * If we change this to HighLite, the database will stop using the "Highlite" name that users already have
+ * */
+let highliteProfile = 'Highlite333';
+initializeProfile();
+
+function initializeProfile() {
+    ipcMain.handle('get-profile', () => {
+        return highliteProfile;
+    });
+
+    const args = process.argv;
+    const profileArg = args.find(arg => arg.startsWith('--profile='));
+
+    if (profileArg) {
+        highliteProfile = profileArg.split('=')[1];
+    }
+}
 
 function initializeTitle(mainWindow) {
     const args = process.argv;
@@ -35,6 +63,8 @@ function initializeTitle(mainWindow) {
 }
 
 async function createWindow() {
+    const highliteSession = session.fromPartition(`persist:${highliteProfile}`);
+
     const mainWindow = new BrowserWindow({
         titleBarStyle: 'hidden',
         webPreferences: {
@@ -54,6 +84,7 @@ async function createWindow() {
             },
         } : {}),
         show: false,
+        session: highliteSession,
     });
 
     mainWindow.setMenu(null);
@@ -63,8 +94,6 @@ async function createWindow() {
         shell.openExternal(url);
         return { action: 'deny' };
     });
-
-    mainWindow.webContents.setVisualZoomLevelLimits(0.25, 5);
 
     if (!app.isPackaged) {
         mainWindow.webContents.openDevTools();
@@ -79,6 +108,9 @@ async function createWindow() {
         initializeTitle(mainWindow);
 
         mainWindow.show();
+
+        webFrame.setVisualZoomLevelLimits(1, 3);
+        mainWindow.webContents.setVisualZoomLevelLimits(1, 3);
     });
 
     windows.add(mainWindow);
