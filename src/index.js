@@ -32,7 +32,7 @@ let windows = new Set();
 /**
  * If we change this to HighLite, the database will stop using the "Highlite" name that users already have
  * */
-let highliteProfile = 'Highlite333';
+let highliteProfile = 'Highlite';
 initializeProfile();
 
 function initializeProfile() {
