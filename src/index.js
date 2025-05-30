@@ -135,7 +135,7 @@ async function createWindow() {
             mainWindow.webContents.toggleDevTools();
         }
     });
-
+  
     // Enable Zooming Page In and Out
     mainWindow.webContents.on('zoom-changed', (event, zoomDirection) => {
         if (zoomDirection === 'in') {
@@ -158,7 +158,7 @@ async function createWindow() {
         // Always start with zoom reset to 0.0
         mainWindow.webContents.setZoomLevel(0);
     });
-
+  
     mainWindow.webContents.send('is-darwin', process.platform === 'darwin');
 }
 
