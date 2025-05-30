@@ -101,6 +101,8 @@ ipcMain.on('show-dev-tools', (event) => {
     }
 });
 
+
+windows = [];
 async function createWindow() {
     const mainWindow = new BrowserWindow({
         webPreferences: {
@@ -117,8 +119,8 @@ async function createWindow() {
     });
 
     mainWindow.setMenu(null);
-
-    mainWindow.loadFile(path.join(__dirname, 'index.html'));
+    windows.push(mainWindow);
+    mainWindow.loadURL(path.join('file://', __dirname, `index.html?windowID=${windows.length - 1}`));
 
     // Open Links in External Browser
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
@@ -133,18 +135,28 @@ async function createWindow() {
             mainWindow.webContents.toggleDevTools();
         }
     });
-    
-    mainWindow.webContents.zoomLevel = 0;
+
     // Enable Zooming Page In and Out
     mainWindow.webContents.on('zoom-changed', (event, zoomDirection) => {
         if (zoomDirection === 'in') {
             // Increase zoom factor by 0.1 and dispatch a resize event to adjust the layout
-            mainWindow.webContents.zoomLevel += 0.1;
+            mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() + 0.1);
         }
         else if (zoomDirection === 'out') {
             // Decrease zoom factor by 0.1 and dispatch a resize event to adjust the layout
-            mainWindow.webContents.zoomLevel -= 0.1;
+            mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() - 0.1);
         }
+    });
+
+    mainWindow.on('closed', () => {
+        // Remove the window from the array when closed
+        windows = windows.filter(win => win !== mainWindow);
+    });
+
+    mainWindow.on('ready-to-show', (event) => {
+        console.log(event);
+        // Always start with zoom reset to 0.0
+        mainWindow.webContents.setZoomLevel(0);
     });
 
     mainWindow.webContents.send('is-darwin', process.platform === 'darwin');
