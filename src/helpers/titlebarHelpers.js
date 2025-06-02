@@ -62,3 +62,12 @@ ipcRenderer.on('is-darwin', (event, isDarwin) => {
     minimizeButton.style.display = isDarwin ? 'none' : 'block';
     maximizeButton.style.display = isDarwin ? 'none' : 'block';
 });
+
+// TODO: User for potential checking if title changes over time
+let lastSetTitle = 'HighLite';
+
+export const setTitle = (title) => {
+    document.title = title;
+    window.logoText.innerText = title;
+    lastSetTitle = title;
+};
