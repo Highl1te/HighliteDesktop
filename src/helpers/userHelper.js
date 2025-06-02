@@ -8,6 +8,8 @@
     The script also injects a new button that must be clicked to save the new username and password.
 */
 
+import { setTitle } from "./titlebarHelpers";
+
 const { ipcRenderer } = require('electron');
 
 
@@ -172,6 +174,7 @@ function setupUserHelper() {
             usernameInput.style.display = "none";
             usernameInput.value = this.value;
 
+            setTitle(`HighLite - ${this.value}`);
 
             // IPC Request to get saved passwords for the selected username
             ipcRenderer.invoke("get-saved-password", this.value).then((savedPassword) => {
