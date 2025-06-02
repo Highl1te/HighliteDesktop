@@ -172,7 +172,7 @@ function setupUserHelper() {
             usernameInput.style.display = "none";
             usernameInput.value = this.value;
 
-            const usernameTitle = `HighSpell - ${this.value}`;
+            const usernameTitle = `HighLite - ${this.value}`;
             document.title = usernameTitle;
             window.logoText.innerText = usernameTitle;
 
