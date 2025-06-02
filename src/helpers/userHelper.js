@@ -174,7 +174,7 @@ function setupUserHelper() {
 
             const usernameTitle = `HighSpell - ${this.value}`;
             document.title = usernameTitle;
-            window.logoText = usernameTitle;
+            window.logoText.innerText = usernameTitle;
 
             // IPC Request to get saved passwords for the selected username
             ipcRenderer.invoke("get-saved-password", this.value).then((savedPassword) => {
