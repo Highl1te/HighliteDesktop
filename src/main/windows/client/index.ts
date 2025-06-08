@@ -14,11 +14,7 @@ export async function createClientWindow() {
     const mainWindow = new BrowserWindow({
         webPreferences: {
             preload: path.join(__dirname, '../preload/index.js'),
-            nodeIntegration: true,
-            nodeIntegrationInWorker: true,
-            contextIsolation: false,
-            enablePreferredSizeMode: true,
-            webSecurity: false, // Disable web security for local development
+            sandbox: false, // Disable sandboxing for compatibility with some libraries
         },
         minHeight: 500,
         minWidth: 500,

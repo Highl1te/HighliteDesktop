@@ -255,7 +255,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@electron-toolkit/preload@npm:^3.0.1":
+"@electron-toolkit/preload@npm:^3.0.2":
   version: 3.0.2
   resolution: "@electron-toolkit/preload@npm:3.0.2"
   peerDependencies:
@@ -2868,7 +2868,7 @@ __metadata:
     "@babylonjs/core": "npm:^8.11.0"
     "@electron-toolkit/eslint-config-prettier": "npm:^3.0.0"
     "@electron-toolkit/eslint-config-ts": "npm:^3.0.0"
-    "@electron-toolkit/preload": "npm:^3.0.1"
+    "@electron-toolkit/preload": "npm:^3.0.2"
     "@electron-toolkit/tsconfig": "npm:^1.0.1"
     "@electron-toolkit/utils": "npm:^4.0.0"
     "@types/node": "npm:^22.14.1"

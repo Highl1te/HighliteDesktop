@@ -10,9 +10,7 @@ export async function createUpdateWindow() {
         title: 'Updating HighLite...',
         webPreferences: {
             preload: path.join(__dirname, '../preload/index.js'),
-            nodeIntegration: true,
-            sandbox: false,
-            contextIsolation: false,
+            sandbox: false, // Disable sandboxing for compatibility with some libraries
         },
         frame: true,
         resizable: false,
