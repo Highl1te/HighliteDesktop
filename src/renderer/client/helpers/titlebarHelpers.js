@@ -60,3 +60,11 @@ window.electron.ipcRenderer.on('is-darwin', (event, isDarwin) => {
     minimizeButton.style.display = isDarwin ? 'none' : 'block';
     maximizeButton.style.display = isDarwin ? 'none' : 'block';
 });
+
+export function setTitle(title) {
+    document.title = title;
+    const logoText = document.getElementById('logoText');
+    if (logoText) {
+        logoText.textContent = title;
+    }
+};
