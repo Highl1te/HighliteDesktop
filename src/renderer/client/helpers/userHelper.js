@@ -221,12 +221,16 @@ function setupUserHelper() {
                 if (selectedUsername === "other" && usernameInput.value !== "") {
                     // If "Other" is selected, use the value from the original input
                     window.electron.ipcRenderer.invoke("save-username-password", usernameInput.value, password);
-                    setTitle(`HighLite - ${usernameInput.value}`);
                 } else {
                     // Otherwise, use the selected username from the dropdown
                     window.electron.ipcRenderer.invoke("save-username-password", selectedUsername, password);
-                    setTitle(`HighLite - ${selectedUsername}`);
                 }
+            }
+            
+            if (selectedUsername === "other" && usernameInput.value !== "") {
+                setTitle(`HighLite - ${usernameInput.value}`);
+            } else {
+                setTitle(`HighLite - ${selectedUsername}`);
             }
 
             // Look for 'id' hs-screen-mask to exist trigger once
