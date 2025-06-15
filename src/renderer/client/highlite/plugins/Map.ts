@@ -86,7 +86,7 @@ export class WorldMap extends Plugin {
         titleDiv.appendChild(titleText);
 
         const embed = document.createElement("iframe");
-        embed.src = `https://highlite.fanet.dev/map?hide_decor=true&pos_x=512&pos_y=512&lvl=Overworld`;
+        embed.src = `https://highlite.fanet.dev/map?hide_decor=true&highliteMapPlugin=true`;
         embed.style.width = "100%";
         embed.style.height = "100%";
         embed.style.border = "none";
