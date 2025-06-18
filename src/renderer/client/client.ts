@@ -15,6 +15,7 @@ import { WorldMap } from "./highlite/plugins/Map";
 
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
+import "@fortawesome/fontawesome-free/css/all.css"
 
 import "./helpers/titlebarHelpers.js";
 

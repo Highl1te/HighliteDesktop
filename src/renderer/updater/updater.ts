@@ -1,3 +1,5 @@
+import "@fortawesome/fontawesome-free/css/all.css"
+
 // Update Progress
 const updateStatus = document.getElementById('update-status');
 
