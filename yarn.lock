@@ -1180,7 +1180,6 @@ __metadata:
   linkType: hard
 
 "bl@npm:^4.1.0":
-"bl@npm:^4.1.0":
   version: 4.1.0
   resolution: "bl@npm:4.1.0"
   dependencies:
