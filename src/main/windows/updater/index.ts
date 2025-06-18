@@ -10,10 +10,7 @@ export async function createUpdateWindow() {
         title: 'Updating HighLite...',
         webPreferences: {
             preload: path.join(__dirname, '../preload/index.js'),
-            sandbox: true, // Enable sandboxing for security
-            contextIsolation: true, // Enable context isolation
-            nodeIntegration: false, // Disable node integration in renderer
-            webSecurity: true, // Enable web security
+            sandbox: false, // Disable sandboxing for compatibility with some libraries
         },
         frame: true,
         resizable: false,
@@ -21,7 +18,6 @@ export async function createUpdateWindow() {
         titleBarStyle: 'hidden',
         width: 600,
         height: 400,
-        show: false, // Don't show initially to prevent flash
     });
 
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
@@ -31,7 +27,6 @@ export async function createUpdateWindow() {
     }
 
     updateWindow.on('ready-to-show', async () => {
-        updateWindow.show(); // Show window after it's ready
         if (!app.isPackaged) {
            ipcMain.emit('delay-update');
         } else {
