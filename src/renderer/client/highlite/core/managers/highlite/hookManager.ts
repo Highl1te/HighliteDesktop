@@ -47,6 +47,29 @@ export class HookManager {
         return true;
     }
 
+    public registerClassOverrideHook(sourceClass : string, fnName : string, hookFn = this.hook) : boolean {
+        const self = this;
+        const classObject = document.highlite.gameHooks[sourceClass].prototype;
+
+        if (!classObject) {
+            console.warn(`[Highlite] Attempted to register unknown client class override hook (${sourceClass}).`);
+            return false;
+        }
+
+        let functionName = fnName;
+        if (functionName.startsWith("_")) {
+            functionName = functionName.substring(1)
+        }
+
+        const hookName = `${sourceClass}_${functionName}`;
+        (function (originalFunction : any) {
+            classObject[fnName] = function (...args : Array<unknown>) {
+                return hookFn.apply(self, [hookName, ...args, this]);
+            }
+        }(classObject[fnName]));
+        return true;
+    }
+
     public registerStaticClassHook(sourceClass : string, fnName : string, hookFn = this.hook) : boolean {
         const self = this;
         const classObject = document.client.get(sourceClass);

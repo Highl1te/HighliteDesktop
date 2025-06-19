@@ -28,7 +28,15 @@ export async function createClientWindow() {
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
         mainWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/client.html`)
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../renderer/client/client.html'))
+
+        const fileUrl = format({
+            protocol: 'file',
+            slashes: true,
+            pathname: path.join(__dirname, '../renderer/client/client.html'),
+            query: { windowId: mainWindow.id }
+        });
+
+        mainWindow.loadURL(fileUrl);
     }
 
     // Open Links in External Browser
