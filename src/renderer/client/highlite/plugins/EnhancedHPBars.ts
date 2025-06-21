@@ -19,8 +19,8 @@ export class EnhancedHPBars extends Plugin {
     constructor() {
         super();
 
-        this.settings.overheadBar = {
-            text: "Overhead Bar",
+        this.settings.globalBar = {
+            text: "Global Bar",
             type: SettingsTypes.checkbox,
             value: true,
             callback: () => {
@@ -29,34 +29,34 @@ export class EnhancedHPBars extends Plugin {
         };
     }
 
-    startOverheadBar() {
+    startGlobalBar() {
         const fillStyle = "user-select: none; pointer-events: none; background: rgba(0,200,0,1); height: 100%;";
 
-        function touchOverheadHealthbar() {
-            if ((window as any).highliteOverheadHealthbar) {
-                (window as any).highliteOverheadHealthbar.remove();
+        function touchGlobalHealthbar() {
+            if ((window as any).highliteGlobalHealthbar) {
+                (window as any).highliteGlobalHealthbar.remove();
             }
             let healthDiv = document.createElement("div");
             let healthFill = document.createElement("div");
 
-            healthDiv.setAttribute("id", "highliteOverheadHealthbar");
+            healthDiv.setAttribute("id", "highliteGlobalHealthbar");
             healthDiv.setAttribute("style", "user-select: none; pointer-events: none; background: rgba(200,0,0,0.7); border: 1px solid gray; position: fixed; top: 60px; left: 50px; width: 500px; height: 25px;");
 
-            healthFill.setAttribute("id", "highliteOverheadHealthbarFill");
+            healthFill.setAttribute("id", "highliteGlobalHealthbar");
             healthFill.setAttribute("style", fillStyle);
 
             document.body.appendChild(healthDiv);
             healthDiv.appendChild(healthFill);
         }
 
-        touchOverheadHealthbar();
+        touchGlobalHealthbar();
 
-        clearInterval((window as any).highliteOverheadHealthbarInterval);
-        (window as any).highliteOverheadHealthbarInterval = setInterval(() => {
+        clearInterval((window as any).highliteGlobalHealthbarInterval);
+        (window as any).highliteGlobalHealthbarInterval = setInterval(() => {
             let healthStatus = getHealthLevel();
             let healthPercentage = Number(healthStatus[0]) / Number(healthStatus[1]) * 100;
 
-            (window as any).highliteOverheadHealthbarFill.setAttribute("style", fillStyle + ` width: ${healthPercentage}%;`);
+            (window as any).highliteGlobalHealthbarFill.setAttribute("style", fillStyle + ` width: ${healthPercentage}%;`);
         }, 1000);
 
         function getHealthLevel() {
@@ -64,11 +64,11 @@ export class EnhancedHPBars extends Plugin {
         }
     }
 
-    stopOverheadBar() {
-        clearInterval((window as any).highliteOverheadHealthbarInterval);
+    stopGlobalBar() {
+        clearInterval((window as any).highliteGlobalHealthbarInterval);
 
-        if ((window as any).highliteOverheadHealthbar) {
-            (window as any).highliteOverheadHealthbar.remove();
+        if ((window as any).highliteGlobalHealthbar) {
+            (window as any).highliteGlobalHealthbar.remove();
         }
     }
 
@@ -146,8 +146,8 @@ export class EnhancedHPBars extends Plugin {
             this.createTargetContainer();
         }
 
-        if (this.settings.overheadBar?.value) {
-            this.startOverheadBar();
+        if (this.settings.globalBar?.value) {
+            this.startGlobalBar();
         }
     }
 
@@ -155,7 +155,7 @@ export class EnhancedHPBars extends Plugin {
         // Destroy the target container if it exists
         this.targetContainer?.remove();
 
-        this.stopOverheadBar();
+        this.stopGlobalBar();
     }
 
     SocketManager_loggedIn(...args : any) {
