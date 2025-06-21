@@ -57,7 +57,7 @@ export class EnhancedHPBars extends Plugin {
             let healthPercentage = Number(healthStatus[0]) / Number(healthStatus[1]) * 100;
 
             (window as any).highliteGlobalHealthbarFill.setAttribute("style", fillStyle + ` width: ${healthPercentage}%;`);
-        }, 1000);
+        }, 500);
 
         function getHealthLevel() {
             return ((document.querySelectorAll(".hs-stat-menu-item__level")[0]) as HTMLElement)?.innerText.split("\n");
