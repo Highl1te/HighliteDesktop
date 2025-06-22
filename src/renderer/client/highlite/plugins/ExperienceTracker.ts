@@ -13,7 +13,6 @@ interface SkillTracker {
     trackedActions: number;
     trackedXPGained: number;
     trackerXPGainedWindows: XPWindow[];
-    trackerXPTimer: number;
     previousXP: number;
     inXPPerHourMode?: boolean;
     domElements?: {
@@ -378,7 +377,6 @@ export class ExperienceTracker extends Plugin {
             trackedXPGained: 0,
             previousXP: skill._xp,
             trackerXPGainedWindows: [],
-            trackerXPTimer: 0,
             inXPPerHourMode: false,
             domElements: {
                 skillXPGainedValue: skillXPGainedValue,
