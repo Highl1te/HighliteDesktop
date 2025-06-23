@@ -20,6 +20,7 @@ import "../../../static/css/overrides.css"
 import "@fortawesome/fontawesome-free/css/all.css"
 
 import "./helpers/titlebarHelpers.js";
+import { TreasureMapHelper } from "./highlite/plugins/TreasureMapLocator";
 
 
 async function obtainGameClient() {
@@ -190,7 +191,7 @@ async function generatePage() {
     highlite.pluginManager.registerPlugin(MinimapMarker);
     highlite.pluginManager.registerPlugin(DropLog);
     highlite.pluginManager.registerPlugin(ChatItemTooltip);
-  
+    highlite.pluginManager.registerPlugin(TreasureMapHelper);
     // Start the highlite instance
     highlite.start();
 
