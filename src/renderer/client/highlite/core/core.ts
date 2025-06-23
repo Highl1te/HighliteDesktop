@@ -61,6 +61,8 @@ export class Highlite {
         this.hookManager.registerClass("NW", "PrivateChatMessageList");
         this.hookManager.registerClass("uW", "LoginScreen");
         this.hookManager.registerClass('HR', 'HR');
+        this.hookManager.registerClass('$W', 'ItemSpriteManager');
+        this.hookManager.registerClass('DP', 'ItemDefMap');
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook("LoginScreen", "_handleRegisterButtonClicked", this.loginHooks);
@@ -88,6 +90,8 @@ export class Highlite {
         document.highlite.gameLookups["GameWorldActions"] = document.client.get("VA");
         document.highlite.gameLookups["InventoryActions"] = document.client.get("QA");
         document.highlite.gameLookups["Skills"] = document.client.get("bA");
+        document.highlite.gameLookups["EquipmentTypes"] = document.client.get("oP");
+        document.highlite.gameLookups["NpcDefs"] = document.client.get("uB");
     }
 
     async loginHooks(fnName: string, ...args: any[]) {

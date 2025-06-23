@@ -14,10 +14,13 @@ export class DatabaseManager {
     }
 
    async initDB() {
-        this.database = await openDB<HighliteSchema>('HighliteDatabase', 1, {
-            upgrade(db) {
+        this.database = await openDB<HighliteSchema>('HighliteDatabase', 2, {
+            upgrade(db, oldVersion) {
                 if (!db.objectStoreNames.contains('settings')) {
                     db.createObjectStore('settings');
+                }
+                if (oldVersion < 2 && !db.objectStoreNames.contains('drop_logs')) {
+                    db.createObjectStore('drop_logs');
                 }
             }
         });

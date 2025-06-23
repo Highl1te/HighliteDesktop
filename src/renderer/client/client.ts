@@ -13,6 +13,8 @@ import { CoinCounter } from "./highlite/plugins/CoinCounter";
 import { ExperienceTracker } from "./highlite/plugins/ExperienceTracker";
 import { WorldMap } from "./highlite/plugins/Map";
 import { MinimapMarker } from "./highlite/plugins/MinimapMarker";
+import { DropLog } from "./highlite/plugins/DropLog";
+import { ChatItemTooltip } from "./highlite/plugins/ChatItemTooltip";
 
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
@@ -186,7 +188,9 @@ async function generatePage() {
     highlite.pluginManager.registerPlugin(ExperienceTracker);
     highlite.pluginManager.registerPlugin(WorldMap);
     highlite.pluginManager.registerPlugin(MinimapMarker);
-
+    highlite.pluginManager.registerPlugin(DropLog);
+    highlite.pluginManager.registerPlugin(ChatItemTooltip);
+  
     // Start the highlite instance
     highlite.start();
 
