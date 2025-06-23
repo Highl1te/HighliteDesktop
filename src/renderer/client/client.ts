@@ -192,6 +192,7 @@ async function generatePage() {
     highlite.pluginManager.registerPlugin(DropLog);
     highlite.pluginManager.registerPlugin(ChatItemTooltip);
     highlite.pluginManager.registerPlugin(TreasureMapHelper);
+
     // Start the highlite instance
     highlite.start();
 
