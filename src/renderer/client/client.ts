@@ -15,12 +15,12 @@ import { WorldMap } from "./highlite/plugins/Map";
 import { MinimapMarker } from "./highlite/plugins/MinimapMarker";
 import { DropLog } from "./highlite/plugins/DropLog";
 import { ChatItemTooltip } from "./highlite/plugins/ChatItemTooltip";
+import { TreasureMapHelper } from "./highlite/plugins/TreasureMapLocator";
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
 import "@fortawesome/fontawesome-free/css/all.css"
 
 import "./helpers/titlebarHelpers.js";
-import { TreasureMapHelper } from "./highlite/plugins/TreasureMapLocator";
 
 
 async function obtainGameClient() {
