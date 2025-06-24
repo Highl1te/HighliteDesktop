@@ -38,7 +38,10 @@ export class TreasureMapHelper extends Plugin {
 
     const mapLevel = level === 1 ? "Overworld" : "Underworld";
 
-    const link = `https://highspell.wiki/w/embed/map/?lvl=${mapLevel}&pos_x=${x}&pos_y=${y}&zoom=3&emoji=%E2%9D%8C&coords=${x},${y},${mapLevel}&outline=true&clean=true`;
+    const offsetX = x + 512;
+    const offsetY = y + 512;
+
+    const link = `https://highlite.fanet.dev/map?hide_decor=true&highliteMapPlugin=true&pos_x=${offsetX}&pos_y=${offsetY}&lvl=${mapLevel}`;
 
     const targetElement =
       ".hs-treasure-map-menu__treasure-map-images-container";
