@@ -13,7 +13,9 @@ export class TreasureMapHelper extends Plugin {
 
   stop(): void {}
 
-  init(): void {}
+  init(): void {
+    this.injectPluginStyles();
+  }
 
   async SocketManager_handleInvokedInventoryItemActionPacket([
     action,
@@ -55,19 +57,15 @@ export class TreasureMapHelper extends Plugin {
 
     const container = document.createElement("div");
     container.classList.add("hs-menu");
-    container.style.cursor = "pointer";
-    container.style.position = "absolute";
-    container.style.top = "-25px";
-    container.style.left = "0px";
-    container.style.zIndex = "1000";
-    container.style.padding = "5px 10px";
+    container.classList.add("hs-treasure-map-helper-button");
 
     const linkElement = document.createElement("a");
+    linkElement.classList.add("hs-treasure-map-helper-link");
+    linkElement.classList.add(
+      `hs-treasure-map-helper-link-${isAtSpot ? "green" : "yellow"}`
+    );
     linkElement.href = link;
     linkElement.target = "_blank";
-    linkElement.style.textDecoration = "none";
-
-    linkElement.style.color = isAtSpot ? "green" : "yellow";
 
     container.appendChild(linkElement);
 
@@ -102,5 +100,36 @@ export class TreasureMapHelper extends Plugin {
         childList: true,
       });
     });
+  }
+
+  injectPluginStyles() {
+    const elementId = "highlite-plugin-treasure-map-helper";
+    if (document.getElementById(elementId)) return;
+
+    const style = document.createElement("style");
+    style.id = elementId;
+    style.textContent = `
+    .hs-treasure-map-helper-button {
+      cursor: pointer;
+      position: absolute;
+      top: -25px;
+      left: 0px;
+      z-index: 1000;
+      padding: 5px 10px;
+    }
+
+    .hs-treasure-map-helper-link {
+      text-decoration: none;
+    }
+
+    .hs-treasure-map-helper-link-green {
+      color: green;
+    }
+
+    .hs-treasure-map-helper-link-yellow {
+      color: yellow;
+    }
+  `;
+    document.head.appendChild(style);
   }
 }
