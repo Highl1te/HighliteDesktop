@@ -74,7 +74,7 @@ export class Highlite {
         this.hookManager.registerClassHook("SocketManager", "_handleLoggedOut");
         this.hookManager.registerClassHook("SocketManager", "_handleEnteredIdleStateAction");
         this.hookManager.registerClassHook("SocketManager", "_handleTradeRequestedPacket");
-        this.hookManager.registerClassHook("SocketManager", "_handleInvokedInventoryItemActionPacket")
+        this.hookManager.registerClassHook("SocketManager", "_handleInvokedInventoryItemActionPacket");
         this.hookManager.registerClassHook("EntityManager", "addOtherPlayer");
         this.hookManager.registerClassHook("ItemManager", "invokeInventoryAction");
 
