@@ -16,7 +16,7 @@ import { MinimapMarker } from "./highlite/plugins/MinimapMarker";
 import { DropLog } from "./highlite/plugins/DropLog";
 import { ChatItemTooltip } from "./highlite/plugins/ChatItemTooltip";
 import { XPOrb } from "./highlite/plugins/XPOrb";
-import { TreasureMapHelper } from "./highlite/plugins/TreasureMapLocator";
+import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
