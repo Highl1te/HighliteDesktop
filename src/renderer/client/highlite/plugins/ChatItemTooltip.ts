@@ -14,6 +14,7 @@ export class ChatItemTooltip extends Plugin {
     private isCtrlPressed: boolean = false;
     private inventoryOverlays: HTMLDivElement[] = [];
     private overlaysCreated: boolean = false;
+    private eventListeners: { element: EventTarget; event: string; handler: EventListener }[] = [];
 
     constructor() {
         super();
@@ -520,6 +521,11 @@ export class ChatItemTooltip extends Plugin {
     }
 
     stop(): void {
+        this.eventListeners.forEach(({ element, event, handler }) => {
+            element.removeEventListener(event, handler);
+        });
+        this.eventListeners = [];
+
         if (this.tooltipEl && this.tooltipEl.parentElement) {
             this.tooltipEl.parentElement.removeChild(this.tooltipEl);
             this.tooltipEl = null;
@@ -604,19 +610,47 @@ export class ChatItemTooltip extends Plugin {
     }
 
     private addEventListeners() {
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Control' && this.settings.enableInventoryLinking?.value && !this.isCtrlPressed) {
+        const keydownHandler = (e: Event) => {
+            const keyEvent = e as KeyboardEvent;
+            if (keyEvent.key === 'Control' && this.settings.enableInventoryLinking?.value && !this.isCtrlPressed) {
                 this.isCtrlPressed = true;
                 this.showInventoryOverlays();
             }
-        });
+        };
 
-        document.addEventListener('keyup', (e) => {
-            if (e.key === 'Control' && this.isCtrlPressed) {
+        const keyupHandler = (e: Event) => {
+            const keyEvent = e as KeyboardEvent;
+            if (keyEvent.key === 'Control' && this.isCtrlPressed) {
                 this.isCtrlPressed = false;
                 this.hideInventoryOverlays();
             }
-        });
+        };
+
+        const blurHandler = () => {
+            if (this.isCtrlPressed) {
+                this.isCtrlPressed = false;
+                this.hideInventoryOverlays();
+            }
+        };
+
+        const visibilityHandler = () => {
+            if (document.hidden && this.isCtrlPressed) {
+                this.isCtrlPressed = false;
+                this.hideInventoryOverlays();
+            }
+        };
+
+        document.addEventListener('keydown', keydownHandler);
+        document.addEventListener('keyup', keyupHandler);
+        window.addEventListener('blur', blurHandler);
+        document.addEventListener('visibilitychange', visibilityHandler);
+
+        this.eventListeners = [
+            { element: document, event: 'keydown', handler: keydownHandler },
+            { element: document, event: 'keyup', handler: keyupHandler },
+            { element: window, event: 'blur', handler: blurHandler },
+            { element: document, event: 'visibilitychange', handler: visibilityHandler }
+        ];
     }
 
     private showInventoryOverlays() {
