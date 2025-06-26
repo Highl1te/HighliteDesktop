@@ -77,7 +77,8 @@
     "@fortawesome/fontawesome-free": "^6.7.2",
     "electron-log": "^5.4.0",
     "electron-updater": "^6.3.9",
-    "idb": "^8.0.3"
+    "idb": "^8.0.3",
+    "interactjs": "^1.10.27"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
