@@ -27,6 +27,13 @@ export class Nameplates extends Plugin {
             value: true,
             callback: () => { } //NOOP
         };
+
+        this.settings.groundItemNameplates = {
+            text: "Ground Item Nameplates",
+            type: SettingsTypes.checkbox,
+            value: true,
+            callback: () => { } //NOOP
+        };
     }
 
     NampeplateContainer : HTMLDivElement | null = null;
@@ -34,6 +41,9 @@ export class Nameplates extends Plugin {
         [key : string] : { element: HTMLDivElement, position : Vector3 }
     } = {}
     PlayerDomElements : {
+        [key : string] : { element: HTMLDivElement, position : Vector3  }
+    } = {}
+    GroundItemDomElements : {
         [key : string] : { element: HTMLDivElement, position : Vector3  }
     } = {}
 
@@ -79,15 +89,23 @@ export class Nameplates extends Plugin {
                 delete this.PlayerDomElements[key];
             }
         }
+        for (const key in this.GroundItemDomElements) {
+            if (this.GroundItemDomElements[key]) {
+                this.GroundItemDomElements[key].element.remove();
+                delete this.GroundItemDomElements[key];
+            }
+        }
 
         this.NPCDomElements = {};
         this.PlayerDomElements = {};
+        this.GroundItemDomElements = {};
     }
 
     GameLoop_draw() {
         const NPCS = this.gameHooks.EntityManager.Instance._npcs; // Map
         const Players = this.gameHooks.EntityManager.Instance._players; // Array
         const MainPlayer = this.gameHooks.EntityManager.Instance.MainPlayer;
+        const GroundItems = this.gameHooks.GroundItemManager.Instance.GroundItems; // Map
         const playerCombatLevel = MainPlayer._combatLevel;
         const BW = document.client.get("BW");
 
@@ -119,6 +137,20 @@ export class Nameplates extends Plugin {
             if (!Players[key] && key != MainPlayer._entityId || (key == MainPlayer._entityId && !this.settings.youNameplate!.value)) {
                 this.PlayerDomElements[key]?.element.remove();
                 delete this.PlayerDomElements[key];
+            }
+        }
+
+        // Clear non-existing Ground Items
+        if (GroundItems.size == 0 || this.settings.enable.value == false || this.settings.groundItemNameplates!.value == false) {
+            for (const key in this.GroundItemDomElements) {
+                this.GroundItemDomElements[key]?.element.remove();
+                delete this.GroundItemDomElements[key];
+            }
+        }
+        for (const key in this.GroundItemDomElements) {
+            if (!GroundItems.has(key)) {
+                this.GroundItemDomElements[key]?.element.remove();
+                delete this.GroundItemDomElements[key];
             }
         }
 
@@ -244,6 +276,55 @@ export class Nameplates extends Plugin {
                 this.log("Error updating Player element position: ", e);
             }
         }
+
+        // Loop through all Ground Items
+        if (this.settings.groundItemNameplates!.value) {
+            for (const [key, groundItem] of GroundItems) {
+                if (!this.GroundItemDomElements[key]) {
+                    this.GroundItemDomElements[key] = {
+                        element: document.createElement('div'),
+                        position: Vector3.ZeroReadOnly
+                    };
+                    this.GroundItemDomElements[key]!.element.id = `highlite-nameplates-grounditem-${key}`;
+                    this.GroundItemDomElements[key]!.element.style.position = "absolute";
+                    this.GroundItemDomElements[key]!.element.style.pointerEvents = "none";
+                    this.GroundItemDomElements[key]!.element.style.zIndex = "999"; // Slightly lower than NPCs/Players
+                    this.GroundItemDomElements[key]!.element.style.display = "flex";
+                    this.GroundItemDomElements[key]!.element.style.flexDirection = "column";
+                    this.GroundItemDomElements[key]!.element.style.justifyContent = "center";
+                    
+                    // Create Item Name Holder
+                    const nameSpan = document.createElement("div");
+                    nameSpan.style.color = "orange";
+                    nameSpan.style.textAlign = "center";
+                    nameSpan.style.fontSize = "10px";
+                    nameSpan.style.textShadow = "1px 1px 2px rgba(0,0,0,0.8)";
+
+                    // Get item name and quantity
+                    const itemName = groundItem._def._nameCapitalized || "Unknown Item";
+                    const quantity = groundItem._amount || 1;
+                    
+                    if (quantity > 1) {
+                        nameSpan.innerText = `${itemName} (${quantity})`;
+                    } else {
+                        nameSpan.innerText = itemName;
+                    }
+                    
+                    this.GroundItemDomElements[key]!.element.append(nameSpan);
+                    document.getElementById('highlite-nameplates')?.appendChild(this.GroundItemDomElements[key]!.element);
+                }
+
+                this.GroundItemDomElements[key]!.position = groundItem._currentGamePosition;
+
+                // Use the ground item's mesh for positioning
+                const groundItemMesh = groundItem._appearance._billboardMesh;
+                try {
+                    this.updateElementPosition(groundItemMesh, this.GroundItemDomElements[key]);
+                } catch (e) {
+                    this.log("Error updating Ground Item element position: ", e);
+                }
+            }
+        }
     }
 
                         // Halo  // DIV Element
@@ -254,6 +335,18 @@ export class Nameplates extends Plugin {
             this.gameHooks.GameCameraManager.Camera.viewport.toGlobal(this.gameHooks.GameEngine.Instance.Engine.getRenderWidth(1), this.gameHooks.GameEngine.Instance.Engine.getRenderHeight(1)),
         );
         const camera =  this.gameHooks.GameCameraManager.Camera;
+        
+        // Calculate distance from camera to entity for scaling
+        const cameraPosition = camera.position;
+        const entityWorldPosition = Vector3.TransformCoordinates(Vector3.ZeroReadOnly, e.getWorldMatrix());
+        const distance = Vector3.Distance(cameraPosition, entityWorldPosition);
+        
+        // Scale factor based on distance (more subtle scaling)
+        const baseScale = 1.0;
+        const maxDistance = 100; // Increased distance for more gradual scaling
+        const minScale = 0.7; // Increased minimum scale (70% instead of 30%)
+        const scaleFactor = Math.max(minScale, baseScale * (maxDistance / Math.max(distance, maxDistance)));
+        
         // camera._scene._frustrumPlanes
         const isInFrustrum = camera.isInFrustum(e);
         if (!isInFrustrum) {
@@ -262,23 +355,36 @@ export class Nameplates extends Plugin {
             t.element.style.visibility = "visible";
         }
 
-        // T is contains the position and is a member of either player or npc, if anything shares the same position, they should gain height based off where they fall in alphabetical order
+        // Calculate the height offset for stacking elements at the same 3D world position
+        // Get the current element's 3D world position
+        const currentWorldPosition = t.position;
         
-        // Calculate the height based on the position in the array
-        // Find all elements that share the same position
-        // const elementsAtPosition = Object.values(this.NPCDomElements).concat(Object.values(this.PlayerDomElements)).filter(el => el.position.equals(t.position));
-        // const index = elementsAtPosition.findIndex(el => el.element.id === t.element.id);
-        // let heightOffset = index * 20; // 20px per element at the same position
+        // Find all elements that share the same 3D world position
+        const allElements = [
+            ...Object.values(this.NPCDomElements),
+            ...Object.values(this.PlayerDomElements),
+            ...Object.values(this.GroundItemDomElements)
+        ];
+        
+        const elementsAtPosition = allElements.filter(el => {
+            // Compare 3D world positions with a very small tolerance for exact position matching
+            const distance = Vector3.Distance(el.position, currentWorldPosition);
+            return distance < 0.001; // Very small tolerance for exact position matching only
+        });
+        
+        // Sort elements by their ID to ensure consistent ordering
+        elementsAtPosition.sort((a, b) => a.element.id.localeCompare(b.element.id));
+        
+        const index = elementsAtPosition.findIndex(el => el.element.id === t.element.id);
+        let heightOffset = index * 20 * scaleFactor; // Scale the height offset too
 
-        // // If element is the only one at the position, set heightOffset to 0
-        // if (elementsAtPosition.length == 1) {
-        //     heightOffset = 0;
-        // }
+        // If element is the only one at the position, set heightOffset to 0
+        if (elementsAtPosition.length == 1) {
+            heightOffset = 0;
+        }
 
-        const heightOffset = 0; // TODO: Implement height offset based on position in array
-
-
-        t.element.style.transform = "translate3d(calc(" + this.pxToRem(translationCoordinates.x) + "rem - 50%), calc(" + this.pxToRem(translationCoordinates.y - 30 - heightOffset) + "rem - 50%), 0px)"
+        // Apply transform with scaling
+        t.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - heightOffset)}rem - 50%), 0px) scale(${scaleFactor})`;
 
 
     }
