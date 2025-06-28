@@ -54,7 +54,7 @@ export class FPSLimiter extends Plugin {
             });
         };
         this.log(`[FPSLimiter] requestAnimationFrame limited to ${targetFPS} FPS`);
-    }y
+    }
 
     stop(): void {
         if (this.rafPatched && this.originalRAF) {
