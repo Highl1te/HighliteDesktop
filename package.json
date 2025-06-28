@@ -5,7 +5,7 @@
   "description": "A RuneLite-esque Client for the game High Spell",
   "homepage": "https://github.com/Highl1te/HighliteDesktop#readme",
   "engines": {
-    "node": "22.14.x"
+    "node": "^22.x.x"
   },
   "bugs": {
     "url": "https://github.com/Highl1te/HighliteDesktop/issues"
@@ -82,7 +82,7 @@
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
-    "@types/node": "^22.14.1",
+    "@types/node": "^22.0.0",
     "electron": "^36.4.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^3.1.0",

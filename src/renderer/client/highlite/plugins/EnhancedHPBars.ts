@@ -348,7 +348,7 @@ export class EnhancedHPBars extends Plugin {
 
     }
 
-    dG_handleTargetAction(actionNumber, targetEntity) {
+    BV_handleTargetAction(actionNumber, targetEntity) {
         this.playerAction = this.gameLookups.GameWorldActions[actionNumber];
         this.playerTarget = targetEntity;
     }

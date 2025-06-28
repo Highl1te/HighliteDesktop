@@ -42,27 +42,27 @@ export class Highlite {
         // Class Mappings
         this.hookManager.registerClass("Lk", "EntityManager");
         this.hookManager.registerClass("CN", "GroundItemManager");
-        this.hookManager.registerClass("lF", "MeshManager"); // probably out of date
-        this.hookManager.registerClass("mF", "WorldMapManager"); // probably out of date
-        this.hookManager.registerClass("zR", "AtmosphereManager"); // probably out of date
-        this.hookManager.registerClass("aD", "WorldEntityManager"); // probably out of date
-        this.hookManager.registerClass("Mz", "SpellManager"); // probably out of date
-        this.hookManager.registerClass("wk", "SpellMeshManager"); // probably out of date
+        this.hookManager.registerClass("vF", "MeshManager");
+        this.hookManager.registerClass("If", "WorldMapManager");
+        this.hookManager.registerClass("zR", "AtmosphereManager");
+        this.hookManager.registerClass("aD", "WorldEntityManager");
+        this.hookManager.registerClass("dW", "SpellManager");
+        this.hookManager.registerClass("Xk", "SpellMeshManager")
         this.hookManager.registerClass("pW", "GameLoop");
-        this.hookManager.registerClass("zG", "ChatManager");
-        this.hookManager.registerClass("Dz", "RangeManager"); // probably out of date
+        this.hookManager.registerClass("jG", "ChatManager");
+        this.hookManager.registerClass("uG", "RangeManager");
         this.hookManager.registerClass("FG", "SocketManager");
-        this.hookManager.registerClass("qV", "ItemManager");
         this.hookManager.registerClass("gW", "GameEngine");
-        // this.hookManager.registerClass("LF", "MainPlayer");
-        this.hookManager.registerClass("H", "GameCameraManager");
-        // this.hookManager.registerClass("RX", "HealthBar")
-        this.hookManager.registerClass("kF", "PF"); // Unkown Name (okay but niw this really needs a perma name - dpe)
-        this.hookManager.registerClass("JG", "PrivateChatMessageList");
+        this.hookManager.registerClass("qV", "ItemManager");
         this.hookManager.registerClass("MW", "LoginScreen");
-        this.hookManager.registerClass('HR', 'HR');
-        this.hookManager.registerClass('dH', 'ItemSpriteManager');
+        this.hookManager.registerClass("JW", "PrivateChatMessageList");
+        this.hookManager.registerClass("kF", "InventoryManager");
+        this.hookManager.registerClass('HR', 'HR'); // Potential name: UIManager?
+        this.hookManager.registerClass('dH', 'InventoryItemSpriteManager');
         this.hookManager.registerClass('DP', 'ItemDefMap');
+        // this.hookManager.registerClass("LF", "MainPlayer");
+        this.hookManager.registerClass("eR", "GameCameraManager"); // Tip to find: contains call initializeCamera(e ,t)
+
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook("LoginScreen", "_handleRegisterButtonClicked", this.loginHooks);
@@ -75,16 +75,11 @@ export class Highlite {
         this.hookManager.registerClassHook("SocketManager", "_handleEnteredIdleStateAction");
         this.hookManager.registerClassHook("SocketManager", "_handleTradeRequestedPacket");
         this.hookManager.registerClassHook("SocketManager", "_handleInvokedInventoryItemActionPacket");
-        this.hookManager.registerClassHook("EntityManager", "addOtherPlayer");
-        this.hookManager.registerClassHook("ItemManager", "invokeInventoryAction");
 
         // Needs Naming
-
-        this.hookManager.registerClassHook("PF", "addItemToInventory");
         this.contextMenuManager.registerContextHook("nz", "_createInventoryItemContextMenuItems", this.contextMenuManager.inventoryContextHook);
         this.contextMenuManager.registerContextHook("nz", "_createGameWorldContextMenuItems", this.contextMenuManager.gameWorldContextHook);
         this.hookManager.registerStaticClassHook('BV', 'handleTargetAction');
-        this.hookManager.registerStaticClassHook('BV', 'getActionsAndEntitiesAtMousePointer');
         this.hookManager.registerStaticClassHook('BV', 'getActionsAndEntitiesAtMousePointer', this.contextMenuManager.ActionSorting);
 
         // Lookup Table Mappings
@@ -92,7 +87,7 @@ export class Highlite {
         document.highlite.gameLookups["InventoryActions"] = document.client.get("QA");
         document.highlite.gameLookups["Skills"] = document.client.get("bA");
         document.highlite.gameLookups["EquipmentTypes"] = document.client.get("oP");
-        document.highlite.gameLookups["NpcDefs"] = document.client.get("uB");
+        // document.highlite.gameLookups["NpcDefs"] = document.client.get("uB");
     }
 
     async loginHooks(fnName: string, ...args: any[]) {
