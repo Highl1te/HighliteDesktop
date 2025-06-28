@@ -38,6 +38,35 @@ export class Nameplates extends Plugin {
             value: true,
             callback: () => { } //NOOP
         };
+
+        // Text size settings for each nameplate type
+        this.settings.playerNameplateSize = {
+            text: "Player Nameplate Text Size (12-32)",
+            type: SettingsTypes.range,
+            value: 20,
+            callback: () => this.regeneratePlayerNameplates()
+        };
+
+        this.settings.npcNameplateSize = {
+            text: "NPC Nameplate Text Size (12-32)",
+            type: SettingsTypes.range,
+            value: 20,
+            callback: () => this.regenerateNPCNameplates()
+        };
+
+        this.settings.youNameplateSize = {
+            text: "You Nameplate Text Size (12-32)",
+            type: SettingsTypes.range,
+            value: 20,
+            callback: () => this.regenerateMainPlayerNameplate()
+        };
+
+        this.settings.groundItemNameplateSize = {
+            text: "Ground Item Nameplate Text Size (12-32)",
+            type: SettingsTypes.range,
+            value: 18,
+            callback: () => this.regenerateGroundItemNameplates()
+        };
     }
 
     NPCTextMeshes: {
@@ -234,7 +263,7 @@ export class Nameplates extends Plugin {
                         };
                     } else {
                         // NPC with no combat level, just show name
-                        const textMesh = this.createTextMesh(nameplateText, "yellow", 20);
+                        const textMesh = this.createTextMesh(nameplateText, "yellow", 20, 'npc');
                         textMesh.parent = npc._appearance._haloNode; // Parent to halo node
                         textMesh.position = new Vector3(0, 0.25, 0); // Relative position above the NPC
                         this.NPCTextMeshes[key] = {
@@ -274,7 +303,7 @@ export class Nameplates extends Plugin {
                     // Build nameplate text (just the name for players)
                     let nameplateText = player._name;
 
-                    const textMesh = this.createTextMesh(nameplateText, currentColor, 20);
+                    const textMesh = this.createTextMesh(nameplateText, currentColor, 20, 'player');
                     textMesh.parent = player._appearance._haloNode; // Parent to halo node
                     this.PlayerTextMeshes[player._entityId] = {
                         mesh: textMesh,
@@ -286,7 +315,7 @@ export class Nameplates extends Plugin {
                     if (existingMesh.mesh) {
                         // Friend status changed, recreate the mesh with new color
                         existingMesh.mesh.dispose();
-                        const textMesh = this.createTextMesh(player._name, currentColor, 20);
+                        const textMesh = this.createTextMesh(player._name, currentColor, 20, 'player');
                         textMesh.parent = player._appearance._haloNode; // Parent to halo node
                         this.PlayerTextMeshes[player._entityId] = {
                             mesh: textMesh,
@@ -316,7 +345,7 @@ export class Nameplates extends Plugin {
             
             if (!this.PlayerTextMeshes[mainPlayerEntityId]) {
                 // Create nameplate for MainPlayer
-                const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20); // Use cyan to distinguish from other players
+                const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20, 'mainPlayer'); // Use cyan to distinguish from other players
                 textMesh.parent = MainPlayer._appearance._haloNode; // Parent to halo node
                 this.PlayerTextMeshes[mainPlayerEntityId] = {
                     mesh: textMesh,
@@ -383,7 +412,7 @@ export class Nameplates extends Plugin {
                 
                 if (!this.GroundItemTextMeshes[representativeKey]) {
                     // Create new nameplate
-                    const textMesh = this.createTextMesh(displayText, "orange", 18);
+                    const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
                     textMesh.parent = firstItem.item._appearance._billboardMesh;
                     
                     const worldPos = firstItem.item._appearance._billboardMesh.getAbsolutePosition();
@@ -404,7 +433,7 @@ export class Nameplates extends Plugin {
                         // Dispose old mesh and create new one with updated text
                         existingMesh.mesh.dispose();
                         
-                        const textMesh = this.createTextMesh(displayText, "orange", 18);
+                        const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
                         textMesh.parent = firstItem.item._appearance._billboardMesh;
                         
                         existingMesh.mesh = textMesh;
@@ -425,16 +454,33 @@ export class Nameplates extends Plugin {
     }
 
 
-    createTextMesh(text: string, color: string = "white", fontSize: number = 24): Mesh {
+    createTextMesh(text: string, color: string = "white", fontSize: number = 24, nameplateType: 'player' | 'npc' | 'mainPlayer' | 'groundItem' = 'player'): Mesh {
         const scene = this.gameHooks.GameEngine.Instance.Scene;
+
+        // Get the appropriate font size setting based on nameplate type
+        let actualFontSize = fontSize;
+        switch (nameplateType) {
+            case 'player':
+                actualFontSize = this.settings.playerNameplateSize?.value as number || fontSize;
+                break;
+            case 'npc':
+                actualFontSize = this.settings.npcNameplateSize?.value as number || fontSize;
+                break;
+            case 'mainPlayer':
+                actualFontSize = this.settings.youNameplateSize?.value as number || fontSize;
+                break;
+            case 'groundItem':
+                actualFontSize = this.settings.groundItemNameplateSize?.value as number || fontSize;
+                break;
+        }
 
         // Use higher resolution for better text quality
         const scaleFactor = 3; // Render at 3x resolution for crisp text
-        const actualFontSize = fontSize * scaleFactor;
+        const scaledFontSize = actualFontSize * scaleFactor;
 
         // Create a dynamic texture for the text with better dimensions
-        const textureWidth = Math.max(1024, text.length * actualFontSize * 0.8) * scaleFactor;
-        const textureHeight = (actualFontSize * 2 + 80) * scaleFactor; // More height for better spacing
+        const textureWidth = Math.max(1024, text.length * scaledFontSize * 0.8) * scaleFactor;
+        const textureHeight = (scaledFontSize * 2 + 80) * scaleFactor; // More height for better spacing
         const dynamicTexture = new DynamicTexture("textTexture", { width: textureWidth, height: textureHeight }, scene, false, DynamicTexture.TRILINEAR_SAMPLINGMODE);
 
         // Enable transparency on the texture
@@ -453,13 +499,13 @@ export class Nameplates extends Plugin {
         (context as any).textRenderingOptimization = 'optimizeQuality';
 
         // Set font properties with better settings
-        context.font = `bold ${actualFontSize}px Arial, sans-serif`;
+        context.font = `bold ${scaledFontSize}px Arial, sans-serif`;
         context.textAlign = "center";
         context.textBaseline = "middle";
 
         // Split text into lines for multi-line support
         const lines = text.split('\n');
-        const lineHeight = actualFontSize + (10 * scaleFactor); // Reduced spacing between lines
+        const lineHeight = scaledFontSize + (10 * scaleFactor); // Reduced spacing between lines
         const startY = textureHeight / 2 - ((lines.length - 1) * lineHeight) / 2;
 
         // Draw each line with outline for better visibility
@@ -536,9 +582,12 @@ export class Nameplates extends Plugin {
     ): Mesh {
         const scene = this.gameHooks.GameEngine.Instance.Scene;
         
+        // Get the NPC nameplate size setting
+        const npcFontSize = this.settings.npcNameplateSize?.value as number || fontSize;
+        
         // Use higher resolution for better text quality
         const scaleFactor = 3; // Render at 3x resolution for crisp text
-        const actualFontSize = fontSize * scaleFactor;
+        const actualFontSize = npcFontSize * scaleFactor;
         
         // Add emoji based on aggression
         let emojiText = "";
@@ -761,5 +810,200 @@ export class Nameplates extends Plugin {
         this.NPCTextMeshes = {};
         this.PlayerTextMeshes = {};
         this.GroundItemTextMeshes = {};
+    }
+
+    /**
+     * Regenerate all player nameplates when size setting changes
+     */
+    private regeneratePlayerNameplates(): void {
+        const Players = this.gameHooks.EntityManager.Instance._players;
+        const MainPlayer = this.gameHooks.EntityManager.Instance.MainPlayer;
+        const playerFriends = this.gameHooks.ChatManager.Instance._friends;
+
+        if (!Players || !MainPlayer) return;
+
+        // Regenerate regular player nameplates
+        for (const player of Players) {
+            if (player._entityId !== MainPlayer._entityId && this.PlayerTextMeshes[player._entityId]) {
+                const existingMesh = this.PlayerTextMeshes[player._entityId];
+                const isFriend = playerFriends.includes(player._nameLowerCase);
+                const currentColor = isFriend ? "lightgreen" : "white";
+
+                // Dispose old mesh and create new one with updated size
+                existingMesh.mesh.dispose();
+                const textMesh = this.createTextMesh(player._name, currentColor, 20, 'player');
+                textMesh.parent = player._appearance._haloNode;
+                
+                this.PlayerTextMeshes[player._entityId] = {
+                    mesh: textMesh,
+                    isFriend: isFriend
+                };
+
+                this.log(`Regenerated player nameplate for ${player._name} with new size`);
+            }
+        }
+    }
+
+    /**
+     * Regenerate all NPC nameplates when size setting changes
+     */
+    private regenerateNPCNameplates(): void {
+        const NPCS: Map<number, any> = this.gameHooks.EntityManager.Instance._npcs;
+        const MainPlayer = this.gameHooks.EntityManager.Instance.MainPlayer;
+
+        if (!NPCS || !MainPlayer) return;
+
+        // Regenerate all NPC nameplates
+        for (const [key, npc] of NPCS) {
+            if (this.NPCTextMeshes[key]) {
+                // Dispose old mesh
+                this.NPCTextMeshes[key].mesh.dispose();
+
+                // Create new mesh with updated size
+                let textMesh: Mesh;
+                if (npc._combatLevel != 0) {
+                    // Calculate level color using the same logic as in GameLoop_draw
+                    const playerCombatLevel = MainPlayer._combatLevel;
+                    const levelDifference = playerCombatLevel - npc._combatLevel;
+                    
+                    let levelColor = "rgb(255, 255, 255)"; // Default white
+                    
+                    if (levelDifference >= 10) {
+                        levelColor = "rgb(0, 255, 0)"; // pos-10
+                    } else if (levelDifference === 9) {
+                        levelColor = "rgb(25, 255, 0)"; // pos-9
+                    } else if (levelDifference === 8) {
+                        levelColor = "rgb(50, 255, 0)"; // pos-8
+                    } else if (levelDifference === 7) {
+                        levelColor = "rgb(76, 255, 0)"; // pos-7
+                    } else if (levelDifference === 6) {
+                        levelColor = "rgb(101, 255, 0)"; // pos-6
+                    } else if (levelDifference === 5) {
+                        levelColor = "rgb(127, 255, 0)"; // pos-5
+                    } else if (levelDifference === 4) {
+                        levelColor = "rgb(152, 255, 0)"; // pos-4
+                    } else if (levelDifference === 3) {
+                        levelColor = "rgb(178, 255, 0)"; // pos-3
+                    } else if (levelDifference === 2) {
+                        levelColor = "rgb(204, 255, 0)"; // pos-2
+                    } else if (levelDifference === 1) {
+                        levelColor = "rgb(229, 255, 0)"; // pos-1
+                    } else if (levelDifference === 0) {
+                        levelColor = "rgb(255, 255, 0)"; // pos-0
+                    } else if (levelDifference === -1) {
+                        levelColor = "rgb(255, 229, 0)"; // neg-1
+                    } else if (levelDifference === -2) {
+                        levelColor = "rgb(255, 204, 0)"; // neg-2
+                    } else if (levelDifference === -3) {
+                        levelColor = "rgb(255, 178, 0)"; // neg-3
+                    } else if (levelDifference === -4) {
+                        levelColor = "rgb(255, 152, 0)"; // neg-4
+                    } else if (levelDifference === -5) {
+                        levelColor = "rgb(255, 127, 0)"; // neg-5
+                    } else if (levelDifference === -6) {
+                        levelColor = "rgb(255, 101, 0)"; // neg-6
+                    } else if (levelDifference === -7) {
+                        levelColor = "rgb(255, 76, 0)"; // neg-7
+                    } else if (levelDifference === -8) {
+                        levelColor = "rgb(255, 50, 0)"; // neg-8
+                    } else if (levelDifference === -9) {
+                        levelColor = "rgb(255, 25, 0)"; // neg-9
+                    } else if (levelDifference <= -10) {
+                        levelColor = "rgb(255, 0, 0)"; // neg-10
+                    }
+
+                    textMesh = this.createMultiColorTextMesh(
+                        npc._name, 
+                        `Lvl. ${npc._combatLevel}`, 
+                        npc._def._combat._isAggressive, 
+                        npc._def._combat._isAlwaysAggro,
+                        "yellow", 
+                        levelColor, 
+                        20
+                    );
+                } else {
+                    textMesh = this.createTextMesh(npc._name, "yellow", 20, 'npc');
+                }
+
+                textMesh.parent = npc._appearance._haloNode;
+                textMesh.position = new Vector3(0, 0.25, 0);
+                this.NPCTextMeshes[key] = {
+                    mesh: textMesh
+                };
+
+                this.log(`Regenerated NPC nameplate for ${npc._name} with new size`);
+            }
+        }
+    }
+
+    /**
+     * Regenerate main player nameplate when size setting changes
+     */
+    private regenerateMainPlayerNameplate(): void {
+        const MainPlayer = this.gameHooks.EntityManager.Instance.MainPlayer;
+
+        if (!MainPlayer) return;
+
+        const mainPlayerEntityId = MainPlayer._entityId;
+        if (this.PlayerTextMeshes[mainPlayerEntityId]) {
+            // Dispose old mesh
+            this.PlayerTextMeshes[mainPlayerEntityId].mesh.dispose();
+
+            // Create new mesh with updated size
+            const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20, 'mainPlayer');
+            textMesh.parent = MainPlayer._appearance._haloNode;
+            
+            this.PlayerTextMeshes[mainPlayerEntityId] = {
+                mesh: textMesh,
+                isFriend: false
+            };
+
+            this.log(`Regenerated main player nameplate with new size`);
+        }
+    }
+
+    /**
+     * Regenerate all ground item nameplates when size setting changes
+     */
+    private regenerateGroundItemNameplates(): void {
+        const GroundItems = this.gameHooks.GroundItemManager.Instance.GroundItems;
+
+        if (!GroundItems) return;
+
+        // Store the current ground item data before regenerating
+        const currentGroundItems: { [key: string]: { itemName: string, quantity: number, position: string, parent: any } } = {};
+        
+        for (const key in this.GroundItemTextMeshes) {
+            const existingMesh = this.GroundItemTextMeshes[key];
+            currentGroundItems[key] = {
+                itemName: existingMesh.itemName,
+                quantity: existingMesh.quantity,
+                position: existingMesh.position,
+                parent: existingMesh.mesh.parent
+            };
+            // Dispose old mesh
+            existingMesh.mesh.dispose();
+        }
+
+        // Clear the collection
+        this.GroundItemTextMeshes = {};
+
+        // Recreate nameplates with new size
+        for (const key in currentGroundItems) {
+            const data = currentGroundItems[key];
+            const displayText = data.quantity > 1 ? `${data.itemName} [x${data.quantity}]` : data.itemName;
+            
+            const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
+            textMesh.parent = data.parent;
+            
+            this.GroundItemTextMeshes[key] = {
+                mesh: textMesh,
+                itemName: data.itemName,
+                quantity: data.quantity,
+                position: data.position
+            };
+        }
+
+        this.log(`Regenerated ${Object.keys(currentGroundItems).length} ground item nameplates with new size`);
     }
 }
