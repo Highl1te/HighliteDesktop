@@ -615,7 +615,7 @@ export class DropLog extends Plugin {
             const sprite = document.createElement('div');
             sprite.className = 'drop-log-item-sprite';
             try {
-                const pos = (document as any).highlite?.gameHooks?.ItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(itemId));
+                const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(itemId));
                 if (pos) {
                     sprite.style.backgroundPosition = pos;
                 }

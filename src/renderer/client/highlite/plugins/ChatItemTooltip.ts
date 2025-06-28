@@ -354,7 +354,7 @@ export class ChatItemTooltip extends Plugin {
         spriteDiv.className = 'hs-item-tooltip-sprite';
         
         try {
-            const pos = (document as any).highlite.gameHooks.ItemSpriteManager.getCSSBackgroundPositionForItem(id);
+            const pos = (document as any).highlite.gameHooks.InventoryItemSpriteManager.getCSSBackgroundPositionForItem(id);
             if (pos) {
                 spriteDiv.style.backgroundPosition = pos;
             }
