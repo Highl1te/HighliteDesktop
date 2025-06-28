@@ -36,6 +36,7 @@ interface Skill {
 
 export class ExperienceTracker extends Plugin {
     pluginName = "Experience Tracker";
+    author = "Highlite";
     panelManager : PanelManager = new PanelManager();
     panelContent : HTMLElement | undefined = undefined;
 

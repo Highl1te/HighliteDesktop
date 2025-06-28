@@ -5,6 +5,7 @@ import { SoundManager } from "../core/managers/highlite/soundsManager";
 
 export class PMAlerts extends Plugin {
     pluginName = "PM Alerts";
+    author = "Highlite";
     private notificationManager: NotificationManager = new NotificationManager();
     private soundManager : SoundManager = new SoundManager();
 

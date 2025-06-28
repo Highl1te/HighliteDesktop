@@ -65,16 +65,65 @@ export class SettingsManager {
         this.panelContainer = this.panelManager.requestMenuItem("🛠️", "Settings")[1] as HTMLDivElement;
         this.panelContainer.style.display = 'flex';
         this.panelContainer.style.width = '100%';
+        this.panelContainer.style.background = 'var(--theme-background)';
 
         // Create a content row holder that will hold all the content rows
         this.mainSettingsView = document.createElement("div");
         this.mainSettingsView.id = 'highlite-settings-content-row-holder'
-        this.mainSettingsView.style.width = '100%';
-        this.mainSettingsView.style.height = '100%';
         this.mainSettingsView.style.overflowY = 'auto';
         this.mainSettingsView.style.overflowX = 'hidden';
         this.mainSettingsView.style.display = 'flex';
         this.mainSettingsView.style.flexDirection = 'column';
+        this.mainSettingsView.style.padding = '8px';
+        this.mainSettingsView.style.gap = '2px';
+
+        // Create search bar container
+        const searchContainer = document.createElement("div");
+        searchContainer.style.display = 'flex';
+        searchContainer.style.flexDirection = 'column';
+        searchContainer.style.gap = '8px';
+        searchContainer.style.marginBottom = '8px';
+        searchContainer.style.flexShrink = '0';
+
+        // Create search input
+        const searchInput = document.createElement("input");
+        searchInput.type = "text";
+        searchInput.placeholder = "Search plugins...";
+        searchInput.style.padding = '10px 12px';
+        searchInput.style.borderRadius = '8px';
+        searchInput.style.border = '1px solid var(--theme-border)';
+        searchInput.style.background = 'var(--theme-background-mute)';
+        searchInput.style.color = 'var(--theme-text-primary)';
+        searchInput.style.fontSize = '14px';
+        searchInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        searchInput.style.outline = 'none';
+        searchInput.style.transition = 'all 0.2s ease';
+        searchInput.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+
+        // Placeholder color
+        searchInput.style.setProperty('::placeholder', 'var(--theme-text-muted)');
+
+        // Add focus styling for search input
+        searchInput.addEventListener('focus', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            searchInput.style.border = '1px solid var(--theme-accent)';
+            searchInput.style.boxShadow = '0 0 0 2px var(--theme-accent-transparent-20)';
+        });
+        searchInput.addEventListener('blur', () => {
+            searchInput.style.border = '1px solid var(--theme-border)';
+            searchInput.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+        });
+
+        // Add search functionality
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = (e.target as HTMLInputElement).value.toLowerCase();
+            this.filterPlugins(searchTerm);
+        });
+
+        searchContainer.appendChild(searchInput);
+        this.mainSettingsView.appendChild(searchContainer);
+
         this.currentView = this.mainSettingsView;
         this.panelContainer.appendChild(this.currentView);
     }
@@ -82,28 +131,78 @@ export class SettingsManager {
     private createPluginSettings(plugin: Plugin) {
         const contentRow = document.createElement("div");
         contentRow.id = `highlite-settings-content-row-${plugin.pluginName}`
-        contentRow.style.width = '100%';
-        contentRow.style.height = '35px';
+        contentRow.style.minHeight = '48px';
         contentRow.style.display = 'flex';
         contentRow.style.alignItems = 'center';
-        contentRow.style.borderTop = '1px solid black';
-        contentRow.style.borderBottom = '1px solid #444';
+        contentRow.style.background = 'var(--theme-background-mute)';
+        contentRow.style.borderRadius = '8px';
+        contentRow.style.border = '1px solid var(--theme-border)';
+        contentRow.style.margin = '2px 0';
+        contentRow.style.transition = 'all 0.2s ease';
+        contentRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+
+        // Add hover effect
+        contentRow.addEventListener('mouseenter', () => {
+            contentRow.style.background = 'var(--theme-background-light)';
+            contentRow.style.border = '1px solid var(--theme-divider)';
+            contentRow.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.4)';
+        });
+        contentRow.addEventListener('mouseleave', () => {
+            contentRow.style.background = 'var(--theme-background-mute)';
+            contentRow.style.border = '1px solid var(--theme-border)';
+            contentRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+        });
+
+        // Create a container for plugin name and author
+        const pluginInfoContainer = document.createElement("div");
+        pluginInfoContainer.style.display = 'flex';
+        pluginInfoContainer.style.flexDirection = 'column';
+        pluginInfoContainer.style.flex = '1';
+        pluginInfoContainer.style.minWidth = '0';
+        pluginInfoContainer.style.padding = '12px 16px';
 
         const pluginName = document.createElement("span");
         pluginName.innerText = plugin.pluginName;
-        pluginName.style.color = 'white';
-        pluginName.style.fontSize = '13px';
+        pluginName.style.color = 'var(--theme-text-primary)';
+        pluginName.style.fontSize = '14px';
         pluginName.style.margin = '0px';
-        pluginName.style.padding = '10px';
-        pluginName.style.fontFamily = 'Inter';
-        pluginName.style.fontWeight = 'bold';
+        pluginName.style.padding = '0px';
+        pluginName.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        pluginName.style.fontWeight = '500';
         pluginName.style.textAlign = 'left';
-        pluginName.style.width = '100%';
+        pluginName.style.letterSpacing = '0.025em';
+        pluginName.style.whiteSpace = 'nowrap';
+        pluginName.style.overflow = 'hidden';
+        pluginName.style.textOverflow = 'ellipsis';
+        pluginName.title = plugin.pluginName; // Show full text on hover
+
+        const pluginAuthor = document.createElement("span");
+        pluginAuthor.innerText = `by ${plugin.author}`;
+        pluginAuthor.style.color = 'var(--theme-text-muted)';
+        pluginAuthor.style.fontSize = '12px';
+        pluginAuthor.style.margin = '0px';
+        pluginAuthor.style.padding = '0px';
+        pluginAuthor.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        pluginAuthor.style.fontWeight = '400';
+        pluginAuthor.style.textAlign = 'left';
+        pluginAuthor.style.letterSpacing = '0.025em';
+        pluginAuthor.style.whiteSpace = 'nowrap';
+        pluginAuthor.style.overflow = 'hidden';
+        pluginAuthor.style.textOverflow = 'ellipsis';
+        pluginAuthor.title = `by ${plugin.author}`; // Show full text on hover
+
+        pluginInfoContainer.appendChild(pluginName);
+        pluginInfoContainer.appendChild(pluginAuthor);
 
         /* this is for the enable section */
         const toggleSwitch = document.createElement("input");
         toggleSwitch.type = "checkbox";
         toggleSwitch.checked = plugin.settings.enable.value as boolean;
+        toggleSwitch.style.width = '18px';
+        toggleSwitch.style.height = '18px';
+        toggleSwitch.style.marginRight = '12px';
+        toggleSwitch.style.cursor = 'pointer';
+        toggleSwitch.style.accentColor = 'var(--theme-accent)';
         toggleSwitch.addEventListener("change", async () => {
             plugin.settings.enable.value = toggleSwitch.checked;
             plugin.settings.enable.callback.call(plugin);
@@ -113,14 +212,28 @@ export class SettingsManager {
         // Cog is the character ⚙️
         const cogIcon = document.createElement("span");
         cogIcon.innerText = "⚙️";
-        cogIcon.style.color = 'white';
-        cogIcon.style.fontSize = '16px';
-        cogIcon.style.marginBottom = '2px';
-        cogIcon.style.padding = '10px';
-        cogIcon.style.fontFamily = 'Inter';
-        cogIcon.style.fontWeight = 'bold';
+        cogIcon.style.color = 'var(--theme-text-muted)';
+        cogIcon.style.fontSize = '18px';
+        cogIcon.style.marginRight = '8px';
+        cogIcon.style.padding = '8px';
+        cogIcon.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
         cogIcon.style.textAlign = 'right';
         cogIcon.style.cursor = 'pointer';
+        cogIcon.style.borderRadius = '4px';
+        cogIcon.style.transition = 'all 0.2s ease';
+        
+        // Add hover effect for cog icon
+        cogIcon.addEventListener('mouseenter', () => {
+            cogIcon.style.color = 'var(--theme-text-primary)';
+            cogIcon.style.background = 'var(--theme-border-light)';
+            cogIcon.style.transform = 'scale(1.1)';
+        });
+        cogIcon.addEventListener('mouseleave', () => {
+            cogIcon.style.color = 'var(--theme-text-muted)';
+            cogIcon.style.background = 'transparent';
+            cogIcon.style.transform = 'scale(1)';
+        });
+        
         cogIcon.addEventListener("click", () => {
             // Open the plugin settings
             this.openPluginSettings(plugin);
@@ -131,7 +244,7 @@ export class SettingsManager {
             cogIcon.style.display = 'none';
         }
 
-        contentRow.appendChild(pluginName);
+        contentRow.appendChild(pluginInfoContainer);
         contentRow.appendChild(cogIcon);
         contentRow.appendChild(toggleSwitch);
 
@@ -148,51 +261,92 @@ export class SettingsManager {
         this.pluginSettingsView = document.createElement("div");
 
         this.pluginSettingsView.id = 'highlite-settings-content-row-holder'
-        this.pluginSettingsView.style.width = '100%';
         this.pluginSettingsView.style.height = '100%';
         this.pluginSettingsView.style.overflowY = 'auto';
         this.pluginSettingsView.style.overflowX = 'hidden';
         this.pluginSettingsView.style.display = 'flex';
         this.pluginSettingsView.style.flexDirection = 'column';
+        this.pluginSettingsView.style.padding = '8px';
+        this.pluginSettingsView.style.gap = '8px';
+        this.pluginSettingsView.style.background = 'var(--theme-background)';
 
         // Create a title for the settings panel
         const titleRow = document.createElement("div");
         titleRow.id = 'highlite-settings-title-row'
-        titleRow.style.width = '100%';
-        titleRow.style.height = '50px';
+        titleRow.style.minHeight = '60px';
         titleRow.style.display = 'flex';
         titleRow.style.alignItems = 'center';
         titleRow.style.justifyContent = 'center';
+        titleRow.style.flexDirection = 'column';
+        titleRow.style.background = 'var(--theme-background-mute)';
+        titleRow.style.borderRadius = '8px';
+        titleRow.style.border = '1px solid var(--theme-border)';
+        titleRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+        titleRow.style.marginBottom = '8px';
+        titleRow.style.padding = '16px';
 
         const title = document.createElement("h1");
         title.innerText = `${plugin.pluginName} Settings`;
-        title.style.color = 'white';
-        title.style.fontSize = '20px';
+        title.style.color = 'var(--theme-text-primary)';
+        title.style.fontSize = '22px';
         title.style.margin = '0px';
         title.style.padding = '0px';
-        title.style.fontFamily = 'Inter';
-        title.style.fontWeight = 'bold';
+        title.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        title.style.fontWeight = '600';
         title.style.textAlign = 'center';
         title.style.width = '100%';
+        title.style.letterSpacing = '0.025em';
+
+        const authorText = document.createElement("span");
+        authorText.innerText = `by ${plugin.author}`;
+        authorText.style.color = 'var(--theme-text-muted)';
+        authorText.style.fontSize = '14px';
+        authorText.style.margin = '4px 0 0 0';
+        authorText.style.padding = '0px';
+        authorText.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        authorText.style.fontWeight = '400';
+        authorText.style.textAlign = 'center';
+        authorText.style.width = '100%';
+        authorText.style.letterSpacing = '0.025em';
+
         titleRow.appendChild(title);
+        titleRow.appendChild(authorText);
         this.pluginSettingsView.appendChild(titleRow);
 
         // Add a back button in the form of a small row
         const backButton = document.createElement("div");
         backButton.id = 'highlite-settings-back-button'
         backButton.style.width = '100%';
-        backButton.style.height = '25px';
+        backButton.style.minHeight = '36px';
         backButton.style.display = 'flex';
         backButton.style.alignItems = 'center';
         backButton.style.justifyContent = 'center';
         backButton.style.cursor = 'pointer';
-        backButton.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
-        backButton.style.color = 'white';
-        backButton.style.fontSize = '16px';
-        backButton.style.fontFamily = 'Inter';
-        backButton.style.fontWeight = 'bold';
+        backButton.style.background = 'var(--theme-accent)';
+        backButton.style.borderRadius = '6px';
+        backButton.style.border = '1px solid var(--theme-accent-dark)';
+        backButton.style.color = 'var(--theme-text-dark)';
+        backButton.style.fontSize = '14px';
+        backButton.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+        backButton.style.fontWeight = '500';
         backButton.style.textAlign = 'center';
-        backButton.innerText = "Back";
+        backButton.style.transition = 'all 0.2s ease';
+        backButton.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+        backButton.style.letterSpacing = '0.025em';
+        backButton.innerText = "← Back";
+        
+        // Add hover effect for back button
+        backButton.addEventListener('mouseenter', () => {
+            backButton.style.background = 'var(--theme-accent-light)';
+            backButton.style.boxShadow = '0 4px 8px var(--theme-accent-transparent-40)';
+            backButton.style.transform = 'translateY(-1px)';
+        });
+        backButton.addEventListener('mouseleave', () => {
+            backButton.style.background = 'var(--theme-accent)';
+            backButton.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+            backButton.style.transform = 'translateY(0)';
+        });
+        
         backButton.addEventListener("click", () => {
             this.panelContainer?.removeChild(this.currentView!);
             this.currentView = this.mainSettingsView;
@@ -210,14 +364,28 @@ export class SettingsManager {
             let setting = plugin.settings[settingKey];
             const contentRow = document.createElement("div");
             contentRow.id = `highlite-settings-content-row-${settingKey}`
-            contentRow.style.width = '100%';
             contentRow.style.display = 'flex';
             contentRow.style.flexDirection = 'column';
             contentRow.style.justifyContent = 'center';
-            contentRow.style.padding = '5px 0px';
-            contentRow.style.alignItems = 'center';
-            contentRow.style.borderTop = '1px solid black';
-            contentRow.style.borderBottom = '1px solid #444';
+            contentRow.style.padding = '16px';
+            contentRow.style.alignItems = 'stretch';
+            contentRow.style.background = 'var(--theme-background-mute)';
+            contentRow.style.borderRadius = '8px';
+            contentRow.style.border = '1px solid var(--theme-border)';
+            contentRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+            contentRow.style.transition = 'all 0.2s ease';
+
+            // Add hover effect
+            contentRow.addEventListener('mouseenter', () => {
+                contentRow.style.background = 'var(--theme-background-light)';
+                contentRow.style.border = '1px solid var(--theme-divider)';
+                contentRow.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.4)';
+            });
+            contentRow.addEventListener('mouseleave', () => {
+                contentRow.style.background = 'var(--theme-background-mute)';
+                contentRow.style.border = '1px solid var(--theme-border)';
+                contentRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+            });
 
             // Capitalize the first letter of the name 
             const capitalizedSettingName = settingKey.replace(/([A-Z])/g, " $1");
@@ -227,41 +395,84 @@ export class SettingsManager {
 
             switch (setting?.type) {
                 case SettingsTypes.checkbox:
+                    const checkboxContainer = document.createElement("div");
+                    checkboxContainer.style.display = 'flex';
+                    checkboxContainer.style.alignItems = 'center';
+                    checkboxContainer.style.gap = '12px';
+                    checkboxContainer.style.minWidth = '0'; // Allow flex item to shrink below content size
+                    
                     const toggleSwitch = document.createElement("input");
                     toggleSwitch.type = "checkbox";
                     toggleSwitch.checked = setting.value as boolean;
+                    toggleSwitch.style.width = '20px';
+                    toggleSwitch.style.height = '20px';
+                    toggleSwitch.style.cursor = 'pointer';
+                    toggleSwitch.style.accentColor = 'var(--theme-accent)';
                     toggleSwitch.addEventListener("change", async () => {
                         setting.value = toggleSwitch.checked;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
                         console.log(setting);
                     });
+                    
                     // Add a label for the toggle switch
                     const toggleLabel = document.createElement("label");
                     toggleLabel.innerText = finalizedSettingName;
-                    toggleLabel.style.color = 'white';
+                    toggleLabel.style.color = 'var(--theme-text-primary)';
                     toggleLabel.style.fontSize = '16px';
                     toggleLabel.style.margin = '0px';
-                    toggleLabel.style.padding = '10px';
-                    toggleLabel.style.fontFamily = 'Inter';
-                    toggleLabel.style.fontWeight = 'bold';
-                    toggleLabel.style.textAlign = 'left';
+                    toggleLabel.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    toggleLabel.style.fontWeight = '500';
+                    toggleLabel.style.cursor = 'pointer';
+                    toggleLabel.style.letterSpacing = '0.025em';
+                    toggleLabel.style.flex = '1'; // Use flex instead of flexGrow for better control
+                    toggleLabel.style.minWidth = '0'; // Allow flex item to shrink below content size
+                    toggleLabel.style.whiteSpace = 'nowrap';
+                    toggleLabel.style.overflow = 'hidden';
+                    toggleLabel.style.textOverflow = 'ellipsis';
+                    toggleLabel.title = finalizedSettingName; // Show full text on hover
+                    
+                    toggleLabel.addEventListener('click', () => {
+                        toggleSwitch.click();
+                    });
 
-
-                    contentRow.appendChild(toggleLabel);
-                    contentRow.appendChild(toggleSwitch);
+                    checkboxContainer.appendChild(toggleLabel);
+                    checkboxContainer.appendChild(toggleSwitch);
+                    contentRow.appendChild(checkboxContainer);
                     break;
                 case SettingsTypes.range:
+                    const rangeContainer = document.createElement("div");
+                    rangeContainer.style.display = 'flex';
+                    rangeContainer.style.flexDirection = 'column';
+                    rangeContainer.style.gap = '8px';
+                    
                     const numberInput = document.createElement("input");
                     numberInput.type = "number";
                     numberInput.value = setting.value.toString();
                     // Allow floats
                     numberInput.step = "any";
-                    // Prevent game from taking away input focus
-                    numberInput.addEventListener("focus", (e) => {
+                    numberInput.style.padding = '8px 12px';
+                    numberInput.style.borderRadius = '6px';
+                    numberInput.style.border = '1px solid var(--theme-border)';
+                    numberInput.style.background = 'var(--theme-background)';
+                    numberInput.style.color = 'var(--theme-text-primary)';
+                    numberInput.style.fontSize = '14px';
+                    numberInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    numberInput.style.outline = 'none';
+                    numberInput.style.transition = 'all 0.2s ease';
+                    
+                    // Add focus styling
+                    numberInput.addEventListener('focus', (e) => {
                         e.preventDefault();
                         e.stopPropagation();
+                        numberInput.style.border = '1px solid var(--theme-accent)';
+                        numberInput.style.boxShadow = '0 0 0 2px var(--theme-accent-transparent-20)';
                     });
+                    numberInput.addEventListener('blur', () => {
+                        numberInput.style.border = '1px solid var(--theme-border)';
+                        numberInput.style.boxShadow = 'none';
+                    });
+                    
                     numberInput.addEventListener("change", async () => {
                         setting.value = parseFloat(numberInput.value);
                         setting.callback.call(plugin);
@@ -272,15 +483,20 @@ export class SettingsManager {
                     // Add a label for the number input
                     const numberLabel = document.createElement("label");
                     numberLabel.innerText = finalizedSettingName;
-                    numberLabel.style.color = 'white';
+                    numberLabel.style.color = 'var(--theme-text-primary)';
                     numberLabel.style.fontSize = '16px';
                     numberLabel.style.margin = '0px';
-                    numberLabel.style.padding = '10px';
-                    numberLabel.style.fontFamily = 'Inter';
-                    numberLabel.style.fontWeight = 'bold';
-                    numberLabel.style.textAlign = 'left';
-                    contentRow.appendChild(numberLabel);
-                    contentRow.appendChild(numberInput);
+                    numberLabel.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    numberLabel.style.fontWeight = '500';
+                    numberLabel.style.letterSpacing = '0.025em';
+                    numberLabel.style.whiteSpace = 'nowrap';
+                    numberLabel.style.overflow = 'hidden';
+                    numberLabel.style.textOverflow = 'ellipsis';
+                    numberLabel.title = finalizedSettingName; // Show full text on hover
+                    
+                    rangeContainer.appendChild(numberLabel);
+                    rangeContainer.appendChild(numberInput);
+                    contentRow.appendChild(rangeContainer);
 
                     break;
                 default:
@@ -294,5 +510,37 @@ export class SettingsManager {
 
         this.currentView = this.pluginSettingsView
         this.panelContainer?.appendChild(this.currentView);
+    }
+
+    private filterPlugins(searchTerm: string) {
+        // Get all plugin rows
+        const pluginRows = this.mainSettingsView?.querySelectorAll('[id^="highlite-settings-content-row-"]');
+        
+        if (!pluginRows) return;
+
+        pluginRows.forEach((row) => {
+            const htmlRow = row as HTMLElement;
+            // Skip the search container
+            if (htmlRow.id === 'highlite-settings-content-row-holder') return;
+            
+            // Get the plugin info container
+            const pluginInfoContainer = htmlRow.querySelector('div');
+            if (pluginInfoContainer && pluginInfoContainer.style.flexDirection === 'column') {
+                const pluginNameSpan = pluginInfoContainer.children[0] as HTMLElement;
+                const pluginAuthorSpan = pluginInfoContainer.children[1] as HTMLElement;
+                
+                if (pluginNameSpan && pluginAuthorSpan) {
+                    const pluginName = pluginNameSpan.innerText.toLowerCase();
+                    const pluginAuthor = pluginAuthorSpan.innerText.toLowerCase();
+                    
+                    // Show/hide based on search term matching name or author
+                    if (searchTerm === '' || pluginName.includes(searchTerm) || pluginAuthor.includes(searchTerm)) {
+                        htmlRow.style.display = 'flex';
+                    } else {
+                        htmlRow.style.display = 'none';
+                    }
+                }
+            }
+        });
     }
 }

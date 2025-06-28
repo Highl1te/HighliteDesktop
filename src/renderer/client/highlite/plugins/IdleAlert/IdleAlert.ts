@@ -9,6 +9,7 @@ export class IdleAlert extends Plugin {
     private notificationManager: NotificationManager = new NotificationManager();
     private soundManager : SoundManager = new SoundManager();
     pluginName: string = "Idle Alert";
+    author = "Highlite";
 
     constructor() {
         super();

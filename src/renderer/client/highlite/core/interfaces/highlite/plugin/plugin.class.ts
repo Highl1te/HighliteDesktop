@@ -5,6 +5,7 @@ export abstract class Plugin {
     [key: string]: any;
 
     abstract pluginName : string;
+    abstract author : string;
 
     abstract init(): void;
     abstract start(): void;

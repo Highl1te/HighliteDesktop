@@ -5,6 +5,7 @@ import { ContextMenuTypes } from "../core/interfaces/game/ContextMenuTypes.enum"
 
 export class Lookup extends Plugin {
     pluginName = "Lookup";
+    author = "Highlite";
 
     lookupContextActionInventory  = 0;
     lookupContextActionEntities  = 0;

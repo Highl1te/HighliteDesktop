@@ -4,6 +4,7 @@ const TreasureMapItemIds = [442, 443, 456];
 
 export class TreasureMapHelper extends Plugin {
   pluginName = "Treasure Map Helper";
+  author = "Oatelaus";
 
   constructor() {
     super();

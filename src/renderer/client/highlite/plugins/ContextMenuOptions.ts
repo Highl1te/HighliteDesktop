@@ -3,6 +3,7 @@ import { ContextMenuManager } from "../core/managers/game/contextMenuManager";
 
 export class ContextMenuOptions extends Plugin {
     pluginName = "Context Menu Options";
+    author = "Highlite";
     contextMenuManager : ContextMenuManager = new ContextMenuManager();
 
     constructor() {

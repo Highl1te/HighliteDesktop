@@ -9,6 +9,7 @@ import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings
 
 export class Nameplates extends Plugin {
     pluginName = "Nameplates";
+    author = "Highlite";
     constructor() {
         super();
         this.settings.playerNameplates = {
@@ -257,7 +258,6 @@ export class Nameplates extends Plugin {
                             20
                         );
                         textMesh.parent = npc._appearance._haloNode; // Parent to halo node
-                        textMesh.position = new Vector3(0, 0.25, 0); // Relative position above the NPC
                         this.NPCTextMeshes[key] = {
                             mesh: textMesh
                         };
@@ -265,11 +265,19 @@ export class Nameplates extends Plugin {
                         // NPC with no combat level, just show name
                         const textMesh = this.createTextMesh(nameplateText, "yellow", 20, 'npc');
                         textMesh.parent = npc._appearance._haloNode; // Parent to halo node
-                        textMesh.position = new Vector3(0, 0.25, 0); // Relative position above the NPC
                         this.NPCTextMeshes[key] = {
                             mesh: textMesh
                         };
                     }
+                }
+
+                // Update position every frame for proper stacking (similar to players)
+                if (this.NPCTextMeshes[key]) {
+                    // Force re-parent to ensure proper connection to halo node
+                    if (this.NPCTextMeshes[key].mesh.parent !== npc._appearance._haloNode) {
+                        this.NPCTextMeshes[key].mesh.parent = npc._appearance._haloNode;
+                    }
+                    this.NPCTextMeshes[key].mesh.position = this.calculateNPCStackedPosition(npc);
                 }
             }
         } else {
@@ -354,7 +362,16 @@ export class Nameplates extends Plugin {
             }
             
             // Update position every frame - MainPlayer nameplate is always at the top
+            // Force re-parent to ensure proper connection to halo node
+            if (this.PlayerTextMeshes[mainPlayerEntityId].mesh.parent !== MainPlayer._appearance._haloNode) {
+                this.PlayerTextMeshes[mainPlayerEntityId].mesh.parent = MainPlayer._appearance._haloNode;
+            }
             this.PlayerTextMeshes[mainPlayerEntityId].mesh.position = this.calculatePlayerStackedPosition(MainPlayer, true);
+            
+            // Ensure the mesh is always visible by unfreezing and updating world matrix
+            this.PlayerTextMeshes[mainPlayerEntityId].mesh.unfreezeWorldMatrix();
+            this.PlayerTextMeshes[mainPlayerEntityId].mesh.computeWorldMatrix(true);
+            this.PlayerTextMeshes[mainPlayerEntityId].mesh.freezeWorldMatrix();
         } else if (!this.settings.youNameplate!.value && MainPlayer) {
             // Remove MainPlayer nameplate if setting is disabled
             const mainPlayerEntityId = MainPlayer._entityId;
@@ -530,7 +547,9 @@ export class Nameplates extends Plugin {
         context.restore();
 
         // Update the texture after all drawing is complete
-        dynamicTexture.update();        // Create material with transparency
+        dynamicTexture.update();        
+        
+        // Create material with transparency
         const material = new StandardMaterial("textMaterial", scene);
         material.diffuseTexture = dynamicTexture;
         material.disableLighting = true;
@@ -551,10 +570,16 @@ export class Nameplates extends Plugin {
         material.needAlphaBlending = () => true;
         material.needAlphaTesting = () => false;
         
-        // Disable post-processing effects on this material
+        // Enhanced rendering settings for better visibility
         material.disableColorWrite = false;
-        material.disableDepthWrite = false;
+        material.disableDepthWrite = true; // Disable depth writing to prevent z-fighting
         material.separateCullingPass = true;
+        material.forceDepthWrite = false;
+        
+        // Special settings for main player nameplate
+        if (nameplateType === 'mainPlayer') {
+            material.freeze(); // Freeze material for better performance
+        }
         
         // Create plane mesh with optimized size (scaled back down for proper world size)
         const textWidth = (textureWidth / scaleFactor) / 60;
@@ -562,11 +587,20 @@ export class Nameplates extends Plugin {
         const plane = PlaneBuilder.CreatePlane("textPlane", { width: textWidth, height: textHeight }, scene);
         plane.material = material;
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 2; // Use a moderate rendering group
+        
+        // Special handling for main player nameplate to ensure it's always visible
+        if (nameplateType === 'mainPlayer') {
+            plane.renderingGroupId = 3; // Higher rendering group for main player
+            plane.infiniteDistance = true; // Prevent frustum culling
+            plane.alwaysSelectAsActiveMesh = true; // Always consider for rendering
+        } else {
+            plane.renderingGroupId = 2; // Use a moderate rendering group for others
+        }
         
         // Exclude from post-processing pipeline
         plane.isPickable = false;
         plane.doNotSyncBoundingInfo = true;
+        plane.freezeWorldMatrix(); // Optimize performance by freezing world matrix updates
 
         return plane;
     }
@@ -693,11 +727,12 @@ export class Nameplates extends Plugin {
         const plane = PlaneBuilder.CreatePlane("multiColorTextPlane", {width: textWidth, height: textHeight}, scene);
         plane.material = material;
         plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 2; // Use a moderate rendering group
+        plane.renderingGroupId = 2; // Use a moderate rendering group for NPCs
         
         // Exclude from post-processing pipeline
         plane.isPickable = false;
         plane.doNotSyncBoundingInfo = true;
+        plane.freezeWorldMatrix(); // Optimize performance
         
         return plane;
     }
@@ -766,6 +801,36 @@ export class Nameplates extends Plugin {
         // Calculate Y offset (stack upwards)
         const baseHeight = 0.25;
         const stackSpacing = 0.4; // Spacing between player nameplates
+        const yOffset = baseHeight + (stackIndex * stackSpacing);
+        
+        return new Vector3(0, yOffset, 0);
+    }
+
+    /**
+     * Calculate the Y offset for NPC nameplates based on existing nameplates at the same position
+     */
+    private calculateNPCStackedPosition(npc: any): Vector3 {
+        if (!npc || !npc._appearance || !npc._appearance._haloNode) {
+            return new Vector3(0, 0.25, 0); // Default position
+        }
+
+        // Use world position from the halo node for more reliable positioning
+        const worldPos = npc._appearance._haloNode.getAbsolutePosition();
+        
+        // Create a position key based on rounded world coordinates (to group nearby NPCs)
+        const roundedX = Math.round(worldPos.x * 2) / 2; // Round to nearest 0.5
+        const roundedZ = Math.round(worldPos.z * 2) / 2; // Round to nearest 0.5
+        const positionKey = `npc_${roundedX}_${roundedZ}`;
+        
+        // Get current stack count for this position
+        const stackIndex = this.positionTracker.get(positionKey) || 0;
+        
+        // Update stack count
+        this.positionTracker.set(positionKey, stackIndex + 1);
+        
+        // Calculate Y offset (stack upwards)
+        const baseHeight = 0.25;
+        const stackSpacing = 0.4; // Spacing between NPC nameplates
         const yOffset = baseHeight + (stackIndex * stackSpacing);
         
         return new Vector3(0, yOffset, 0);
@@ -952,6 +1017,10 @@ export class Nameplates extends Plugin {
             // Create new mesh with updated size
             const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20, 'mainPlayer');
             textMesh.parent = MainPlayer._appearance._haloNode;
+            
+            // Ensure proper rendering properties for main player
+            textMesh.infiniteDistance = true;
+            textMesh.alwaysSelectAsActiveMesh = true;
             
             this.PlayerTextMeshes[mainPlayerEntityId] = {
                 mesh: textMesh,

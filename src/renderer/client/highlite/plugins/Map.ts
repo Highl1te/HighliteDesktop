@@ -5,6 +5,7 @@ import interact from "interactjs";
 
 export class WorldMap extends Plugin {
   pluginName = "World Map";
+  author = "Highlite";
   panelManager: PanelManager = new PanelManager();
   mapWindow: HTMLDivElement | null = null;
   mapEmbed: HTMLIFrameElement | null = null;

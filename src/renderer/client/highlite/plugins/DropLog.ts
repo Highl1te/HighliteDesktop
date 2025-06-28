@@ -29,6 +29,7 @@ interface NPCKillData {
 
 export class DropLog extends Plugin {
     pluginName = "Drop Log";
+    author = "JayArrowz";
     private panelManager: PanelManager = new PanelManager();
     private panelContent: HTMLElement | null = null;
     private static readonly DB_STORE_NAME = "drop_logs";

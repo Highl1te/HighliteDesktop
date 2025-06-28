@@ -3,6 +3,7 @@ import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings
 
 export class EnhancedHPBars extends Plugin {
     pluginName = "Enhanced HP Bars";
+    author = "Highlite";
 
     targetContainer : HTMLDivElement | null = null;
     previousTarget : any | null = null;

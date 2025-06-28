@@ -2,6 +2,7 @@ import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
 
 export class EnhancedLoginScreen extends Plugin {
     pluginName = "Enhanced Login Screen";
+    author = "Highlite";
 
     videoElement : HTMLVideoElement | null = null;
 

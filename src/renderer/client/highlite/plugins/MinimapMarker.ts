@@ -8,6 +8,7 @@ export class MinimapMarker extends Plugin {
     private readonly MARKER_OFFSET = 8;
 
     pluginName = "Minimap Marker";
+    author = "JayArrowz";
     minimapContainer: HTMLDivElement | null = null;
     minimapMarkerEl: HTMLImageElement | null = null;
     minimapArrowEl: HTMLImageElement | null = null;

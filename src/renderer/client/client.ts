@@ -20,9 +20,9 @@ import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
-import "@fortawesome/fontawesome-free/css/all.css"
 
 import "./helpers/titlebarHelpers.js";
+import "@iconify/iconify";
 
 
 async function obtainGameClient() {

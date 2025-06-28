@@ -18,6 +18,7 @@ interface XPDrop {
 
 export class XPOrb extends Plugin {
     pluginName = "XP Orb";
+    author = "JayArrowz";
     
     private xpOrbContainer: HTMLDivElement | null = null;
     private xpOrbElement: HTMLDivElement | null = null;

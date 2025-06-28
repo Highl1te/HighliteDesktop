@@ -1,3 +1,60 @@
+:root {
+    --theme-background: #1a1a1a;
+    --theme-background-soft: #222222;
+    --theme-background-mute: #2a2a2a;
+    --theme-background-light: #333333;
+    --theme-accent: #F9F449;
+    --theme-accent-dark: #e6e03a;
+    --theme-accent-light: #fbf65c;
+    --theme-accent-muted: rgba(249, 244, 73, .8);
+    --theme-accent-transparent-10: rgba(249, 244, 73, .1);
+    --theme-accent-transparent-20: rgba(249, 244, 73, .2);
+    --theme-accent-transparent-30: rgba(249, 244, 73, .3);
+    --theme-accent-transparent-40: rgba(249, 244, 73, .4);
+    --theme-accent-transparent-60: rgba(249, 244, 73, .6);
+    --theme-text-primary: #ffffff;
+    --theme-text-secondary: rgba(255, 255, 255, .8);
+    --theme-text-muted: rgba(255, 255, 255, .6);
+    --theme-text-dark: #1a1a1a;
+    --theme-border: rgba(255, 255, 255, .1);
+    --theme-border-light: rgba(255, 255, 255, .05);
+    --theme-divider: rgba(255, 255, 255, .15);
+    --theme-success: #10b981;
+    --theme-success-dark: #059669;
+    --theme-success-light: #34d399;
+    --theme-success-transparent-30: rgba(16, 185, 129, .3);
+    --theme-danger: #ef4444;
+    --theme-danger-dark: #dc2626;
+    --theme-danger-light: #f87171;
+    --theme-danger-transparent-30: rgba(239, 68, 68, .3);
+    --vt-c-white: #ffffff;
+    --vt-c-white-soft: #f8f8f8;
+    --vt-c-white-mute: #f2f2f2;
+    --vt-c-black: var(--theme-background);
+    --vt-c-black-soft: var(--theme-background-soft);
+    --vt-c-black-mute: var(--theme-background-mute);
+    --vt-c-indigo: var(--theme-accent);
+    --vt-c-divider-light-1: var(--theme-divider);
+    --vt-c-divider-light-2: var(--theme-border);
+    --vt-c-divider-dark-1: var(--theme-divider);
+    --vt-c-divider-dark-2: var(--theme-border);
+    --vt-c-text-light-1: var(--theme-text-primary);
+    --vt-c-text-light-2: var(--theme-text-secondary);
+    --vt-c-text-dark-1: var(--theme-text-primary);
+    --vt-c-text-dark-2: var(--theme-text-secondary)
+}
+
+:root {
+    --color-background: var(--theme-background);
+    --color-background-soft: var(--theme-background-soft);
+    --color-background-mute: var(--theme-background-mute);
+    --color-border: var(--theme-border);
+    --color-border-hover: var(--theme-divider);
+    --color-heading: var(--theme-text-primary);
+    --color-text: var(--theme-text-primary);
+    --section-gap: 160px
+}
+
 body {
     margin: 0;
     overflow-x: hidden;
@@ -39,6 +96,7 @@ body {
 .highlite_titlebar a {
     /* Allow clicking on the links */
     -webkit-app-region: no-drag;
+    display: flex;
 }
 
 .highlite_bar {

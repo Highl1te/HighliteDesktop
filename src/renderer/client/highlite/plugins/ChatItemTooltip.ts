@@ -7,6 +7,7 @@ import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings
  */
 export class ChatItemTooltip extends Plugin {
     pluginName = "Chat Item Tooltip";
+    author = "JayArrowz";
 
     private processedIds: Set<number> = new Set();
     private tooltipEl: HTMLDivElement | null = null;

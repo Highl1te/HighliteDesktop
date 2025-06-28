@@ -2,32 +2,51 @@ let ogError = console.error;
 console.error = function(...args) {
     ogError(...args);
     const warningIndicator = document.querySelector('#warningIndicator');
-    if (warningIndicator) {
-        warningIndicator.style.color = 'red';
-        warningIndicator.display = 'unset';
+    const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+    if (warningIndicator && warningIcon) {
+        // Remove any existing warning classes and add error class
+        warningIcon.classList.remove('warning');
+        warningIcon.classList.add('error');
+        warningIndicator.style.display = 'flex';
     }
     // On click open dev tools
-    warningIndicator.onclick = () => {
-        window.electron.ipcRenderer.send('show-dev-tools');
-        warningIndicator.style.display = 'none';
-    };
+    if (warningIndicator) {
+        warningIndicator.onclick = () => {
+            window.electron.ipcRenderer.send('show-dev-tools');
+            // Clear the warning classes and hide the indicator
+            const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+            if (warningIcon) {
+                warningIcon.classList.remove('warning', 'error');
+            }
+            warningIndicator.style.display = 'none';
+        };
+    }
 };
 
 let ogWarn = console.warn;
 console.warn = function(...args) {
     ogWarn(...args);
     const warningIndicator = document.querySelector('#warningIndicator');
-    if (warningIndicator) {
-        if (warningIndicator.style.color !== 'red') {
-            warningIndicator.style.color = 'yellow';
+    const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+    if (warningIndicator && warningIcon) {
+        // Only set warning class if there's no error class (errors take precedence)
+        if (!warningIcon.classList.contains('error')) {
+            warningIcon.classList.add('warning');
         }
-        warningIndicator.style.display = 'unset';
+        warningIndicator.style.display = 'flex';
     }
     // On click open dev tools
-    warningIndicator.onclick = () => {
-        window.electron.ipcRenderer.send('show-dev-tools');
-        warningIndicator.style.display = 'none';
-    };
+    if (warningIndicator) {
+        warningIndicator.onclick = () => {
+            window.electron.ipcRenderer.send('show-dev-tools');
+            // Clear the warning classes and hide the indicator
+            const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+            if (warningIcon) {
+                warningIcon.classList.remove('warning', 'error');
+            }
+            warningIndicator.style.display = 'none';
+        };
+    }
 };
 setInterval(() => {
     const titlebar = document.querySelector('#iconbar');

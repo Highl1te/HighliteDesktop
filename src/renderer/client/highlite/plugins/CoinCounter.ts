@@ -4,6 +4,7 @@ import { abbreviateValue } from "../core/utilities/abbreviateValue";
 
 export class CoinCounter extends Plugin {
     pluginName = "Coin Counter";
+    author = "Highlite";
     private uiManager = new UIManager();
     private coinCounterUI : HTMLElement | null = null;
     private coinCounterValueUI : HTMLElement | null = null;
@@ -66,13 +67,15 @@ export class CoinCounter extends Plugin {
 
         // Create Sub-Span Element
         const coinCounterSpan = document.createElement("span");
+        coinCounterSpan.style.display = "flex";
+        coinCounterSpan.style.justifyContent = "center";
 
         
         // Create Sub-Span-I Element
         const coinCounterSpanI = document.createElement("i");
-        coinCounterSpanI.className = "fa-solid fa-coins";
+        coinCounterSpanI.className = "iconify";
+        coinCounterSpanI.setAttribute("data-icon", "material-symbols:monetization-on");
         coinCounterSpanI.ariaHidden = "true";
-        coinCounterSpanI.style.fontFamily = "FontAwesome";
         coinCounterSpanI.style.marginRight = "10px";
         coinCounterSpan.appendChild(coinCounterSpanI);
 

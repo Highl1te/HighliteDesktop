@@ -5,6 +5,7 @@ import { SoundManager } from "../core/managers/highlite/soundsManager";
 
 export class TradeAlerts extends Plugin {
     pluginName = "Trade Alerts";
+    author = "Highlite";
     private notificationManager: NotificationManager = new NotificationManager();
     private soundManager : SoundManager = new SoundManager();
 

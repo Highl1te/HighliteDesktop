@@ -5,6 +5,7 @@ import { SoundManager } from "../core/managers/highlite/soundsManager";
 
 export class HPAlert extends Plugin {
     pluginName = "HP Alert";
+    author = "Highlite";
     private notificationManager: NotificationManager = new NotificationManager();
     private doNotify = true;
     private soundManager : SoundManager = new SoundManager();
