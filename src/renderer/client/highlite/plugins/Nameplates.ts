@@ -196,7 +196,7 @@ export class Nameplates extends Plugin {
 
                 // Update position every frame for proper stacking (similar to players)
                 if (this.NPCTextMeshes[key]) {
-                    this.NPCTextMeshes[key].mesh.position = this.calculateNPCStackedPosition(npc);
+                    this.NPCTextMeshes[key].mesh.position = this.calculateStackedPosition(npc, 'npc');
                 }
             }
         } else {
@@ -212,7 +212,12 @@ export class Nameplates extends Plugin {
 
                 if (!this.PlayerTextMeshes[player._entityId]) {
                     // Build nameplate text (just the name for players)
-                    const textMesh = this.createTextMesh(player._name, currentColor, 20, 'player');
+                    const textMesh = this.createNameplateMesh({
+                        text: player._name,
+                        color: currentColor,
+                        fontSize: 20,
+                        nameplateType: 'player'
+                    });
                     textMesh.parent = player._appearance._haloNode; // Parent to halo node
                     this.PlayerTextMeshes[player._entityId] = {
                         mesh: textMesh,
@@ -224,7 +229,12 @@ export class Nameplates extends Plugin {
                     if (existingMesh.mesh) {
                         // Friend status changed, recreate the mesh with new color
                         existingMesh.mesh.dispose(false, true);
-                        const textMesh = this.createTextMesh(player._name, currentColor, 20, 'player');
+                        const textMesh = this.createNameplateMesh({
+                            text: player._name,
+                            color: currentColor,
+                            fontSize: 20,
+                            nameplateType: 'player'
+                        });
                         textMesh.parent = player._appearance._haloNode; // Parent to halo node
                         this.PlayerTextMeshes[player._entityId] = {
                             mesh: textMesh,
@@ -234,7 +244,7 @@ export class Nameplates extends Plugin {
                 }
                 
                 // Update position every frame for proper stacking
-                this.PlayerTextMeshes[player._entityId].mesh.position = this.calculatePlayerStackedPosition(player, false);
+                this.PlayerTextMeshes[player._entityId].mesh.position = this.calculateStackedPosition(player, 'player', false);
             }
         } else {
             // Player nameplates are disabled, clean up any existing player meshes (except MainPlayer)
@@ -253,7 +263,12 @@ export class Nameplates extends Plugin {
             
             if (!this.PlayerTextMeshes[mainPlayerEntityId]) {
                 // Create nameplate for MainPlayer
-                const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20, 'mainPlayer'); // Use cyan to distinguish from other players
+                const textMesh = this.createNameplateMesh({
+                    text: MainPlayer._name,
+                    color: "cyan",
+                    fontSize: 20,
+                    nameplateType: 'mainPlayer'
+                }); // Use cyan to distinguish from other players
                 textMesh.parent = MainPlayer._appearance._haloNode; // Parent to halo node
                 this.PlayerTextMeshes[mainPlayerEntityId] = {
                     mesh: textMesh,
@@ -261,7 +276,7 @@ export class Nameplates extends Plugin {
                 };
             }
 
-            this.PlayerTextMeshes[mainPlayerEntityId].mesh.position = this.calculatePlayerStackedPosition(MainPlayer, true);
+            this.PlayerTextMeshes[mainPlayerEntityId].mesh.position = this.calculateStackedPosition(MainPlayer, 'player', true);
         } else if (!this.settings.youNameplate!.value && MainPlayer) {
             // Remove MainPlayer nameplate if setting is disabled
             const mainPlayerEntityId = MainPlayer._entityId;
@@ -273,8 +288,8 @@ export class Nameplates extends Plugin {
 
         // Handle Ground Items
         if (this.settings.groundItemNameplates!.value) {
-            // First, group items by name and position
-            const itemGroups: Map<string, { items: any[], count: number, firstKey: string }> = new Map();
+            // First, group items by position only (not by name)
+            const positionGroups: Map<string, { items: Map<string, { items: any[], count: number }>, firstKey: string, totalItems: number }> = new Map();
             
             for (const [key, groundItem] of GroundItems) {
                 const itemName = groundItem._def._nameCapitalized;
@@ -282,74 +297,90 @@ export class Nameplates extends Plugin {
                 const roundedX = Math.round(worldPos.x * 2) / 2;
                 const roundedZ = Math.round(worldPos.z * 2) / 2;
                 const positionKey = `${roundedX}_${roundedZ}`;
-                const groupKey = `${itemName}_${positionKey}`;
                 
-                if (!itemGroups.has(groupKey)) {
-                    itemGroups.set(groupKey, { items: [], count: 0, firstKey: String(key) });
+                if (!positionGroups.has(positionKey)) {
+                    positionGroups.set(positionKey, { 
+                        items: new Map(), 
+                        firstKey: String(key), 
+                        totalItems: 0 
+                    });
                 }
                 
-                const group = itemGroups.get(groupKey)!;
-                group.items.push({ key: String(key), item: groundItem });
-                group.count++;
+                const positionGroup = positionGroups.get(positionKey)!;
+                
+                if (!positionGroup.items.has(itemName)) {
+                    positionGroup.items.set(itemName, { items: [], count: 0 });
+                }
+                
+                const itemGroup = positionGroup.items.get(itemName)!;
+                itemGroup.items.push({ key: String(key), item: groundItem });
+                itemGroup.count++;
+                positionGroup.totalItems++;
             }
             
             // Clean up old meshes that are no longer needed
-            const activeGroupKeys = new Set();
-            for (const [groupKey] of itemGroups) {
-                activeGroupKeys.add(groupKey);
+            const activePositionKeys = new Set();
+            for (const [positionKey] of positionGroups) {
+                activePositionKeys.add(positionKey);
             }
             
             for (const key in this.GroundItemTextMeshes) {
                 const existingMesh = this.GroundItemTextMeshes[key];
-                const groupKey = `${existingMesh.itemName}_${existingMesh.position}`;
-                if (!activeGroupKeys.has(groupKey)) {
+                if (!activePositionKeys.has(existingMesh.position)) {
                     existingMesh.mesh.dispose(false, true);
                     delete this.GroundItemTextMeshes[key];
                 }
             }
             
-            // Create or update nameplates for each group
-            for (const [, group] of itemGroups) {
-                const firstItem = group.items[0];
-                const itemName = firstItem.item._def._nameCapitalized;
-                const displayText = group.count > 1 ? `${itemName} [x${group.count}]` : itemName;
+            // Create or update nameplates for each position group
+            for (const [positionKey, positionGroup] of positionGroups) {
+                const representativeKey = positionGroup.firstKey;
                 
-                // Use the first item's key as the representative key for this group
-                const representativeKey = group.firstKey;
+                // Create multi-line text with all items at this position
+                const lines: Array<{ text: string, color: string }> = [];
+                
+                // Sort items by name for consistent display
+                const sortedItems = Array.from(positionGroup.items.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+                
+                for (const [itemName, itemGroup] of sortedItems) {
+                    const displayText = itemGroup.count > 1 ? `${itemName} [x${itemGroup.count}]` : itemName;
+                    lines.push({ text: displayText, color: "orange" });
+                }
                 
                 if (!this.GroundItemTextMeshes[representativeKey]) {
-                    // Create new nameplate
-                    const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
+                    // Create new multi-line nameplate
+                    const firstItem = Array.from(positionGroup.items.values())[0].items[0];
+                    const textMesh = this.createMultiLineGroundItemNameplate(lines);
                     textMesh.parent = firstItem.item._appearance._billboardMesh;
-                    
-                    const worldPos = firstItem.item._appearance._billboardMesh.getAbsolutePosition();
-                    const roundedX = Math.round(worldPos.x * 2) / 2;
-                    const roundedZ = Math.round(worldPos.z * 2) / 2;
-                    const positionKey = `${roundedX}_${roundedZ}`;
                     
                     this.GroundItemTextMeshes[representativeKey] = {
                         mesh: textMesh,
-                        itemName: itemName,
-                        quantity: group.count,
+                        itemName: `${positionGroup.items.size} types`, // Store summary info
+                        quantity: positionGroup.totalItems,
                         position: positionKey
                     };
                 } else {
-                    // Update existing nameplate if quantity changed
+                    // Update existing nameplate if contents changed
                     const existingMesh = this.GroundItemTextMeshes[representativeKey];
-                    if (existingMesh.quantity !== group.count) {
+                    if (existingMesh.quantity !== positionGroup.totalItems) {
                         // Dispose old mesh and create new one with updated text
                         existingMesh.mesh.dispose(false, true);
                         
-                        const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
+                        const firstItem = Array.from(positionGroup.items.values())[0].items[0];
+                        const textMesh = this.createMultiLineGroundItemNameplate(lines);
                         textMesh.parent = firstItem.item._appearance._billboardMesh;
                         
                         existingMesh.mesh = textMesh;
-                        existingMesh.quantity = group.count;
+                        existingMesh.quantity = positionGroup.totalItems;
+                        existingMesh.itemName = `${positionGroup.items.size} types`;
                     }
                 }
                 
                 // Update position every frame for proper stacking
-                this.GroundItemTextMeshes[representativeKey].mesh.position = this.calculateGroundItemStackedPosition(firstItem.item);
+                this.GroundItemTextMeshes[representativeKey].mesh.position = this.calculateStackedPosition(
+                    Array.from(positionGroup.items.values())[0].items[0].item, 
+                    'grounditem'
+                );
             }
         } else {
             // Ground item nameplates are disabled, clean up any existing ground item meshes
@@ -358,256 +389,76 @@ export class Nameplates extends Plugin {
     }
 
 
-    createTextMesh(text: string, color: string = "white", fontSize: number = 24, nameplateType: 'player' | 'npc' | 'mainPlayer' | 'groundItem' = 'player'): Mesh {
+    /**
+     * Create a nameplate mesh with text - unified method for all nameplate types
+     */
+    createNameplateMesh(options: {
+        text?: string;
+        nameText?: string;
+        levelText?: string;
+        color?: string;
+        nameColor?: string;
+        levelColor?: string;
+        fontSize?: number;
+        nameplateType: 'player' | 'npc' | 'mainPlayer' | 'groundItem';
+        isAggressive?: boolean;
+        isAlwaysAggro?: boolean;
+    }): Mesh {
         const scene = this.gameHooks.GameEngine.Instance.Scene;
-
-        // Get the appropriate font size setting based on nameplate type
-        const actualFontSize = this.getFontSize(nameplateType, fontSize);
-
-        // Use higher resolution for better text quality
-        const scaleFactor = 3; // Render at 3x resolution for crisp text
-        const scaledFontSize = actualFontSize * scaleFactor;
-
-        // Create a dynamic texture for the text with better dimensions
-        const textureWidth = Math.max(1024, text.length * scaledFontSize * 0.8) * scaleFactor;
-        const textureHeight = (scaledFontSize * 2 + 80) * scaleFactor; // More height for better spacing
-        const dynamicTexture = new DynamicTexture("textTexture", { width: textureWidth, height: textureHeight }, scene, false, DynamicTexture.TRILINEAR_SAMPLINGMODE);
-
-        // Enable transparency on the texture
-        dynamicTexture.hasAlpha = true;
-
-        // Get the 2D context for advanced text rendering
-        const context = dynamicTexture.getContext() as CanvasRenderingContext2D;
-
-        // Clear the entire canvas to transparent
-        context.save();
-        context.clearRect(0, 0, textureWidth, textureHeight);
-
-        // Enable high-quality text rendering
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = 'high';
-        (context as any).textRenderingOptimization = 'optimizeQuality';
-
-        // Set font properties with better settings
-        context.font = `bold ${scaledFontSize}px Arial, sans-serif`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-
-        // Split text into lines for multi-line support
-        const lines = text.split('\n');
-        const lineHeight = scaledFontSize + (10 * scaleFactor); // Reduced spacing between lines
-        const startY = textureHeight / 2 - ((lines.length - 1) * lineHeight) / 2;
-
-        // Draw each line with outline for better visibility
-        lines.forEach((line, index) => {
-            const y = startY + (index * lineHeight);
-            const x = textureWidth / 2;
-
-            // Draw black outline (stroke) with scaled settings
-            context.strokeStyle = "rgba(0, 0, 0, 0.9)";
-            context.lineWidth = 4 * scaleFactor;
-            context.lineJoin = "round";
-            context.lineCap = "round";
-            context.miterLimit = 2;
-            context.strokeText(line, x, y);
-
-            // Ensure the fill color is properly set and draw main text
-            context.globalCompositeOperation = "source-over";
-            context.fillStyle = color;
-            context.fillText(line, x, y);
-        });
-
-        context.restore();
-
-        // Update the texture after all drawing is complete
-        dynamicTexture.update();        
+        const actualFontSize = this.getFontSize(options.nameplateType, options.fontSize || 24);
         
-        // Create material with transparency
-        const material = new StandardMaterial("textMaterial", scene);
-        material.diffuseTexture = dynamicTexture;
-        material.disableLighting = true;
-        material.useAlphaFromDiffuseTexture = true;
-        material.backFaceCulling = false;
-        material.alphaMode = Engine.ALPHA_COMBINE;
+        // Determine if this is a multi-color (NPC) nameplate
+        const isMultiColor = options.nameText && options.levelText;
         
-        // Ensure the material doesn't override texture colors
-        material.emissiveTexture = dynamicTexture;
-        material.diffuseColor.r = 1;
-        material.diffuseColor.g = 1;
-        material.diffuseColor.b = 1;
-        material.emissiveColor.r = 1;
-        material.emissiveColor.g = 1;
-        material.emissiveColor.b = 1;
+        let texture: DynamicTexture;
+        let width: number;
+        let height: number;
+        let scaleFactor: number;
         
-        // Force transparency settings
-        material.needAlphaBlending = () => true;
-        material.needAlphaTesting = () => false;
-        
-        // Enhanced rendering settings for better visibility
-        material.disableColorWrite = false;
-        material.disableDepthWrite = true; // Disable depth writing to prevent z-fighting
-        material.separateCullingPass = true;
-        material.forceDepthWrite = false;
-        
-        // Special settings for main player nameplate
-        if (nameplateType === 'mainPlayer') {
-            material.freeze(); // Freeze material for better performance
-        }
-        
-        // Create plane mesh with optimized size (scaled back down for proper world size)
-        const textWidth = (textureWidth / scaleFactor) / 60;
-        const textHeight = (textureHeight / scaleFactor) / 60;
-        const plane = PlaneBuilder.CreatePlane("textPlane", { width: textWidth, height: textHeight }, scene);
-        plane.material = material;
-        plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        
-        // Special handling for main player nameplate to ensure it's always visible
-        if (nameplateType === 'mainPlayer') {
-            plane.renderingGroupId = 3; // Higher rendering group for main player
-            plane.infiniteDistance = true; // Prevent frustum culling
-            plane.alwaysSelectAsActiveMesh = true; // Always consider for rendering
+        if (isMultiColor) {
+            // Create multi-color texture for NPCs
+            const result = this.createDynamicTexture({
+                lines: [
+                    { text: options.nameText!, color: options.nameColor || "yellow" },
+                    { text: options.levelText! + this.getAggressionEmoji(options.isAggressive, options.isAlwaysAggro), color: options.levelColor || "white" }
+                ],
+                fontSize: actualFontSize,
+                scene
+            });
+            texture = result.texture;
+            width = result.width;
+            height = result.height;
+            scaleFactor = result.scaleFactor;
         } else {
-            plane.renderingGroupId = 2; // Use a moderate rendering group for others
+            // Create single-color texture for players and ground items
+            const result = this.createDynamicTexture({
+                lines: [{ text: options.text!, color: options.color || "white" }],
+                fontSize: actualFontSize,
+                scene
+            });
+            texture = result.texture;
+            width = result.width;
+            height = result.height;
+            scaleFactor = result.scaleFactor;
         }
         
-        // Exclude from post-processing pipeline
-        plane.isPickable = false;
-        plane.doNotSyncBoundingInfo = true;
-        plane.freezeWorldMatrix(); // Optimize performance by freezing world matrix updates
+        // Create material and plane
+        const material = this.createTextMaterial(texture, scene);
+        const plane = this.createTextPlane(material, width, height, scaleFactor, scene);
 
         return plane;
     }
 
-    createMultiColorTextMesh(
-        nameText: string, 
-        levelText: string, 
-        isAggressive: boolean, 
-        isAlwaysAggro: boolean, 
-        nameColor: string, 
-        levelColor: string, 
-        fontSize: number = 24
-    ): Mesh {
-        const scene = this.gameHooks.GameEngine.Instance.Scene;
-        
-        // Get the NPC nameplate size setting
-        const npcFontSize = this.getFontSize('npc', fontSize);
-        
-        // Use higher resolution for better text quality
-        const scaleFactor = 3; // Render at 3x resolution for crisp text
-        const actualFontSize = npcFontSize * scaleFactor;
-        
-        // Add emoji based on aggression
-        let emojiText = "";
-        if (isAggressive && !isAlwaysAggro) {
-            emojiText = " 😠";
-        } else if (!isAggressive && !isAlwaysAggro) {
-            emojiText = " 😐";
-        } else if (isAlwaysAggro) {
-            emojiText = " 👿";
-        }
-        
-        // Create a dynamic texture for the text with better dimensions
-        const maxLineLength = Math.max(nameText.length, (levelText + emojiText).length);
-        const textureWidth = Math.max(1024, maxLineLength * actualFontSize * 0.8) * scaleFactor;
-        const textureHeight = (actualFontSize * 3 + 80) * scaleFactor; // Height for 2 lines plus spacing
-        const dynamicTexture = new DynamicTexture("multiColorTextTexture", {width: textureWidth, height: textureHeight}, scene, false, DynamicTexture.TRILINEAR_SAMPLINGMODE);
-        
-        // Enable transparency on the texture
-        dynamicTexture.hasAlpha = true;
-        
-        // Get the 2D context for advanced text rendering
-        const context = dynamicTexture.getContext() as CanvasRenderingContext2D;
-        
-        // Clear the entire canvas to transparent
-        context.save();
-        context.clearRect(0, 0, textureWidth, textureHeight);
-        
-        // Enable high-quality text rendering
-        context.imageSmoothingEnabled = true;
-        context.imageSmoothingQuality = 'high';
-        (context as any).textRenderingOptimization = 'optimizeQuality';
-        
-        // Set font properties with better settings
-        context.font = `bold ${actualFontSize}px Arial, sans-serif`;
-        context.textAlign = "center";
-        context.textBaseline = "middle";
-        
-        const lineHeight = actualFontSize + (10 * scaleFactor); // Reduced spacing between lines
-        const startY = textureHeight / 2 - lineHeight / 2;
-        
-        // Draw name line (first line)
-        const nameY = startY;
-        const nameX = textureWidth / 2;
-        
-        // Draw black outline for name
-        context.strokeStyle = "rgba(0, 0, 0, 0.9)";
-        context.lineWidth = 4 * scaleFactor;
-        context.lineJoin = "round";
-        context.lineCap = "round";
-        context.miterLimit = 2;
-        context.strokeText(nameText, nameX, nameY);
-        
-        // Draw name text
-        context.globalCompositeOperation = "source-over";
-        context.fillStyle = nameColor;
-        context.fillText(nameText, nameX, nameY);
-        
-        // Draw level line (second line)
-        const levelY = startY + lineHeight;
-        const levelX = textureWidth / 2;
-        
-        // Draw black outline for level
-        context.strokeText(levelText + emojiText, levelX, levelY);
-        
-        // Draw level text
-        context.fillStyle = levelColor;
-        context.fillText(levelText + emojiText, levelX, levelY);
-        
-        context.restore();
-        
-        // Update the texture after all drawing is complete
-        dynamicTexture.update();
-        
-        // Create material with transparency
-        const material = new StandardMaterial("multiColorTextMaterial", scene);
-        material.diffuseTexture = dynamicTexture;
-        material.disableLighting = true;
-        material.useAlphaFromDiffuseTexture = true;
-        material.backFaceCulling = false;
-        material.alphaMode = Engine.ALPHA_COMBINE;
-        
-        // Ensure the material doesn't override texture colors
-        material.emissiveTexture = dynamicTexture;
-        material.diffuseColor.r = 1;
-        material.diffuseColor.g = 1;
-        material.diffuseColor.b = 1;
-        material.emissiveColor.r = 1;
-        material.emissiveColor.g = 1;
-        material.emissiveColor.b = 1;
-        
-        // Force transparency settings
-        material.needAlphaBlending = () => true;
-        material.needAlphaTesting = () => false;
-        
-        // Disable post-processing effects on this material
-        material.disableColorWrite = false;
-        material.disableDepthWrite = false;
-        material.separateCullingPass = true;
-        
-        // Create plane mesh with optimized size (scaled back down for proper world size)
-        const textWidth = (textureWidth / scaleFactor) / 60;
-        const textHeight = (textureHeight / scaleFactor) / 60;
-        const plane = PlaneBuilder.CreatePlane("multiColorTextPlane", {width: textWidth, height: textHeight}, scene);
-        plane.material = material;
-        plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
-        plane.renderingGroupId = 2; // Use a moderate rendering group for NPCs
-        
-        // Exclude from post-processing pipeline
-        plane.isPickable = false;
-        plane.doNotSyncBoundingInfo = true;
-        plane.freezeWorldMatrix(); // Optimize performance
-        
-        return plane;
+    /**
+     * Legacy method for backward compatibility - delegates to unified method
+     */
+    createTextMesh(text: string, color: string = "white", fontSize: number = 24, nameplateType: 'player' | 'npc' | 'mainPlayer' | 'groundItem' = 'player'): Mesh {
+        return this.createNameplateMesh({
+            text,
+            color,
+            fontSize,
+            nameplateType
+        });
     }
 
     /**
@@ -618,115 +469,98 @@ export class Nameplates extends Plugin {
             // Calculate level color using the helper method
             const levelColor = this.calculateLevelColor(mainPlayerLevel, npc._combatLevel);
             
-            return this.createMultiColorTextMesh(
-                npc._name, 
-                `Lvl. ${npc._combatLevel}`, 
-                npc._def._combat._isAggressive, 
-                npc._def._combat._isAlwaysAggro,
-                "yellow", 
-                levelColor, 
-                20
-            );
+            return this.createNameplateMesh({
+                nameText: npc._name,
+                levelText: `Lvl. ${npc._combatLevel}`,
+                nameColor: "yellow",
+                levelColor: levelColor,
+                fontSize: 20,
+                nameplateType: 'npc',
+                isAggressive: npc._def._combat._isAggressive,
+                isAlwaysAggro: npc._def._combat._isAlwaysAggro
+            });
         } else {
             // NPC with no combat level, just show name
-            return this.createTextMesh(npc._name, "yellow", 20, 'npc');
+            return this.createNameplateMesh({
+                text: npc._name,
+                color: "yellow",
+                fontSize: 20,
+                nameplateType: 'npc'
+            });
         }
     }
 
     /**
-     * Calculate the Y offset for ground item nameplates based on existing nameplates at the same position
+     * Calculate the Y offset for nameplates based on existing nameplates at the same position
      */
-    private calculateGroundItemStackedPosition(groundItem: any): Vector3 {
-        if (!groundItem || !groundItem._appearance || !groundItem._appearance._billboardMesh) {
-            return new Vector3(0, 0.25, 0); // Default position
-        }
-
-        // Use world position from the billboard mesh for more reliable positioning
-        const worldPos = groundItem._appearance._billboardMesh.getAbsolutePosition();
+    private calculateStackedPosition(
+        entity: any, 
+        entityType: 'player' | 'npc' | 'grounditem', 
+        isMainPlayer: boolean = false
+    ): Vector3 {
+        // Determine the position source and validation based on entity type
+        let worldPos: Vector3;
+        let positionSource: any;
         
-        // Create a position key based on rounded world coordinates (to group nearby items)
+        if (entityType === 'grounditem') {
+            if (!entity || !entity._appearance || !entity._appearance._billboardMesh) {
+                return new Vector3(0, 0.25, 0); // Default position
+            }
+            positionSource = entity._appearance._billboardMesh;
+        } else {
+            // For players and NPCs
+            if (!entity || !entity._appearance || !entity._appearance._haloNode) {
+                return new Vector3(0, 0.25, 0); // Default position
+            }
+            positionSource = entity._appearance._haloNode;
+        }
+        
+        // Get world position from the appropriate source
+        worldPos = positionSource.getAbsolutePosition();
+        
+        // Create a position key based on rounded world coordinates (to group nearby entities)
         const roundedX = Math.round(worldPos.x * 2) / 2; // Round to nearest 0.5
         const roundedZ = Math.round(worldPos.z * 2) / 2; // Round to nearest 0.5
-        const positionKey = `grounditem_${roundedX}_${roundedZ}`;
+        const positionKey = `${entityType}_${roundedX}_${roundedZ}`;
         
-        // Get current stack count for this position
-        const stackIndex = this.positionTracker.get(positionKey) || 0;
-        
-        // Update stack count
-        this.positionTracker.set(positionKey, stackIndex + 1);
-        
-        // Calculate Y offset (stack upwards with spacing optimized for ground items)
-        const baseHeight = 0.5; // Start higher than NPCs/players to avoid overlap
-        const stackSpacing = 0.3; // Smaller spacing for ground items
-        const yOffset = baseHeight + (stackIndex * stackSpacing);
-        
-        return new Vector3(0, yOffset, 0);
-    }
-
-    /**
-     * Calculate the Y offset for player nameplates based on existing nameplates at the same position
-     */
-    private calculatePlayerStackedPosition(player: any, isMainPlayer: boolean): Vector3 {
-        if (!player || !player._appearance || !player._appearance._haloNode) {
-            return new Vector3(0, 0.25, 0); // Default position
-        }
-
-        // Use world position from the halo node for more reliable positioning
-        const worldPos = player._appearance._haloNode.getAbsolutePosition();
-        
-        // Create a position key based on rounded world coordinates (to group nearby players)
-        const roundedX = Math.round(worldPos.x * 2) / 2; // Round to nearest 0.5
-        const roundedZ = Math.round(worldPos.z * 2) / 2; // Round to nearest 0.5
-        const positionKey = `player_${roundedX}_${roundedZ}`;
-        
+        // Calculate stack index based on entity type and main player status
         let stackIndex = 0;
         
-        if (isMainPlayer) {
+        if (entityType === 'player' && isMainPlayer) {
             // MainPlayer always gets the top position (highest Y)
-            // Reserve the top slot for MainPlayer
             const totalPlayersAtPosition = this.positionTracker.get(positionKey) || 0;
             this.positionTracker.set(positionKey, totalPlayersAtPosition + 1);
             stackIndex = totalPlayersAtPosition; // MainPlayer gets the highest index
         } else {
-            // Other players stack below MainPlayer
+            // Standard stacking for NPCs, regular players, and ground items
             const currentStack = this.positionTracker.get(positionKey) || 0;
             this.positionTracker.set(positionKey, currentStack + 1);
             stackIndex = currentStack;
         }
         
-        // Calculate Y offset (stack upwards)
-        const baseHeight = 0.25;
-        const stackSpacing = 0.4; // Spacing between player nameplates
-        const yOffset = baseHeight + (stackIndex * stackSpacing);
+        // Configure height and spacing based on entity type
+        let baseHeight: number;
+        let stackSpacing: number;
         
-        return new Vector3(0, yOffset, 0);
-    }
-
-    /**
-     * Calculate the Y offset for NPC nameplates based on existing nameplates at the same position
-     */
-    private calculateNPCStackedPosition(npc: any): Vector3 {
-        if (!npc || !npc._appearance || !npc._appearance._haloNode) {
-            return new Vector3(0, 0.25, 0); // Default position
+        switch (entityType) {
+            case 'grounditem':
+                baseHeight = 0.5; // Start higher than NPCs/players to avoid overlap
+                stackSpacing = 0.3; // Smaller spacing for ground items
+                break;
+            case 'player':
+                baseHeight = 0.25;
+                stackSpacing = 0.4; // Spacing between player nameplates
+                break;
+            case 'npc':
+                baseHeight = 0.25;
+                stackSpacing = 0.4; // Spacing between NPC nameplates
+                break;
+            default:
+                baseHeight = 0.25;
+                stackSpacing = 0.4;
         }
-
-        // Use world position from the halo node for more reliable positioning
-        const worldPos = npc._appearance._haloNode.getAbsolutePosition();
-        
-        // Create a position key based on rounded world coordinates (to group nearby NPCs)
-        const roundedX = Math.round(worldPos.x * 2) / 2; // Round to nearest 0.5
-        const roundedZ = Math.round(worldPos.z * 2) / 2; // Round to nearest 0.5
-        const positionKey = `npc_${roundedX}_${roundedZ}`;
-        
-        // Get current stack count for this position
-        const stackIndex = this.positionTracker.get(positionKey) || 0;
-        
-        // Update stack count
-        this.positionTracker.set(positionKey, stackIndex + 1);
         
         // Calculate Y offset (stack upwards)
-        const baseHeight = 0.25;
-        const stackSpacing = 0.4; // Spacing between NPC nameplates
         const yOffset = baseHeight + (stackIndex * stackSpacing);
         
         return new Vector3(0, yOffset, 0);
@@ -769,11 +603,16 @@ export class Nameplates extends Plugin {
             if (player._entityId !== MainPlayer._entityId && this.PlayerTextMeshes[player._entityId]) {
                 const existingMesh = this.PlayerTextMeshes[player._entityId];
                 const isFriend = playerFriends.includes(player._nameLowerCase);
-                const currentColor = this.getPlayerNameplateColor(player._name, playerFriends);
+                const currentColor = isFriend ? "lightgreen" : "white";
 
                 // Dispose old mesh and create new one with updated size
                 existingMesh.mesh.dispose(false, true);
-                const textMesh = this.createTextMesh(player._name, currentColor, 20, 'player');
+                const textMesh = this.createNameplateMesh({
+                    text: player._name,
+                    color: currentColor,
+                    fontSize: 20,
+                    nameplateType: 'player'
+                });
                 textMesh.parent = player._appearance._haloNode;
                 
                 this.PlayerTextMeshes[player._entityId] = {
@@ -824,12 +663,13 @@ export class Nameplates extends Plugin {
             this.PlayerTextMeshes[mainPlayerEntityId].mesh.dispose(false, true);
 
             // Create new mesh with updated size
-            const textMesh = this.createTextMesh(MainPlayer._name, "cyan", 20, 'mainPlayer');
+            const textMesh = this.createNameplateMesh({
+                text: MainPlayer._name,
+                color: "cyan",
+                fontSize: 20,
+                nameplateType: 'mainPlayer'
+            });
             textMesh.parent = MainPlayer._appearance._haloNode;
-            
-            // Ensure proper rendering properties for main player
-            textMesh.infiniteDistance = true;
-            textMesh.alwaysSelectAsActiveMesh = true;
             
             this.PlayerTextMeshes[mainPlayerEntityId] = {
                 mesh: textMesh,
@@ -847,15 +687,38 @@ export class Nameplates extends Plugin {
         if (!GroundItems) return;
 
         // Store the current ground item data before regenerating
-        const currentGroundItems: { [key: string]: { itemName: string, quantity: number, position: string, parent: any } } = {};
+        const currentGroundItems: { [key: string]: { itemName: string, quantity: number, position: string, parent: any, lines?: Array<{ text: string, color: string }> } } = {};
         
         for (const key in this.GroundItemTextMeshes) {
             const existingMesh = this.GroundItemTextMeshes[key];
+            
+            // Try to reconstruct the lines from current ground items at this position
+            const lines: Array<{ text: string, color: string }> = [];
+            const positionKey = existingMesh.position;
+            
+            // Find all ground items at this position to reconstruct the multi-line text
+            for (const [, groundItem] of GroundItems) {
+                const worldPos = groundItem._appearance._billboardMesh.getAbsolutePosition();
+                const roundedX = Math.round(worldPos.x * 2) / 2;
+                const roundedZ = Math.round(worldPos.z * 2) / 2;
+                const itemPositionKey = `${roundedX}_${roundedZ}`;
+                
+                if (itemPositionKey === positionKey) {
+                    const itemName = groundItem._def._nameCapitalized;
+                    // Check if this item name already exists in lines
+                    const existingLine = lines.find(line => line.text.includes(itemName));
+                    if (!existingLine) {
+                        lines.push({ text: itemName, color: "orange" });
+                    }
+                }
+            }
+            
             currentGroundItems[key] = {
                 itemName: existingMesh.itemName,
                 quantity: existingMesh.quantity,
                 position: existingMesh.position,
-                parent: existingMesh.mesh.parent
+                parent: existingMesh.mesh.parent,
+                lines: lines
             };
             // Dispose old mesh
             existingMesh.mesh.dispose(false, true);
@@ -867,17 +730,18 @@ export class Nameplates extends Plugin {
         // Recreate nameplates with new size
         for (const key in currentGroundItems) {
             const data = currentGroundItems[key];
-            const displayText = data.quantity > 1 ? `${data.itemName} [x${data.quantity}]` : data.itemName;
             
-            const textMesh = this.createTextMesh(displayText, "orange", 18, 'groundItem');
-            textMesh.parent = data.parent;
-            
-            this.GroundItemTextMeshes[key] = {
-                mesh: textMesh,
-                itemName: data.itemName,
-                quantity: data.quantity,
-                position: data.position
-            };
+            if (data.lines && data.lines.length > 0) {
+                const textMesh = this.createMultiLineGroundItemNameplate(data.lines);
+                textMesh.parent = data.parent;
+                
+                this.GroundItemTextMeshes[key] = {
+                    mesh: textMesh,
+                    itemName: data.itemName,
+                    quantity: data.quantity,
+                    position: data.position
+                };
+            }
         }
     }
 
@@ -906,4 +770,146 @@ export class Nameplates extends Plugin {
         
         return sizeMap[nameplateType] || defaultSize;
     }
+
+    /**
+     * Get aggression emoji based on NPC state
+     */
+    private getAggressionEmoji(isAggressive?: boolean, isAlwaysAggro?: boolean): string {
+        if (isAggressive === undefined || isAlwaysAggro === undefined) return "";
+        
+        if (isAggressive && !isAlwaysAggro) {
+            return " 😠";
+        } else if (!isAggressive && !isAlwaysAggro) {
+            return " 😐";
+        } else if (isAlwaysAggro) {
+            return " 👿";
+        }
+        return "";
+    }
+
+    /**
+     * Unified dynamic texture creation method
+     */
+    private createDynamicTexture(options: {
+        lines: Array<{ text: string, color: string }>;
+        fontSize: number;
+        scene: any;
+    }): { texture: DynamicTexture, width: number, height: number, scaleFactor: number } {
+        const scaleFactor = 3; // Render at 3x resolution for crisp text
+        const scaledFontSize = options.fontSize * scaleFactor;
+        
+        // Calculate texture dimensions
+        const maxLineLength = Math.max(...options.lines.map(line => line.text.length));
+        const textureWidth = Math.max(1024, maxLineLength * scaledFontSize * 0.8) * scaleFactor;
+        const lineHeight = scaledFontSize + (10 * scaleFactor);
+        const textureHeight = (options.lines.length * lineHeight + 80) * scaleFactor;
+        
+        const dynamicTexture = new DynamicTexture("textTexture", { width: textureWidth, height: textureHeight }, options.scene, false, DynamicTexture.TRILINEAR_SAMPLINGMODE);
+        dynamicTexture.hasAlpha = true;
+        
+        const context = dynamicTexture.getContext() as CanvasRenderingContext2D;
+        
+        // Configure high-quality rendering
+        context.save();
+        context.clearRect(0, 0, textureWidth, textureHeight);
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.font = `bold ${scaledFontSize}px Arial, sans-serif`;
+        context.textAlign = "center";
+        context.textBaseline = "middle";
+        
+        // Configure outline
+        context.strokeStyle = "rgba(0, 0, 0, 0.9)";
+        context.lineWidth = 4 * scaleFactor;
+        context.lineJoin = "round";
+        context.lineCap = "round";
+        context.miterLimit = 2;
+        
+        // Calculate starting Y position for centered text
+        const totalTextHeight = options.lines.length * lineHeight;
+        const startY = (textureHeight - totalTextHeight) / 2 + lineHeight / 2;
+        const x = textureWidth / 2;
+        
+        // Draw each line
+        options.lines.forEach((line, index) => {
+            const y = startY + (index * lineHeight);
+            
+            // Draw outline
+            context.strokeText(line.text, x, y);
+            
+            // Draw main text
+            context.globalCompositeOperation = "source-over";
+            context.fillStyle = line.color;
+            context.fillText(line.text, x, y);
+        });
+        
+        context.restore();
+        dynamicTexture.update();
+        
+        return { texture: dynamicTexture, width: textureWidth, height: textureHeight, scaleFactor };
+    }
+
+    /**
+     * Create a simplified text material for nameplate meshes
+     */
+    private createTextMaterial(texture: DynamicTexture, scene: any): StandardMaterial {
+        const material = new StandardMaterial("textMaterial", scene);
+        
+        // Basic texture and transparency setup
+        material.diffuseTexture = texture;
+        material.emissiveTexture = texture;
+        material.useAlphaFromDiffuseTexture = true;
+        material.alphaMode = Engine.ALPHA_COMBINE;
+        
+        // Disable lighting and enable transparency
+        material.disableLighting = true;
+        material.backFaceCulling = false;
+        material.disableDepthWrite = true; // Prevent z-fighting
+        
+        return material;
+    }
+
+    /**
+     * Create a simplified text plane for nameplate meshes
+     */
+    private createTextPlane(material: StandardMaterial, textureWidth: number, textureHeight: number, scaleFactor: number, scene: any): Mesh {
+        const textWidth = (textureWidth / scaleFactor) / 60;
+        const textHeight = (textureHeight / scaleFactor) / 60;
+        const plane = PlaneBuilder.CreatePlane("textPlane", { width: textWidth, height: textHeight, updatable: false }, scene);
+
+        plane.material = material;
+        plane.billboardMode = Mesh.BILLBOARDMODE_ALL;
+        plane.isPickable = false;
+        plane.doNotSyncBoundingInfo = true;
+        
+        plane.freezeWorldMatrix();
+        plane.renderingGroupId = 3;
+        plane.alwaysSelectAsActiveMesh = true;
+        
+        plane.computeWorldMatrix(true);
+        plane.refreshBoundingInfo();
+        return plane;
+    }
+
+    /**
+     * Create a multi-line nameplate for ground items at the same position
+     */
+    private createMultiLineGroundItemNameplate(lines: Array<{ text: string, color: string }>): Mesh {
+        const scene = this.gameHooks.GameEngine.Instance.Scene;
+        const actualFontSize = this.getFontSize('groundItem', 18);
+        
+        // Create multi-line texture
+        const result = this.createDynamicTexture({
+            lines: lines,
+            fontSize: actualFontSize,
+            scene
+        });
+        
+        // Create material and plane
+        const material = this.createTextMaterial(result.texture, scene);
+        const plane = this.createTextPlane(material, result.width, result.height, result.scaleFactor, scene);
+
+        return plane;
+    }
+
 }
