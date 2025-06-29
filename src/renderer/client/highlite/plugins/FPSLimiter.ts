@@ -6,21 +6,11 @@ export class FPSLimiter extends Plugin {
     author = "Highlite";
     private originalRAF?: typeof window.requestAnimationFrame;
     private rafPatched = false;
+    private lastFrameTime = 0;
+    private frameTimeThreshold = 0;
 
     constructor() {
         super();
-        this.settings.enable = {
-            text: "Enable FPS Limiter",
-            type: SettingsTypes.checkbox,
-            value: true,
-            callback: () => {
-                if (this.settings.enable.value) {
-                    this.start();
-                } else {
-                    this.stop();
-                }
-            }
-        } as any;
         this.settings.targetFPS = {
             text: "Target FPS",
             type: SettingsTypes.range,
@@ -31,7 +21,7 @@ export class FPSLimiter extends Plugin {
                     this.start();
                 }
             }
-        } as any;
+        }
     }
 
     init(): void {
@@ -41,26 +31,40 @@ export class FPSLimiter extends Plugin {
     start(): void {
         if (this.rafPatched) return;
         if (!this.settings.enable.value) return;
-        this.rafPatched = true;
+        
         const targetFPS = Number(this.settings.targetFPS.value);
-        const frameTime = 1000 / targetFPS;
+        
+        this.rafPatched = true;
+        this.frameTimeThreshold = 1000 / targetFPS;
+        this.lastFrameTime = performance.now();
+        
         this.originalRAF = window.requestAnimationFrame.bind(window);
+        
         window.requestAnimationFrame = (callback: FrameRequestCallback): number => {
             return this.originalRAF!((currentTime) => {
-                const delay = Math.max(0, frameTime - (performance.now() - currentTime));
-                setTimeout(() => {
-                    callback(performance.now());
-                }, delay);
+                const deltaTime = currentTime - this.lastFrameTime;
+                
+                if (deltaTime >= this.frameTimeThreshold) {
+                    // Enough time has passed, execute the callback
+                    this.lastFrameTime = currentTime - (deltaTime % this.frameTimeThreshold);
+                    callback(currentTime);
+                } else {
+                    // Not enough time has passed, schedule for next frame
+                    window.requestAnimationFrame(callback);
+                }
             });
         };
-        this.log(`[FPSLimiter] requestAnimationFrame limited to ${targetFPS} FPS`);
+        
+        this.log(`[FPSLimiter] Frame rate limited to ${targetFPS} FPS (${this.frameTimeThreshold.toFixed(2)}ms per frame)`);
     }
 
     stop(): void {
         if (this.rafPatched && this.originalRAF) {
             window.requestAnimationFrame = this.originalRAF;
             this.rafPatched = false;
-            this.log("[FPSLimiter] requestAnimationFrame restored to default");
+            this.lastFrameTime = 0;
+            this.frameTimeThreshold = 0;
+            this.log("[FPSLimiter] Frame rate limiting disabled - restored to native refresh rate");
         }
     }
 }

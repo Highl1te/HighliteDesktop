@@ -261,7 +261,6 @@ export class SettingsManager {
         this.pluginSettingsView = document.createElement("div");
 
         this.pluginSettingsView.id = 'highlite-settings-content-row-holder'
-        this.pluginSettingsView.style.height = '100%';
         this.pluginSettingsView.style.overflowY = 'auto';
         this.pluginSettingsView.style.overflowX = 'hidden';
         this.pluginSettingsView.style.display = 'flex';
