@@ -37,6 +37,13 @@ export class Nameplates extends Plugin {
             value: true,
             callback: () => {} // NO OP
         };
+
+        this.settings.fixedSizeNameplates = {
+            text: "Fixed Size Nameplates (DOM-like - same size regardless of distance)",
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => this.regenerateAllNameplates()
+        };
         
 
         // Text size settings for each nameplate type
@@ -197,6 +204,7 @@ export class Nameplates extends Plugin {
                 // Update position every frame for proper stacking (similar to players)
                 if (this.NPCTextMeshes[key]) {
                     this.NPCTextMeshes[key].mesh.position = this.calculateStackedPosition(npc, 'npc');
+                    this.applyFixedSizeScaling(this.NPCTextMeshes[key].mesh, npc, 'npc');
                 }
             }
         } else {
@@ -245,6 +253,7 @@ export class Nameplates extends Plugin {
                 
                 // Update position every frame for proper stacking
                 this.PlayerTextMeshes[player._entityId].mesh.position = this.calculateStackedPosition(player, 'player', false);
+                this.applyFixedSizeScaling(this.PlayerTextMeshes[player._entityId].mesh, player, 'player');
             }
         } else {
             // Player nameplates are disabled, clean up any existing player meshes (except MainPlayer)
@@ -272,11 +281,12 @@ export class Nameplates extends Plugin {
                 textMesh.parent = MainPlayer._appearance._haloNode; // Parent to halo node
                 this.PlayerTextMeshes[mainPlayerEntityId] = {
                     mesh: textMesh,
-                    isFriend: false // MainPlayer is not considered a friend for color purposes
+                    isFriend: false
                 };
             }
 
             this.PlayerTextMeshes[mainPlayerEntityId].mesh.position = this.calculateStackedPosition(MainPlayer, 'player', true);
+            this.applyFixedSizeScaling(this.PlayerTextMeshes[mainPlayerEntityId].mesh, MainPlayer, 'player');
         } else if (!this.settings.youNameplate!.value && MainPlayer) {
             // Remove MainPlayer nameplate if setting is disabled
             const mainPlayerEntityId = MainPlayer._entityId;
@@ -379,6 +389,11 @@ export class Nameplates extends Plugin {
                 // Update position every frame for proper stacking
                 this.GroundItemTextMeshes[representativeKey].mesh.position = this.calculateStackedPosition(
                     Array.from(positionGroup.items.values())[0].items[0].item, 
+                    'grounditem'
+                );
+                this.applyFixedSizeScaling(
+                    this.GroundItemTextMeshes[representativeKey].mesh,
+                    Array.from(positionGroup.items.values())[0].items[0].item,
                     'grounditem'
                 );
             }
@@ -491,6 +506,33 @@ export class Nameplates extends Plugin {
     }
 
     /**
+     * Calculate scale factor to maintain consistent size regardless of distance
+     */
+    private calculateFixedSizeScale(worldPosition: Vector3): number {
+        if (!this.settings.fixedSizeNameplates?.value) {
+            return 1.0; // No scaling when fixed size is disabled
+        }
+
+        const camera = this.gameHooks.GameCameraManager.Camera;
+        if (!camera) {
+            return 1.0;
+        }
+
+        // Calculate distance from camera to nameplate
+        const cameraPosition = camera.position;
+        const distance = Vector3.Distance(cameraPosition, worldPosition);
+        
+        // Base distance for normal size (adjust this value to control the "normal" viewing distance)
+        const baseDistance = 10.0;
+        
+        // Scale factor to maintain consistent apparent size
+        // At baseDistance, scale = 1.0. Closer = smaller scale, farther = larger scale
+        const scaleFactor = Math.max(0.1, distance / baseDistance);
+        
+        return scaleFactor;
+    }
+
+    /**
      * Calculate the Y offset for nameplates based on existing nameplates at the same position
      */
     private calculateStackedPosition(
@@ -564,6 +606,35 @@ export class Nameplates extends Plugin {
         const yOffset = baseHeight + (stackIndex * stackSpacing);
         
         return new Vector3(0, yOffset, 0);
+    }
+
+    /**
+     * Apply fixed size scaling to a nameplate mesh if the setting is enabled
+     */
+    private applyFixedSizeScaling(mesh: Mesh, entity: any, entityType: 'player' | 'npc' | 'grounditem'): void {
+        if (!this.settings.fixedSizeNameplates?.value) {
+            return; // Fixed size scaling is disabled
+        }
+
+        // Get world position from the appropriate source
+        let worldPos: Vector3;
+        
+        if (entityType === 'grounditem') {
+            if (!entity || !entity._appearance || !entity._appearance._billboardMesh) {
+                return;
+            }
+            worldPos = entity._appearance._billboardMesh.getAbsolutePosition();
+        } else {
+            // For players and NPCs
+            if (!entity || !entity._appearance || !entity._appearance._haloNode) {
+                return;
+            }
+            worldPos = entity._appearance._haloNode.getAbsolutePosition();
+        }
+
+        // Calculate and apply the scale factor
+        const scaleFactor = this.calculateFixedSizeScale(worldPos);
+        mesh.scaling.setAll(scaleFactor);
     }
 
     /**
@@ -746,6 +817,16 @@ export class Nameplates extends Plugin {
     }
 
     /**
+     * Regenerate all nameplate types when fixed size setting changes
+     */
+    private regenerateAllNameplates(): void {
+        this.regeneratePlayerNameplates();
+        this.regenerateNPCNameplates();
+        this.regenerateMainPlayerNameplate();
+        this.regenerateGroundItemNameplates();
+    }
+
+    /**
      * Dispose and clean up a mesh collection
      */
     private cleanupMeshCollection<T extends { mesh: Mesh }>(collection: { [key: string]: T } | { [key: number]: T }): void {
@@ -882,7 +963,11 @@ export class Nameplates extends Plugin {
         plane.isPickable = false;
         plane.doNotSyncBoundingInfo = true;
         
-        plane.freezeWorldMatrix();
+        // If fixed size nameplates are enabled, we'll handle scaling in the game loop
+        if (!this.settings.fixedSizeNameplates?.value) {
+            plane.freezeWorldMatrix();
+        }
+        
         plane.renderingGroupId = 3;
         plane.alwaysSelectAsActiveMesh = true;
         
