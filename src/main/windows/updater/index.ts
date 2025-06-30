@@ -21,9 +21,9 @@ export async function createUpdateWindow() {
     });
 
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
-        updateWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/updater/update.html`)
+        updateWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/update.html`)
     } else {
-        updateWindow.loadFile(path.join(__dirname, '../renderer/updater/update.html'))
+        updateWindow.loadFile(path.join(__dirname, '../renderer/update.html'))
     }
 
     updateWindow.on('ready-to-show', async () => {

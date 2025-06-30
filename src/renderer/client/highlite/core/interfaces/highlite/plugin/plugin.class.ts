@@ -32,9 +32,17 @@ export abstract class Plugin {
     
     postInit?(): void;
 
-    gameHooks = document.highlite.gameHooks
-    gameLookups = document.highlite.gameLookups;
-    registerPlugin = document.highlite.managers.PluginManager.registerPlugin.bind(document.highlite.managers.PluginManager);
+    get gameHooks() {
+        return (document as any).highlite?.gameHooks;
+    }
+    
+    get gameLookups() {
+        return (document as any).highlite?.gameLookups;
+    }
+    
+    get registerPlugin() {
+        return (document as any).highlite?.managers?.PluginManager?.registerPlugin?.bind((document as any).highlite.managers.PluginManager);
+    }
 
     // Log seems to be broken from loading HighSpell Client
     log(...args: any[]) : void {
