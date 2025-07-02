@@ -18,6 +18,7 @@ import { ChatItemTooltip } from "./highlite/plugins/ChatItemTooltip";
 import { XPOrb } from "./highlite/plugins/XPOrb";
 import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
+import { obtainGameClient } from "../../utils/clientUtils";
 
 import "../../../static/css/index.css"
 import "../../../static/css/overrides.css"
@@ -25,46 +26,6 @@ import "../../../static/css/item-tooltip.css"
 
 import "./helpers/titlebarHelpers.js";
 import "@iconify/iconify";
-
-
-async function obtainGameClient() {
-    const highspellAssetsURL = "https://highspell.com:3002/assetsClient";
-    const highliteDB = new IndexDBWrapper();
-    await highliteDB.init();
-
-    // Check if clientLastVersion is set
-    const clientLastVersion = await highliteDB.getItem("clientLastVersion");
-
-    // Get Asset JSON to determine latest version
-    const highSpellAssetJSON = (await (await fetch(highspellAssetsURL)).json());
-    const remoteLastVersion = highSpellAssetJSON.data.latestClientVersion;
-
-    let highSpellClient = "";
-    if (clientLastVersion == undefined || clientLastVersion < remoteLastVersion) {
-        console.log("[Highlite Loader] High Spell Client Version is outdated, updating...");
-        const highSpellClientURL = `https://highspell.com/js/client/client.${highSpellAssetJSON.data.latestClientVersion}.js`;
-        console.log(highSpellClientURL);
-        highSpellClient = (await (await fetch(highSpellClientURL + "?time=" + Date.now())).text());
-        console.log(highSpellClient);
-        highSpellClient = highSpellClient.substring(0, highSpellClient.length - 9)
-        + "; document.client = {};"
-        + "document.client.get = function(a) {"
-        + "return eval(a);"
-        + "};"
-        + "document.client.set = function(a, b) {"
-        + "eval(a + ' = ' + b);"
-        + "};"
-        + highSpellClient.substring(highSpellClient.length - 9)
-        await highliteDB.setItem("highSpellClient", highSpellClient);
-        await highliteDB.setItem("clientLastVersion", remoteLastVersion);
-        console.log("[Highlite Loader] High Spell Client Version " + highSpellAssetJSON.data.latestClientVersion + " downloaded.");
-    } else {
-        console.log("[Highlite Loader] High Spell Client Version is up to date.");
-        highSpellClient = await highliteDB.getItem("highSpellClient");
-    }
-
-    return Promise.resolve(highSpellClient);
-}
 
 async function generatePage() {
     // POST Request to https://highspell.com/game

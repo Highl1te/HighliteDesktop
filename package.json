@@ -23,7 +23,8 @@
     "build:unpack": "npm run build && electron-builder --dir",
     "build:win": "npm run build && electron-builder --win",
     "build:mac": "npm run build && electron-builder --mac",
-    "build:linux": "npm run build && electron-builder --linux"
+    "build:linux": "npm run build && electron-builder --linux",
+    "walk": "ts-node-dev src/ast/highSpellWalker.ts"
   },
   "build": {
     "appId": "com.highlite.desktop",
@@ -88,7 +89,11 @@
     "electron-vite": "^3.1.0",
     "typescript": "^5.8.3",
     "vite": "^6.2.6",
-    "vite-plugin-electron": "^0.29.0"
+    "vite-plugin-electron": "^0.29.0",
+    "acorn": "^8.15.0",
+    "acorn-private-methods": "^1.0.0",
+    "estree-walker-ts": "^1.1.0",
+    "ts-node-dev": "^2.0.0"
   },
   "packageManager": "yarn@4.9.2"
 }
