@@ -27,6 +27,15 @@ interface NPCKillData {
     lastUpdated: number;
 }
 
+interface PlayerDropLogData {
+    playerName: string;
+    defId: number;
+    name: string;
+    killCount: number;
+    drops: { [itemId: number]: { name: string, quantity: number, totalDropped: number } };
+    lastUpdated: number;
+}
+
 export class DropLog extends Plugin {
     pluginName = "Drop Log";
     author = "JayArrowz";
@@ -34,6 +43,8 @@ export class DropLog extends Plugin {
     private panelContent: HTMLElement | null = null;
     private static readonly DB_STORE_NAME = "drop_logs";
     private isLoggedIn = false;
+    private currentPlayerName: string | null = null;
+    private migrationCompleted: boolean = false;
 
     private attackedNPCs: Set<number> = new Set();
     private npcDataCache: Map<number, any> = new Map(); // entityId -> npc data when first tracked
@@ -80,8 +91,6 @@ export class DropLog extends Plugin {
             value: 2000,
             callback: () => { }
         } as any;
-
-
     }
 
     start(): void {
@@ -93,6 +102,7 @@ export class DropLog extends Plugin {
         this.addCSSStyles();
 
         if (this.isLoggedIn) {
+            this.updatePlayerName();
             this.loadFromDatabase();
         }
     }
@@ -107,6 +117,31 @@ export class DropLog extends Plugin {
         this.checkForDeaths();
         this.checkForDrops();
         this.cleanupOldDeaths();
+    }
+
+    private getCurrentPlayerName(): string | null {
+        try {
+            const playerName = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer?.Name;
+            return playerName || null;
+        } catch (error) {
+            return null;
+        }
+    }
+
+    private updatePlayerName(): void {
+        const newPlayerName = this.getCurrentPlayerName();
+        if (newPlayerName && newPlayerName !== this.currentPlayerName) {
+            this.currentPlayerName = newPlayerName;
+            this.migrationCompleted = false;
+            
+            // Clear current data and reload for new player
+            this.dropData.clear();
+            this.loadFromDatabase();
+        }
+    }
+
+    private generatePlayerKey(defId: number): string {
+        return `${this.currentPlayerName || 'unknown'}_${defId}`;
     }
 
     private trackCurrentTarget(): void {
@@ -438,8 +473,9 @@ export class DropLog extends Plugin {
         }
 
         const filteredCount = this.getFilteredData().length;
+        const playerName = this.currentPlayerName || 'Unknown Player';
         header.innerHTML = `
-            <h3>Drop Log</h3>
+            <h3>Drop Log - ${playerName}</h3>
             <div class="drop-log-stats">
                 <span>Total NPCs: ${this.dropData.size}</span>
                 <span>Showing: ${filteredCount}</span>
@@ -579,8 +615,6 @@ export class DropLog extends Plugin {
         this.virtualScrollContent.appendChild(visibleContainer);
     }
 
-
-
     private createNPCEntry(defId: number, killData: NPCKillData): HTMLElement {
         const npcEntry = document.createElement('div');
         npcEntry.className = 'drop-log-npc-entry';
@@ -661,20 +695,89 @@ export class DropLog extends Plugin {
         }
     }
 
-    private async saveNPCToDatabase(defId: number, killData: NPCKillData): Promise<void> {
+    private async migrateOldData(): Promise<void> {
+        if (this.migrationCompleted || !this.currentPlayerName) return;
+
         try {
             if (!(await this.ensureObjectStore())) return;
 
             const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
-            const dataToSave = {
+            const allKeys = await dbManager.database.getAllKeys(DropLog.DB_STORE_NAME);
+            
+            let migratedCount = 0;
+            const oldKeys: any[] = [];
+
+            // Find old-style keys (just numbers) vs new-style keys (player_defId)
+            for (const key of allKeys) {
+                if (typeof key === 'number') {
+                    oldKeys.push(key);
+                }
+            }
+
+            if (oldKeys.length === 0) {
+                this.migrationCompleted = true;
+                return;
+            }
+
+            this.log(`DropLog: Found ${oldKeys.length} old records to migrate for player ${this.currentPlayerName}`);
+
+            // Migrate old data to new player-specific format
+            for (const oldKey of oldKeys) {
+                try {
+                    const oldRecord = await dbManager.database.get(DropLog.DB_STORE_NAME, oldKey);
+                    if (oldRecord && oldRecord.defId) {
+                        const newKey = this.generatePlayerKey(oldRecord.defId);
+                        
+                        // Check if player-specific record already exists
+                        const existingRecord = await dbManager.database.get(DropLog.DB_STORE_NAME, newKey as any);
+                        
+                        if (!existingRecord) {
+                            // Create new player-specific record
+                            const newRecord: PlayerDropLogData = {
+                                playerName: this.currentPlayerName,
+                                defId: oldRecord.defId,
+                                name: oldRecord.name,
+                                killCount: oldRecord.killCount,
+                                drops: oldRecord.drops || {},
+                                lastUpdated: oldRecord.lastUpdated || Date.now()
+                            };
+                            
+                            await dbManager.database.put(DropLog.DB_STORE_NAME, newRecord, newKey as any);
+                            migratedCount++;
+                        }
+                        
+                        // Remove old record
+                        await dbManager.database.delete(DropLog.DB_STORE_NAME, oldKey);
+                    }
+                } catch (error) {
+                    console.error(`Error migrating record ${oldKey}:`, error);
+                }
+            }
+
+            this.log(`DropLog: Successfully migrated ${migratedCount} records for player ${this.currentPlayerName}`);
+            this.migrationCompleted = true;
+        } catch (error) {
+            console.error("Error during migration:", error);
+        }
+    }
+
+    private async saveNPCToDatabase(defId: number, killData: NPCKillData): Promise<void> {
+        try {
+            if (!(await this.ensureObjectStore()) || !this.currentPlayerName) return;
+
+            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const key = this.generatePlayerKey(defId);
+            
+            const dataToSave: PlayerDropLogData = {
+                playerName: this.currentPlayerName,
                 defId,
                 name: killData.name,
                 killCount: killData.killCount,
                 drops: killData.drops,
-                lastUpdated: killData.lastUpdated // Use the actual lastUpdated from killData
+                lastUpdated: killData.lastUpdated
             };
 
-            await dbManager.database.put(DropLog.DB_STORE_NAME, dataToSave, defId);
+            await dbManager.database.put(DropLog.DB_STORE_NAME, dataToSave, key as any);
         } catch (error) {
             console.error("Error saving NPC to database", error);
         }
@@ -682,7 +785,10 @@ export class DropLog extends Plugin {
 
     private async loadFromDatabase(): Promise<void> {
         try {
-            if (!(await this.ensureObjectStore())) return;
+            if (!(await this.ensureObjectStore()) || !this.currentPlayerName) return;
+
+            // First, perform migration if needed
+            await this.migrateOldData();
 
             const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
             const allRecords = await dbManager.database.getAll(DropLog.DB_STORE_NAME);
@@ -691,14 +797,17 @@ export class DropLog extends Plugin {
 
             this.dropData.clear();
 
+            // Filter records for current player
             for (const record of allRecords) {
-                if (record.defId && record.name && typeof record.killCount === 'number') {
-                    this.log(`Loading NPC ${record.name} (defId: ${record.defId}) with ${record.killCount} kills`);
-                    this.dropData.set(record.defId, {
-                        name: record.name,
-                        killCount: record.killCount,
-                        drops: record.drops || {},
-                        lastUpdated: record.lastUpdated || Date.now()
+                // Handle both old format records (without playerName) and new format records (with playerName)
+                const recordWithPlayer = record as any;
+                if (recordWithPlayer.playerName === this.currentPlayerName && recordWithPlayer.defId && recordWithPlayer.name && typeof recordWithPlayer.killCount === 'number') {
+                    this.log(`Loading NPC ${recordWithPlayer.name} (defId: ${recordWithPlayer.defId}) with ${recordWithPlayer.killCount} kills for player ${this.currentPlayerName}`);
+                    this.dropData.set(recordWithPlayer.defId, {
+                        name: recordWithPlayer.name,
+                        killCount: recordWithPlayer.killCount,
+                        drops: recordWithPlayer.drops || {},
+                        lastUpdated: recordWithPlayer.lastUpdated || Date.now()
                     });
                 }
             }
@@ -713,10 +822,11 @@ export class DropLog extends Plugin {
 
     private async removeNPCFromDatabase(defId: number): Promise<void> {
         try {
-            if (!(await this.ensureObjectStore())) return;
+            if (!(await this.ensureObjectStore()) || !this.currentPlayerName) return;
 
             const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
-            await dbManager.database.delete(DropLog.DB_STORE_NAME, defId);
+            const key = this.generatePlayerKey(defId);
+            await dbManager.database.delete(DropLog.DB_STORE_NAME, key as any);
         } catch (error) {
             console.error("Error removing NPC from database", error);
         }
@@ -724,10 +834,17 @@ export class DropLog extends Plugin {
 
     private async clearDatabase(): Promise<void> {
         try {
-            if (!(await this.ensureObjectStore())) return;
+            if (!(await this.ensureObjectStore()) || !this.currentPlayerName) return;
 
             const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
-            await dbManager.database.clear(DropLog.DB_STORE_NAME);
+            const allKeys = await dbManager.database.getAllKeys(DropLog.DB_STORE_NAME);
+            
+            // Only remove records for current player
+            for (const key of allKeys) {
+                if (typeof key === 'string' && (key as string).startsWith(`${this.currentPlayerName}_`)) {
+                    await dbManager.database.delete(DropLog.DB_STORE_NAME, key);
+                }
+            }
         } catch (error) {
             console.error("Error clearing database", error);
         }
@@ -855,8 +972,6 @@ export class DropLog extends Plugin {
                 position: relative;
                 z-index: 2;
             }
-
-
 
             .drop-log-npc-entry {
                 margin-bottom: 15px;
@@ -1029,12 +1144,11 @@ export class DropLog extends Plugin {
         this.processedDeaths.clear();
     }
 
-
-
     SocketManager_loggedIn(): void {
         this.isLoggedIn = true;
         if (!this.settings.enabled?.value) return;
 
+        this.updatePlayerName();
         this.log("Logged in, loading drop data from database...");
         this.loadFromDatabase();
         if (this.panelContent) {
@@ -1044,6 +1158,8 @@ export class DropLog extends Plugin {
 
     SocketManager_handleLoggedOut(): void {
         this.isLoggedIn = false;
+        this.currentPlayerName = null;
+        this.migrationCompleted = false;
 
         for (const entityId of this.npcHealthTrackers.keys()) {
             this.cleanupHealthTracker(entityId);
