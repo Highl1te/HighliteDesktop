@@ -123,7 +123,7 @@ export class WorldMap extends Plugin {
       }
       return;
     }
-    // Create a window in the middle of the screen which embeds the map: https://highlite.fanet.dev/map
+    // Create a window in the middle of the screen which embeds the map: https://highlite.dev/map
     this.mapWindow = document.createElement("div");
     this.mapWindow.classList.add("highlite-map");
     this.mapWindow.style.position = "fixed";
@@ -165,7 +165,7 @@ export class WorldMap extends Plugin {
     titleDiv.appendChild(titleText);
 
         const embed = document.createElement("iframe");
-        embed.src = `https://highlite.fanet.dev/map?hide_decor=true&highliteMapPlugin=true`;
+        embed.src = `https://highlite.dev/map?hide_decor=true&highliteMapPlugin=true`;
         embed.style.width = "100%";
         embed.style.height = "100%";
         embed.style.border = "none";
