@@ -25,10 +25,46 @@ export class Nameplates extends Plugin {
         this.settings.groundItemNameplates = { text: "Ground Item Nameplates", type: SettingsTypes.checkbox, value: true, callback: () => {} };
 
         // Size settings
-        this.settings.playerNameplateSize = { text: "Player Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
-        this.settings.npcNameplateSize = { text: "NPC Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
-        this.settings.youNameplateSize = { text: "You Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
-        this.settings.groundItemNameplateSize = { text: "Ground Item Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
+        this.settings.playerNameplateSize = { 
+            text: "Player Nameplate Text Size", 
+            type: SettingsTypes.range, 
+            value: 12, 
+            callback: () => this.updateAllFontSizes(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 8 && numValue <= 24;
+            }
+        };
+        this.settings.npcNameplateSize = { 
+            text: "NPC Nameplate Text Size", 
+            type: SettingsTypes.range, 
+            value: 12, 
+            callback: () => this.updateAllFontSizes(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 8 && numValue <= 24;
+            }
+        };
+        this.settings.youNameplateSize = { 
+            text: "You Nameplate Text Size", 
+            type: SettingsTypes.range, 
+            value: 12, 
+            callback: () => this.updateAllFontSizes(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 8 && numValue <= 24;
+            }
+        };
+        this.settings.groundItemNameplateSize = { 
+            text: "Ground Item Nameplate Text Size", 
+            type: SettingsTypes.range, 
+            value: 12, 
+            callback: () => this.updateAllFontSizes(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 8 && numValue <= 24;
+            }
+        };
 
         // Theme settings
         this.settings.enableTheming = { text: "Enable Enhanced Theming", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
@@ -37,9 +73,36 @@ export class Nameplates extends Plugin {
         this.settings.showShadows = { text: "Show Text Shadows", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
 
         // Stack limit settings
-        this.settings.maxNPCStack = { text: "Max NPC Stack Display", type: SettingsTypes.range, value: 5, callback: () => this.updateStackLimits() };
-        this.settings.maxPlayerStack = { text: "Max Player Stack Display", type: SettingsTypes.range, value: 5, callback: () => this.updateStackLimits() };
-        this.settings.maxGroundItemStack = { text: "Max Ground Item Stack Display", type: SettingsTypes.range, value: 8, callback: () => this.updateStackLimits() };
+        this.settings.maxNPCStack = { 
+            text: "Max NPC Stack Display", 
+            type: SettingsTypes.range, 
+            value: 5, 
+            callback: () => this.updateStackLimits(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 0 && numValue <= 20;
+            }
+        };
+        this.settings.maxPlayerStack = { 
+            text: "Max Player Stack Display", 
+            type: SettingsTypes.range, 
+            value: 5, 
+            callback: () => this.updateStackLimits(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 0 && numValue <= 20;
+            }
+        };
+        this.settings.maxGroundItemStack = { 
+            text: "Max Ground Item Stack Display", 
+            type: SettingsTypes.range, 
+            value: 8, 
+            callback: () => this.updateStackLimits(),
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 0 && numValue <= 50;
+            }
+        };
 
         // Priority system settings
         this.settings.itemPriorities = { text: "Item Priorities (item:level,item:level)", type: SettingsTypes.text, value: "", callback: () => this.updateAllGroundItemElements() };

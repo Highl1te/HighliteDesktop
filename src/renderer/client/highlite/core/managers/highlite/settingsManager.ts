@@ -408,9 +408,23 @@ export class SettingsManager {
                     toggleSwitch.style.cursor = 'pointer';
                     toggleSwitch.style.accentColor = 'var(--theme-accent)';
                     toggleSwitch.addEventListener("change", async () => {
-                        setting.value = toggleSwitch.checked;
+                        const newValue = toggleSwitch.checked;
+                        
+                        // Check validation if it exists
+                        if (setting.validation && !setting.validation(newValue)) {
+                            // Invalid value - revert to previous value and show error styling
+                            toggleSwitch.checked = setting.value as boolean;
+                            toggleSwitch.style.accentColor = '#ff4444';
+                            return;
+                        }
+                        
+                        // Valid value - apply and save
+                        setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Reset styling to normal
+                        toggleSwitch.style.accentColor = 'var(--theme-accent)';
                         console.log(setting);
                     });
                     
@@ -473,9 +487,25 @@ export class SettingsManager {
                     });
                     
                     numberInput.addEventListener("change", async () => {
-                        setting.value = parseFloat(numberInput.value);
+                        const newValue = parseFloat(numberInput.value);
+                        
+                        // Check validation if it exists
+                        if (setting.validation && !setting.validation(newValue)) {
+                            // Invalid value - revert to previous value and show error styling
+                            numberInput.value = setting.value.toString();
+                            numberInput.style.border = '1px solid #ff4444';
+                            numberInput.style.boxShadow = '0 0 0 2px rgba(255, 68, 68, 0.2)';
+                            return;
+                        }
+                        
+                        // Valid value - apply and save
+                        setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Reset styling to normal
+                        numberInput.style.border = '1px solid var(--theme-border)';
+                        numberInput.style.boxShadow = 'none';
                         console.log(setting);
                     });
 
@@ -534,9 +564,25 @@ export class SettingsManager {
                     });
                     
                     colorInput.addEventListener("change", async () => {
-                        setting.value = colorInput.value;
+                        const newValue = colorInput.value;
+                        
+                        // Check validation if it exists
+                        if (setting.validation && !setting.validation(newValue)) {
+                            // Invalid value - revert to previous value and show error styling
+                            colorInput.value = setting.value as string;
+                            colorInput.style.border = '1px solid #ff4444';
+                            colorInput.style.boxShadow = '0 0 0 2px rgba(255, 68, 68, 0.2)';
+                            return;
+                        }
+                        
+                        // Valid value - apply and save
+                        setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Reset styling to normal
+                        colorInput.style.border = '1px solid var(--theme-border)';
+                        colorInput.style.boxShadow = 'none';
                         console.log(setting);
                     });
 
@@ -592,9 +638,25 @@ export class SettingsManager {
                     });
                     
                     textInput.addEventListener("change", async () => {
-                        setting.value = textInput.value;
+                        const newValue = textInput.value;
+                        
+                        // Check validation if it exists
+                        if (setting.validation && !setting.validation(newValue)) {
+                            // Invalid value - revert to previous value and show error styling
+                            textInput.value = setting.value as string;
+                            textInput.style.border = '1px solid #ff4444';
+                            textInput.style.boxShadow = '0 0 0 2px rgba(255, 68, 68, 0.2)';
+                            return;
+                        }
+                        
+                        // Valid value - apply and save
+                        setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Reset styling to normal
+                        textInput.style.border = '1px solid var(--theme-border)';
+                        textInput.style.boxShadow = 'none';
                         console.log(setting);
                     });
 
