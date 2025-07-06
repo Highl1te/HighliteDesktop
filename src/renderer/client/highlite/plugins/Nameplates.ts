@@ -30,6 +30,17 @@ export class Nameplates extends Plugin {
         this.settings.youNameplateSize = { text: "You Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
         this.settings.groundItemNameplateSize = { text: "Ground Item Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
 
+        // Theme settings
+        this.settings.enableTheming = { text: "Enable Enhanced Theming", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
+        this.settings.showBackgrounds = { text: "Show Background Colors", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
+        this.settings.showBorders = { text: "Show Borders", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
+        this.settings.showShadows = { text: "Show Text Shadows", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
+
+        // Stack limit settings
+        this.settings.maxNPCStack = { text: "Max NPC Stack Display", type: SettingsTypes.range, value: 5, callback: () => this.updateStackLimits() };
+        this.settings.maxPlayerStack = { text: "Max Player Stack Display", type: SettingsTypes.range, value: 5, callback: () => this.updateStackLimits() };
+        this.settings.maxGroundItemStack = { text: "Max Ground Item Stack Display", type: SettingsTypes.range, value: 8, callback: () => this.updateStackLimits() };
+
         // Priority system settings
         this.settings.itemPriorities = { text: "Item Priorities (item:level,item:level)", type: SettingsTypes.text, value: "", callback: () => this.updateAllGroundItemElements() };
         this.settings.priorityItemCustomColor = { text: "Priority Item Custom Color", type: SettingsTypes.color, value: "#ff0000", callback: () => this.updateAllGroundItemElements() };
@@ -127,11 +138,20 @@ export class Nameplates extends Plugin {
 
     private updateIgnoredItemsVisibility(): void {
         const ignoredItems = this.getIgnoredItemsSet();
+        const maxGroundItemStack = this.settings.maxGroundItemStack!.value as number;
         
         // Update all existing ground item elements
         for (const key in this.GroundItemDomElements) {
             const element = this.GroundItemDomElements[key].element;
             const itemContainers = element.children;
+            
+            // Remove any existing stack indicators
+            const existingIndicators = element.querySelectorAll('.ground-stack-indicator');
+            existingIndicators.forEach(indicator => indicator.remove());
+            
+            let visibleItemCount = 0;
+            let hiddenItemCount = 0;
+            let stackIndicatorAdded = false;
             
             for (let i = 0; i < itemContainers.length; i++) {
                 const container = itemContainers[i] as HTMLElement;
@@ -142,10 +162,11 @@ export class Nameplates extends Plugin {
                 
                 if (ignoredItems.has(itemName)) {
                     if (this.altKeyPressed) {
-                        // Show ignored item when ALT is pressed
+                        // Show ignored item when ALT is pressed (no stack limits)
                         container.style.display = 'flex';
                         (textSpan as HTMLElement).style.color = 'gray';
                         (textSpan as HTMLElement).style.fontStyle = 'italic';
+                        visibleItemCount++;
                         this.log(`Showing ignored item: ${itemName}`);
                     } else {
                         // Hide ignored item when ALT is not pressed
@@ -153,10 +174,27 @@ export class Nameplates extends Plugin {
                         this.log(`Hiding ignored item: ${itemName}`);
                     }
                 } else {
-                    // Show non-ignored items
-                    container.style.display = 'flex';
+                    // Show non-ignored items, respecting stack limits only when ALT is not pressed
+                    if (!this.altKeyPressed && visibleItemCount >= maxGroundItemStack) {
+                        container.style.display = 'none';
+                        hiddenItemCount++;
+                        
+                        // Add stack indicator to the last visible item if not already added
+                        if (!stackIndicatorAdded && visibleItemCount === maxGroundItemStack) {
+                            this.addGroundItemStackIndicator(element, hiddenItemCount);
+                            stackIndicatorAdded = true;
+                        }
+                    } else {
+                        container.style.display = 'flex';
+                        visibleItemCount++;
+                    }
                 }
             }
+        }
+        
+        // Reapply theming to all ground item elements after visibility changes
+        for (const key in this.GroundItemDomElements) {
+            this.applyGroundItemElementTheme(this.GroundItemDomElements[key].element);
         }
     }
 
@@ -207,10 +245,6 @@ export class Nameplates extends Plugin {
             this.error("Error injecting CSS variables:", error);
         }
     }
-
-
-
-
 
     private getItemPriorities(): Map<string, number> {
         const prioritiesStr = this.settings.itemPriorities!.value as string;
@@ -394,7 +428,12 @@ export class Nameplates extends Plugin {
 
                 // Update friend status
                 const isFriend = playerFriends.includes(player._nameLowerCase);
-                this.PlayerDomElements[player._entityId].element.style.color = isFriend ? "lightgreen" : "white";
+                const element = this.PlayerDomElements[player._entityId].element;
+                const isMainPlayer = element.id.includes(`player-${MainPlayer._entityId}`);
+                element.style.color = isFriend ? "lightgreen" : (isMainPlayer ? "cyan" : "white");
+                
+                // Reapply theming to update colors properly
+                this.applyPlayerElementTheme(element, isMainPlayer);
 
                 // Update position for stacking calculation
                 const worldPos = this.getEntityWorldPosition(player, 'player');
@@ -453,6 +492,13 @@ export class Nameplates extends Plugin {
 
     private processGroundItems(GroundItems: Map<number, any>): void {
         if (!this.settings.groundItemNameplates!.value) {
+            this.cleanupElementCollection(this.GroundItemDomElements);
+            return;
+        }
+
+        // Check if ground item stack limit is 0 - if so, hide all ground items
+        const maxGroundItemStack = this.settings.maxGroundItemStack!.value as number;
+        if (maxGroundItemStack === 0) {
             this.cleanupElementCollection(this.GroundItemDomElements);
             return;
         }
@@ -541,6 +587,9 @@ export class Nameplates extends Plugin {
             element.appendChild(lvlSpan);
         }
 
+        // Apply theming
+        this.applyNPCElementTheme(element);
+
         this.NPCDomElements[key] = {
             element: element,
             position: Vector3.ZeroReadOnly
@@ -558,6 +607,9 @@ export class Nameplates extends Plugin {
         element.style.color = isMainPlayer ? "cyan" : "white";
         element.style.fontSize = isMainPlayer ? `${this.settings.youNameplateSize!.value}px` : `${this.settings.playerNameplateSize!.value}px`;
         element.innerHTML = player._name;
+
+        // Apply theming
+        this.applyPlayerElementTheme(element, isMainPlayer);
 
         this.PlayerDomElements[entityId] = {
             element: element,
@@ -594,8 +646,12 @@ export class Nameplates extends Plugin {
             return a.localeCompare(b);
         });
 
-        for (const [itemName, itemGroup] of entries) {
+        const maxGroundItemStack = this.settings.maxGroundItemStack!.value as number;
+        let visibleItemCount = 0;
+        let hiddenItemCount = 0;
+        let stackIndicatorAdded = false;
 
+        for (const [itemName, itemGroup] of entries) {
             const itemDiv = document.createElement("div");
             itemDiv.style.textAlign = "center";
             itemDiv.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
@@ -625,6 +681,12 @@ export class Nameplates extends Plugin {
             } else if (priorityItems.has(itemName)) {
                 textSpan.style.color = this.getPriorityColor();
                 textSpan.style.fontWeight = "bold";
+                // Add priority indicator styling
+                if (this.settings.showBorders?.value) {
+                    itemContainer.style.border = "1px solid " + this.getPriorityColor();
+                    itemContainer.style.borderRadius = "2px";
+                    itemContainer.style.padding = "1px 2px";
+                }
             } else {
                 textSpan.style.color = "orange";
             }
@@ -682,8 +744,38 @@ export class Nameplates extends Plugin {
             itemContainer.appendChild(priorityBtn);
             itemContainer.appendChild(ignoreBtn);
 
+            // Apply stack limit logic for ground items
+            const isIgnored = ignoredItems.has(itemName);
+            const shouldShowIgnored = this.altKeyPressed;
+            
+            if (isIgnored && !shouldShowIgnored) {
+                // Hidden ignored item
+                itemContainer.style.display = "none";
+                hiddenItemCount++;
+            } else {
+                // Visible item - check stack limit only when ALT is not pressed
+                if (!this.altKeyPressed && visibleItemCount >= maxGroundItemStack) {
+                    // Hide this item due to stack limit (only when ALT is not pressed)
+                    itemContainer.style.display = "none";
+                    hiddenItemCount++;
+                    
+                    // Add stack indicator to the last visible item if not already added
+                    if (!stackIndicatorAdded && visibleItemCount === maxGroundItemStack) {
+                        this.addGroundItemStackIndicator(element, hiddenItemCount);
+                        stackIndicatorAdded = true;
+                    }
+                } else {
+                    // Show this item (always show when ALT is pressed)
+                    itemContainer.style.display = "flex";
+                    visibleItemCount++;
+                }
+            }
+
             element.appendChild(itemContainer);
         }
+
+        // Apply theming
+        this.applyGroundItemElementTheme(element);
 
         this.GroundItemDomElements[representativeKey] = {
             element: element,
@@ -698,18 +790,37 @@ export class Nameplates extends Plugin {
 
     private groupGroundItemsByPosition(GroundItems: Map<number, any>): Map<string, { items: Map<string, { items: any[], count: number }>, firstKey: string, totalItems: number }> {
         const positionGroups = new Map();
+        const tolerance = 0.5; // 0.5 unit tolerance for grouping
 
         for (const [key, groundItem] of GroundItems) {
             const worldPos = this.getEntityWorldPosition(groundItem, 'grounditem');
             if (!worldPos) continue;
 
-            const positionKey = `${Math.round(worldPos.x * 2) / 2}_${Math.round(worldPos.z * 2) / 2}`;
+            // Find existing group within tolerance, or create new one
+            let foundGroup = false;
+            let groupKey = '';
 
-            if (!positionGroups.has(positionKey)) {
-                positionGroups.set(positionKey, { items: new Map(), firstKey: String(key), totalItems: 0 });
+            for (const [existingKey, existingGroup] of positionGroups) {
+                const [existingX, existingZ] = existingKey.split('_').map(Number);
+                const distance = Math.sqrt(
+                    Math.pow(worldPos.x - existingX, 2) + 
+                    Math.pow(worldPos.z - existingZ, 2)
+                );
+
+                if (distance <= tolerance) {
+                    groupKey = existingKey;
+                    foundGroup = true;
+                    break;
+                }
             }
 
-            const positionGroup = positionGroups.get(positionKey)!;
+            if (!foundGroup) {
+                // Create new group with rounded position
+                groupKey = `${Math.round(worldPos.x * 2) / 2}_${Math.round(worldPos.z * 2) / 2}`;
+                positionGroups.set(groupKey, { items: new Map(), firstKey: String(key), totalItems: 0 });
+            }
+
+            const positionGroup = positionGroups.get(groupKey)!;
             const itemName = groundItem._def._nameCapitalized;
 
             if (!positionGroup.items.has(itemName)) {
@@ -756,10 +867,10 @@ export class Nameplates extends Plugin {
     }
 
     private getPositionKey(worldPosition: Vector3): string {
-        // Round to consistent grid for stacking with a small threshold
+        // Round to consistent grid for stacking with 1 unit tolerance
         // This prevents minor position changes from causing restacking
-        const roundedX = Math.round(worldPosition.x * 2) / 1.5; // Half tile precision with 0.5 unit threshold
-        const roundedZ = Math.round(worldPosition.z * 2) / 1.5;
+        const roundedX = Math.round(worldPosition.x);
+        const roundedZ = Math.round(worldPosition.z);
         return `${roundedX}_${roundedZ}`;
     }
 
@@ -777,21 +888,32 @@ export class Nameplates extends Plugin {
         const camera = this.gameHooks.GameCameraManager.Camera;
         const isInFrustrum = camera.isInFrustum(entityMesh);
 
+        // Calculate stacking offset and visibility
+        const stackingResult = this.calculateStackingOffset(domElement);
+        
+        // Apply frustum culling first - if not in frustum, hide regardless of stack limits
         if (!isInFrustrum) {
             domElement.element.style.visibility = "hidden";
+            return;
+        }
+        
+        // Handle visibility based on stack limits (only if in frustum)
+        if (!stackingResult.shouldShow) {
+            domElement.element.style.visibility = "hidden";
+            return;
         } else {
             domElement.element.style.visibility = "visible";
         }
 
-        // Calculate stacking offset
-        const heightOffset = this.calculateStackingOffset(domElement);
+        // Add stack indicator if needed
+        this.updateStackIndicator(domElement, stackingResult.stackInfo);
 
-        domElement.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - heightOffset)}rem - 50%), 0px)`;
+        domElement.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - stackingResult.offset)}rem - 50%), 0px)`;
     }
 
-    private calculateStackingOffset(domElement: any): number {
+    private calculateStackingOffset(domElement: any): { offset: number, shouldShow: boolean, stackInfo?: { total: number, hidden: number, type: string } } {
         if (!domElement.position) {
-            return 0;
+            return { offset: 0, shouldShow: true };
         }
 
         const positionKey = this.getPositionKey(domElement.position);
@@ -833,14 +955,26 @@ export class Nameplates extends Plugin {
         }
 
         if (elementsAtPosition.length <= 1) {
-            return 0;
+            return { offset: 0, shouldShow: true };
         }
 
         // Sort by type priority (ground items first, then NPCs, then players) and then by ID for consistency
+        // Main player should always be on top
         elementsAtPosition.sort((a, b) => {
             const typePriority = { ground: 0, npc: 1, player: 2 };
             const priorityDiff = typePriority[a.type as keyof typeof typePriority] - typePriority[b.type as keyof typeof typePriority];
             if (priorityDiff !== 0) return priorityDiff;
+            
+            // Check if either element is the main player
+            const isMainPlayerA = a.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+                                 a.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
+            const isMainPlayerB = b.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+                                 b.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
+            
+            // Main player should always be first (lowest index = highest position)
+            if (isMainPlayerA && !isMainPlayerB) return -1;
+            if (!isMainPlayerA && isMainPlayerB) return 1;
+            
             return a.id.localeCompare(b.id);
         });
 
@@ -848,7 +982,168 @@ export class Nameplates extends Plugin {
         const currentElementId = domElement.element.id;
         const index = elementsAtPosition.findIndex(el => el.element.id === currentElementId);
         
-        return index * 25; // 25px spacing per stacked element
+        // Determine element type and max stack limit
+        const elementType = domElement.element.id.includes('npc') ? 'npc' : 
+                           domElement.element.id.includes('player') ? 'player' : 'ground';
+        
+        // Check if this is the main player
+        const isMainPlayer = elementType === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+                            domElement.element.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
+        
+        // Main player should never be subject to stack limits and should have a fixed high position
+        if (isMainPlayer) {
+            return { offset: 50, shouldShow: true };
+        }
+        
+        const maxStack = elementType === 'npc' ? (this.settings.maxNPCStack!.value as number) :
+                        elementType === 'player' ? (this.settings.maxPlayerStack!.value as number) :
+                        (this.settings.maxGroundItemStack!.value as number);
+        
+        // For ground items, we need to count individual items within the nameplate
+        let effectiveIndex = index;
+        let effectiveTotal = elementsAtPosition.length;
+        
+        if (elementType === 'ground') {
+            // Ground items are handled differently - the stack limit applies to items within the nameplate
+            // This is handled in the createGroundItemElement method, not here
+            // Here we just use the position-based counting for the nameplate itself
+            const groundElementsAtPosition = elementsAtPosition.filter(el => el.type === 'ground');
+            const groundIndex = groundElementsAtPosition.findIndex(el => el.element.id === currentElementId);
+            effectiveIndex = groundIndex;
+            effectiveTotal = groundElementsAtPosition.length;
+        }
+        
+        // Check if this element should be shown based on stack limits
+        if (effectiveIndex >= maxStack) {
+            return { 
+                offset: 0, 
+                shouldShow: false,
+                stackInfo: { 
+                    total: effectiveTotal, 
+                    hidden: effectiveTotal - maxStack, 
+                    type: elementType 
+                }
+            };
+        }
+        
+        // If this is the last visible element and there are hidden elements, add stack info
+        if (effectiveIndex === maxStack - 1 && effectiveTotal > maxStack) {
+            return { 
+                offset: index * 25, 
+                shouldShow: true,
+                stackInfo: { 
+                    total: effectiveTotal, 
+                    hidden: effectiveTotal - maxStack, 
+                    type: elementType 
+                }
+            };
+        }
+        
+        return { offset: (index as number) * 25, shouldShow: true };
+    }
+
+    private addGroundItemStackIndicator(element: HTMLDivElement, hiddenCount: number): void {
+        // Find the last visible item container
+        const itemContainers = Array.from(element.children) as HTMLElement[];
+        const lastVisibleContainer = itemContainers.find(container => 
+            container.style.display !== 'none'
+        );
+        
+        if (lastVisibleContainer) {
+            // Create stack indicator
+            const stackIndicator = document.createElement('div');
+            stackIndicator.className = 'ground-stack-indicator';
+            stackIndicator.style.position = 'absolute';
+            stackIndicator.style.top = '-12px';
+            stackIndicator.style.left = '50%';
+            stackIndicator.style.transform = 'translateX(-50%)';
+            stackIndicator.style.fontSize = '8px';
+            stackIndicator.style.fontWeight = '600';
+            stackIndicator.style.color = '#FFA500';
+            stackIndicator.style.textShadow = '0 0 3px rgba(255, 165, 0, 0.8)';
+            stackIndicator.style.letterSpacing = '0.3px';
+            stackIndicator.style.textTransform = 'uppercase';
+            stackIndicator.style.zIndex = '1003';
+            stackIndicator.style.pointerEvents = 'none';
+            stackIndicator.style.background = 'rgba(0, 0, 0, 0.4)';
+            stackIndicator.style.padding = '1px 3px';
+            stackIndicator.style.borderRadius = '2px';
+            stackIndicator.style.backdropFilter = 'blur(1px)';
+            
+            // Format the text
+            if (hiddenCount === 1) {
+                stackIndicator.textContent = '+1';
+            } else if (hiddenCount < 10) {
+                stackIndicator.textContent = `+${hiddenCount}`;
+            } else {
+                stackIndicator.textContent = `+${hiddenCount}+`;
+            }
+            
+            lastVisibleContainer.appendChild(stackIndicator);
+        }
+    }
+
+    private updateStackIndicator(domElement: any, stackInfo?: { total: number, hidden: number, type: string }): void {
+        if (!stackInfo || stackInfo.hidden <= 0) {
+            // Remove any existing stack indicator
+            const existingIndicator = domElement.element.querySelector('.stack-indicator');
+            if (existingIndicator) {
+                existingIndicator.remove();
+            }
+            return;
+        }
+
+        // Check if stack indicator already exists
+        let stackIndicator = domElement.element.querySelector('.stack-indicator');
+        
+        if (!stackIndicator) {
+            // Create new stack indicator
+            stackIndicator = document.createElement('div');
+            stackIndicator.className = 'stack-indicator';
+            stackIndicator.style.position = 'absolute';
+            stackIndicator.style.top = '-16px';
+            stackIndicator.style.left = '50%';
+            stackIndicator.style.transform = 'translateX(-50%)';
+            stackIndicator.style.fontSize = '9px';
+            stackIndicator.style.fontWeight = '600';
+            stackIndicator.style.zIndex = '1001';
+            stackIndicator.style.pointerEvents = 'none';
+            stackIndicator.style.letterSpacing = '0.5px';
+            stackIndicator.style.textTransform = 'uppercase';
+            
+            // Apply theming based on element type
+            const elementType = domElement.element.id.includes('npc') ? 'npc' : 
+                               domElement.element.id.includes('player') ? 'player' : 'ground';
+            
+            if (elementType === 'npc') {
+                stackIndicator.style.color = '#FFD700';
+                stackIndicator.style.textShadow = '0 0 4px rgba(255, 215, 0, 0.8)';
+            } else if (elementType === 'player') {
+                stackIndicator.style.color = '#87CEEB';
+                stackIndicator.style.textShadow = '0 0 4px rgba(135, 206, 235, 0.8)';
+            } else {
+                stackIndicator.style.color = '#FFA500';
+                stackIndicator.style.textShadow = '0 0 4px rgba(255, 165, 0, 0.8)';
+            }
+            
+            // Add subtle background glow
+            stackIndicator.style.background = 'rgba(0, 0, 0, 0.3)';
+            stackIndicator.style.padding = '1px 4px';
+            stackIndicator.style.borderRadius = '2px';
+            stackIndicator.style.backdropFilter = 'blur(2px)';
+            
+            domElement.element.appendChild(stackIndicator);
+        }
+        
+        // Update the indicator text with better formatting
+        const count = stackInfo.hidden;
+        if (count === 1) {
+            stackIndicator.textContent = '+1';
+        } else if (count < 10) {
+            stackIndicator.textContent = `+${count}`;
+        } else {
+            stackIndicator.textContent = `+${count}+`;
+        }
     }
 
     private pxToRem(px: number): number {
@@ -889,6 +1184,220 @@ export class Nameplates extends Plugin {
                 childElement.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
             }
         }
+    }
+
+    private updateStackLimits(): void {
+        // Force recreation of ground item elements to apply new stack limits
+        for (const key in this.GroundItemDomElements) {
+            this.disposeElementFromCollection(this.GroundItemDomElements, key);
+        }
+        
+        this.log("Stack limits updated, forcing ground item recreation");
+    }
+
+    private updateAllElementThemes(): void {
+        // Update NPC themes
+        for (const key in this.NPCDomElements) {
+            this.applyNPCElementTheme(this.NPCDomElements[key].element);
+        }
+
+        // Update player themes
+        for (const key in this.PlayerDomElements) {
+            const element = this.PlayerDomElements[key].element;
+            const isMainPlayer = element.style.color === "cyan";
+            this.applyPlayerElementTheme(element, isMainPlayer);
+        }
+
+        // Update ground item themes
+        for (const key in this.GroundItemDomElements) {
+            this.applyGroundItemElementTheme(this.GroundItemDomElements[key].element);
+        }
+    }
+
+    private applyNPCElementTheme(element: HTMLDivElement): void {
+        if (!this.settings.enableTheming?.value) {
+            // Reset to basic styling
+            element.style.background = "transparent";
+            element.style.border = "none";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+            element.style.boxShadow = "none";
+            element.style.textShadow = "none";
+            return;
+        }
+
+        // Apply enhanced theming
+        if (this.settings.showBackgrounds?.value) {
+            element.style.background = "rgba(0, 0, 0, 0.8)";
+            element.style.borderRadius = "4px";
+            element.style.padding = "2px 6px";
+        } else {
+            element.style.background = "transparent";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+        }
+
+        if (this.settings.showBorders?.value) {
+            element.style.border = "1px solid rgba(255, 255, 0, 0.6)";
+        } else {
+            element.style.border = "none";
+        }
+
+        if (this.settings.showShadows?.value) {
+            element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        } else {
+            element.style.textShadow = "none";
+            element.style.boxShadow = "none";
+        }
+
+        // Apply theme to child elements
+        const childElements = element.children;
+        for (let i = 0; i < childElements.length; i++) {
+            const childElement = childElements[i] as HTMLElement;
+            if (this.settings.showShadows?.value) {
+                childElement.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            } else {
+                childElement.style.textShadow = "none";
+            }
+        }
+    }
+
+    private applyPlayerElementTheme(element: HTMLDivElement, isMainPlayer: boolean): void {
+        if (!this.settings.enableTheming?.value) {
+            // Reset to basic styling
+            element.style.background = "transparent";
+            element.style.border = "none";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+            element.style.boxShadow = "none";
+            element.style.textShadow = "none";
+            return;
+        }
+
+        // Determine player type for theming
+        const isFriend = element.style.color === "lightgreen";
+        const isMainPlayerElement = element.style.color === "cyan";
+
+        // Apply enhanced theming
+        if (this.settings.showBackgrounds?.value) {
+            if (isMainPlayerElement) {
+                element.style.background = "rgba(0, 255, 255, 0.2)";
+            } else if (isFriend) {
+                element.style.background = "rgba(144, 238, 144, 0.2)";
+            } else {
+                element.style.background = "rgba(255, 255, 255, 0.1)";
+            }
+            element.style.borderRadius = "4px";
+            element.style.padding = "2px 6px";
+        } else {
+            element.style.background = "transparent";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+        }
+
+        if (this.settings.showBorders?.value) {
+            if (isMainPlayerElement) {
+                element.style.border = "1px solid rgba(0, 255, 255, 0.6)";
+            } else if (isFriend) {
+                element.style.border = "1px solid rgba(144, 238, 144, 0.6)";
+            } else {
+                element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
+            }
+        } else {
+            element.style.border = "none";
+        }
+
+        if (this.settings.showShadows?.value) {
+            element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        } else {
+            element.style.textShadow = "none";
+            element.style.boxShadow = "none";
+        }
+    }
+
+    private applyGroundItemElementTheme(element: HTMLDivElement): void {
+        if (!this.settings.enableTheming?.value) {
+            // Reset to basic styling
+            element.style.background = "transparent";
+            element.style.border = "none";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+            element.style.boxShadow = "none";
+            element.style.textShadow = "none";
+            return;
+        }
+
+        // Check if this element has any visible (non-ignored) items
+        const hasVisibleItems = this.hasVisibleGroundItems(element);
+
+        if (!hasVisibleItems) {
+            // If no visible items, don't apply any theming
+            element.style.background = "transparent";
+            element.style.border = "none";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+            element.style.boxShadow = "none";
+            element.style.textShadow = "none";
+            return;
+        }
+
+        // Apply enhanced theming only if there are visible items
+        if (this.settings.showBackgrounds?.value) {
+            element.style.background = "rgba(255, 165, 0, 0.15)";
+            element.style.borderRadius = "4px";
+            element.style.padding = "2px 6px";
+        } else {
+            element.style.background = "transparent";
+            element.style.borderRadius = "0";
+            element.style.padding = "0";
+        }
+
+        if (this.settings.showBorders?.value) {
+            element.style.border = "1px solid rgba(255, 165, 0, 0.4)";
+        } else {
+            element.style.border = "none";
+        }
+
+        if (this.settings.showShadows?.value) {
+            element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        } else {
+            element.style.textShadow = "none";
+            element.style.boxShadow = "none";
+        }
+
+        // Apply theme to child elements (item containers)
+        const childElements = element.children;
+        for (let i = 0; i < childElements.length; i++) {
+            const childElement = childElements[i] as HTMLElement;
+            if (this.settings.showShadows?.value) {
+                childElement.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            } else {
+                childElement.style.textShadow = "none";
+            }
+        }
+    }
+
+    private hasVisibleGroundItems(element: HTMLDivElement): boolean {
+        const ignoredItems = this.getIgnoredItemsSet();
+        const itemContainers = element.children;
+        
+        for (let i = 0; i < itemContainers.length; i++) {
+            const container = itemContainers[i] as HTMLElement;
+            const textSpan = container.querySelector('span');
+            if (!textSpan) continue;
+            
+            const itemName = textSpan.innerText.split(' [x')[0];
+            
+            // Check if this item is visible (not ignored, or ALT is pressed)
+            if (!ignoredItems.has(itemName) || this.altKeyPressed) {
+                return true;
+            }
+        }
+        
+        return false;
     }
 
     private disposeElementFromCollection(collection: any, key: string | number): void {
@@ -945,3 +1454,4 @@ export class Nameplates extends Plugin {
         }
     }
 }
+
