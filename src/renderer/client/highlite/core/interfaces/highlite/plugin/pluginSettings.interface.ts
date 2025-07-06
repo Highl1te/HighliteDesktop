@@ -1,6 +1,8 @@
 export enum SettingsTypes {
     checkbox,
     range,
+    color,
+    text,
 }
 
 export interface PluginSettings {

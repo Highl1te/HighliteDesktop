@@ -1,14 +1,22 @@
 import { Vector3 } from "@babylonjs/core/Maths/math";
 import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class"
 import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings.interface";
+import { UIManager, UIManagerScope } from "../core/managers/highlite/uiManager";
 
 export class Nameplates extends Plugin {
     pluginName = "Nameplates";
     author = "Highlite";
     DOMElement: HTMLDivElement | null = null;
     
+    // Priority system properties
+    private altKeyPressed: boolean = false;
+    private uiManager: UIManager;
+    
     constructor() {
         super();
+
+        // Initialize UIManager
+        this.uiManager = new UIManager();
 
         // Nameplate toggles
         this.settings.playerNameplates = { text: "Player Nameplates", type: SettingsTypes.checkbox, value: true, callback: () => {} };
@@ -21,6 +29,10 @@ export class Nameplates extends Plugin {
         this.settings.npcNameplateSize = { text: "NPC Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
         this.settings.youNameplateSize = { text: "You Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
         this.settings.groundItemNameplateSize = { text: "Ground Item Nameplate Text Size", type: SettingsTypes.range, value: 12, callback: () => this.updateAllFontSizes() };
+
+        // Priority system settings
+        this.settings.itemPriorities = { text: "Item Priorities (item:level,item:level)", type: SettingsTypes.text, value: "", callback: () => this.updateAllGroundItemElements() };
+        this.settings.priorityItemCustomColor = { text: "Priority Item Custom Color", type: SettingsTypes.color, value: "#ff0000", callback: () => this.updateAllGroundItemElements() };
     }
 
     NPCDomElements: {
@@ -39,6 +51,7 @@ export class Nameplates extends Plugin {
 
     init(): void {
         this.log("Initializing");
+        this.setupKeyboardListeners();
     }
 
     start(): void {
@@ -61,6 +74,237 @@ export class Nameplates extends Plugin {
 
     SocketManager_handleLoggedOut(): void {
         this.cleanupAllElements();
+    }
+
+    private setupKeyboardListeners(): void {
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Alt') {
+                this.altKeyPressed = true;
+                this.updatePriorityButtonsVisibility();
+                this.disableScreenMaskPointerEvents();
+            }
+        });
+
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'Alt') {
+                this.altKeyPressed = false;
+                this.updatePriorityButtonsVisibility();
+                // Add a delay to allow button clicks to complete
+                setTimeout(() => {
+                    this.enableScreenMaskPointerEvents();
+                }, 200);
+            }
+        });
+    }
+
+    private updatePriorityButtonsVisibility(): void {
+        const buttons = document.querySelectorAll('.priority-button');
+        buttons.forEach(button => {
+            if (this.altKeyPressed) {
+                (button as HTMLElement).style.display = 'inline-block';
+            } else {
+                (button as HTMLElement).style.display = 'none';
+            }
+        });
+
+        // Update visibility of ignored items in existing ground item elements
+        this.updateIgnoredItemsVisibility();
+    }
+
+    private disableScreenMaskPointerEvents(): void {
+        const screenMask = document.getElementById('hs-screen-mask');
+        if (screenMask) {
+            screenMask.style.pointerEvents = 'none';
+        }
+    }
+
+    private enableScreenMaskPointerEvents(): void {
+        const screenMask = document.getElementById('hs-screen-mask');
+        if (screenMask) {
+            screenMask.style.pointerEvents = 'auto';
+        }
+    }
+
+    private updateIgnoredItemsVisibility(): void {
+        const ignoredItems = this.getIgnoredItemsSet();
+        
+        // Update all existing ground item elements
+        for (const key in this.GroundItemDomElements) {
+            const element = this.GroundItemDomElements[key].element;
+            const itemContainers = element.children;
+            
+            for (let i = 0; i < itemContainers.length; i++) {
+                const container = itemContainers[i] as HTMLElement;
+                const textSpan = container.querySelector('span');
+                if (!textSpan) continue;
+                
+                const itemName = textSpan.innerText.split(' [x')[0]; // Extract item name without quantity
+                
+                if (ignoredItems.has(itemName)) {
+                    if (this.altKeyPressed) {
+                        // Show ignored item when ALT is pressed
+                        container.style.display = 'flex';
+                        (textSpan as HTMLElement).style.color = 'gray';
+                        (textSpan as HTMLElement).style.fontStyle = 'italic';
+                        this.log(`Showing ignored item: ${itemName}`);
+                    } else {
+                        // Hide ignored item when ALT is not pressed
+                        container.style.display = 'none';
+                        this.log(`Hiding ignored item: ${itemName}`);
+                    }
+                } else {
+                    // Show non-ignored items
+                    container.style.display = 'flex';
+                }
+            }
+        }
+    }
+
+    private injectCSSVariables(): void {
+        if (!this.DOMElement) return;
+
+        try {
+            const screenMask = document.getElementById('hs-screen-mask');
+            if (!screenMask) return;
+
+            const computedStyle = getComputedStyle(screenMask);
+            const cssVariables = [
+                '--hs-color-cmbt-lvl-diff-pos-10',
+                '--hs-color-cmbt-lvl-diff-pos-9',
+                '--hs-color-cmbt-lvl-diff-pos-8',
+                '--hs-color-cmbt-lvl-diff-pos-7',
+                '--hs-color-cmbt-lvl-diff-pos-6',
+                '--hs-color-cmbt-lvl-diff-pos-5',
+                '--hs-color-cmbt-lvl-diff-pos-4',
+                '--hs-color-cmbt-lvl-diff-pos-3',
+                '--hs-color-cmbt-lvl-diff-pos-2',
+                '--hs-color-cmbt-lvl-diff-pos-1',
+                '--hs-color-cmbt-lvl-diff-pos-0',
+                '--hs-color-cmbt-lvl-diff-neg-1',
+                '--hs-color-cmbt-lvl-diff-neg-2',
+                '--hs-color-cmbt-lvl-diff-neg-3',
+                '--hs-color-cmbt-lvl-diff-neg-4',
+                '--hs-color-cmbt-lvl-diff-neg-5',
+                '--hs-color-cmbt-lvl-diff-neg-6',
+                '--hs-color-cmbt-lvl-diff-neg-7',
+                '--hs-color-cmbt-lvl-diff-neg-8',
+                '--hs-color-cmbt-lvl-diff-neg-9',
+                '--hs-color-cmbt-lvl-diff-neg-10'
+            ];
+
+            let styleString = '';
+            cssVariables.forEach(variable => {
+                const value = computedStyle.getPropertyValue(variable);
+                if (value) {
+                    styleString += `${variable}: ${value}; `;
+                }
+            });
+
+            if (styleString) {
+                this.DOMElement.style.cssText += styleString;
+            }
+        } catch (error) {
+            this.error("Error injecting CSS variables:", error);
+        }
+    }
+
+
+
+
+
+    private getItemPriorities(): Map<string, number> {
+        const prioritiesStr = this.settings.itemPriorities!.value as string;
+        const priorities = new Map<string, number>();
+        
+        if (!prioritiesStr) return priorities;
+        
+        const entries = prioritiesStr.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
+        
+        for (const entry of entries) {
+            const [itemName, levelStr] = entry.split(':');
+            if (itemName && levelStr) {
+                const level = parseInt(levelStr);
+                if (!isNaN(level) && level >= -1 && level <= 1) {
+                    priorities.set(itemName.trim(), level);
+                }
+            }
+        }
+        
+        return priorities;
+    }
+
+    private getPriorityItemsSet(): Set<string> {
+        const priorities = this.getItemPriorities();
+        const priorityItems = new Set<string>();
+        
+        for (const [itemName, level] of priorities) {
+            if (level === 1) {
+                priorityItems.add(itemName);
+            }
+        }
+        
+        return priorityItems;
+    }
+
+    private getIgnoredItemsSet(): Set<string> {
+        const priorities = this.getItemPriorities();
+        const ignoredItems = new Set<string>();
+        
+        for (const [itemName, level] of priorities) {
+            if (level === -1) {
+                ignoredItems.add(itemName);
+            }
+        }
+        
+        return ignoredItems;
+    }
+
+    private toggleItemPriority(itemName: string): void {
+        const priorities = this.getItemPriorities();
+        const currentLevel = priorities.get(itemName) || 0;
+        
+        // Shift priority level up by 1, wrapping from 1 back to 0
+        const newLevel = currentLevel === 1 ? 0 : currentLevel + 1;
+        priorities.set(itemName, newLevel);
+        
+        // Update settings
+        this.settings.itemPriorities!.value = Array.from(priorities.entries())
+            .map(([item, level]) => `${item}:${level}`)
+            .join(', ');
+        
+        this.updateAllGroundItemElements();
+    }
+
+    private toggleItemIgnored(itemName: string): void {
+        const priorities = this.getItemPriorities();
+        const currentLevel = priorities.get(itemName) || 0;
+        
+        // Shift priority level down by 1, wrapping from -1 back to 0
+        const newLevel = currentLevel === -1 ? 0 : currentLevel - 1;
+        priorities.set(itemName, newLevel);
+        
+        // Update settings
+        this.settings.itemPriorities!.value = Array.from(priorities.entries())
+            .map(([item, level]) => `${item}:${level}`)
+            .join(', ');
+        
+        this.updateAllGroundItemElements();
+    }
+
+    private updateAllGroundItemElements(): void {
+        // Force recreation of all ground item elements to reflect new priorities
+        for (const key in this.GroundItemDomElements) {
+            this.disposeElementFromCollection(this.GroundItemDomElements, key);
+        }
+    }
+
+    private getPriorityColor(): string {
+        // Use custom color if available, otherwise fall back to red
+        if (this.settings.priorityItemCustomColor && this.settings.priorityItemCustomColor.value) {
+            return this.settings.priorityItemCustomColor.value as string;
+        }
+        
+        return "#ff0000"; // Default red color
     }
 
     GameLoop_draw(): void {
@@ -335,15 +579,110 @@ export class Nameplates extends Plugin {
         element.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
 
         const entries = Array.from(positionGroup.items.entries()) as [string, any][];
-        entries.sort(([a], [b]) => a.localeCompare(b));
+        
+        // Sort by priority: priority items first, then by name
+        const priorityItems = this.getPriorityItemsSet();
+        const ignoredItems = this.getIgnoredItemsSet();
+        
+        entries.sort(([a, aGroup], [b, bGroup]) => {
+            const aIsPriority = priorityItems.has(a);
+            const bIsPriority = priorityItems.has(b);
+            
+            if (aIsPriority && !bIsPriority) return -1;
+            if (!aIsPriority && bIsPriority) return 1;
+            
+            return a.localeCompare(b);
+        });
 
         for (const [itemName, itemGroup] of entries) {
+
             const itemDiv = document.createElement("div");
-            itemDiv.style.color = "orange";
             itemDiv.style.textAlign = "center";
             itemDiv.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
-            itemDiv.innerText = itemGroup.count > 1 ? `${itemName} [x${itemGroup.count}]` : itemName;
-            element.appendChild(itemDiv);
+            
+            const itemText = itemGroup.count > 1 ? `${itemName} [x${itemGroup.count}]` : itemName;
+            
+            // Create container for item text and buttons
+            const itemContainer = document.createElement("div");
+            itemContainer.style.display = "flex";
+            itemContainer.style.alignItems = "center";
+            itemContainer.style.justifyContent = "center";
+            itemContainer.style.gap = "4px";
+            itemContainer.style.pointerEvents = "auto";
+            itemContainer.style.position = "relative";
+            itemContainer.style.zIndex = "1002";
+
+            // Item text
+            const textSpan = document.createElement("span");
+            textSpan.innerText = itemText;
+            
+            // Set color based on priority and ignore status
+            if (ignoredItems.has(itemName)) {
+                textSpan.style.color = "gray";
+                textSpan.style.fontStyle = "italic";
+                // Initially hide ignored items
+                itemContainer.style.display = this.altKeyPressed ? "flex" : "none";
+            } else if (priorityItems.has(itemName)) {
+                textSpan.style.color = this.getPriorityColor();
+                textSpan.style.fontWeight = "bold";
+            } else {
+                textSpan.style.color = "orange";
+            }
+            
+            itemContainer.appendChild(textSpan);
+
+            // Priority buttons (always show when ALT is pressed)
+            // Priority button (+)
+            const priorityBtn = document.createElement("button");
+            priorityBtn.className = "priority-button";
+            priorityBtn.innerText = "+";
+            priorityBtn.style.display = this.altKeyPressed ? "inline-block" : "none";
+            const currentLevel = this.getItemPriorities().get(itemName) || 0;
+            priorityBtn.style.background = currentLevel === 1 ? "orange" : "transparent";
+            priorityBtn.style.color = currentLevel === 1 ? "white" : "orange";
+            priorityBtn.style.border = "1px solid orange";
+            priorityBtn.style.borderRadius = "2px";
+            priorityBtn.style.padding = "1px 4px";
+            priorityBtn.style.fontSize = "10px";
+            priorityBtn.style.cursor = "pointer";
+            priorityBtn.style.fontWeight = "bold";
+            priorityBtn.style.pointerEvents = "auto";
+            priorityBtn.style.zIndex = "1001";
+            priorityBtn.style.userSelect = "none";
+            priorityBtn.title = currentLevel === 1 ? "Remove Priority" : "Add Priority";
+            
+            // Use UIManager to bind the click event properly
+            this.uiManager.bindOnClickBlockHsMask(priorityBtn, () => {
+                this.toggleItemPriority(itemName);
+            });
+
+            // Ignore button (-)
+            const ignoreBtn = document.createElement("button");
+            ignoreBtn.className = "priority-button";
+            ignoreBtn.innerText = "-";
+            ignoreBtn.style.display = this.altKeyPressed ? "inline-block" : "none";
+            ignoreBtn.style.background = currentLevel === -1 ? "orange" : "transparent";
+            ignoreBtn.style.color = currentLevel === -1 ? "white" : "orange";
+            ignoreBtn.style.border = "1px solid orange";
+            ignoreBtn.style.borderRadius = "2px";
+            ignoreBtn.style.padding = "1px 4px";
+            ignoreBtn.style.fontSize = "10px";
+            ignoreBtn.style.cursor = "pointer";
+            ignoreBtn.style.fontWeight = "bold";
+            ignoreBtn.style.pointerEvents = "auto";
+            ignoreBtn.style.zIndex = "1001";
+            ignoreBtn.style.userSelect = "none";
+            ignoreBtn.title = currentLevel === -1 ? "Un-ignore Item" : "Hide Item";
+            
+            // Use UIManager to bind the click event properly
+            this.uiManager.bindOnClickBlockHsMask(ignoreBtn, () => {
+                this.toggleItemIgnored(itemName);
+            });
+
+            itemContainer.appendChild(priorityBtn);
+            itemContainer.appendChild(ignoreBtn);
+
+            element.appendChild(itemContainer);
         }
 
         this.GroundItemDomElements[representativeKey] = {
@@ -585,17 +924,24 @@ export class Nameplates extends Plugin {
 
     private setupAllElements(): void {
         this.cleanupAllElements();
-        this.DOMElement = document.createElement('div');
-        this.DOMElement.id = "highlite-nameplates";
-        this.DOMElement.style.position = "absolute";
-        this.DOMElement.style.pointerEvents = "none";
-        this.DOMElement.style.zIndex = "1";
-        this.DOMElement.style.overflow = "hidden";
-        this.DOMElement.style.width = "100%";
-        this.DOMElement.style.height = "100%";
-        this.DOMElement.style.fontFamily = "Inter";
-        this.DOMElement.style.fontSize = "12px";
-        this.DOMElement.style.fontWeight = "bold";
-        document.getElementById('hs-screen-mask')?.appendChild(this.DOMElement);
+        
+        // Use UIManager to create the container with ClientRelative scope
+        this.DOMElement = this.uiManager.createElement(UIManagerScope.ClientRelative) as HTMLDivElement;
+        if (this.DOMElement) {
+            this.DOMElement.id = "highlite-nameplates";
+            this.DOMElement.style.position = "absolute";
+            this.DOMElement.style.pointerEvents = "none";
+            this.DOMElement.style.zIndex = "1";
+            this.DOMElement.style.overflow = "hidden";
+            this.DOMElement.style.width = "100%";
+            this.DOMElement.style.height = "calc(100% - var(--titlebar-height))"; // Account for titlebar height
+            this.DOMElement.style.top = "var(--titlebar-height)"; // Position below titlebar
+            this.DOMElement.style.fontFamily = "Inter";
+            this.DOMElement.style.fontSize = "12px";
+            this.DOMElement.style.fontWeight = "bold";
+            
+            // Inject CSS variables from screen mask to ensure proper styling
+            this.injectCSSVariables();
+        }
     }
 }

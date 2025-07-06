@@ -498,6 +498,125 @@ export class SettingsManager {
                     contentRow.appendChild(rangeContainer);
 
                     break;
+
+                case SettingsTypes.color:
+                    const colorContainer = document.createElement("div");
+                    colorContainer.style.display = 'flex';
+                    colorContainer.style.flexDirection = 'column';
+                    colorContainer.style.gap = '8px';
+                    
+                    const colorInput = document.createElement("input");
+                    colorInput.type = "color";
+                    colorInput.value = setting.value as string || "#ff0000";
+                    colorInput.style.padding = '8px 12px';
+                    colorInput.style.borderRadius = '6px';
+                    colorInput.style.border = '1px solid var(--theme-border)';
+                    colorInput.style.background = 'var(--theme-background)';
+                    colorInput.style.color = 'var(--theme-text-primary)';
+                    colorInput.style.fontSize = '14px';
+                    colorInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    colorInput.style.outline = 'none';
+                    colorInput.style.transition = 'all 0.2s ease';
+                    colorInput.style.cursor = 'pointer';
+                    colorInput.style.width = '100%';
+                    colorInput.style.height = '40px';
+                    
+                    // Add focus styling
+                    colorInput.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        colorInput.style.border = '1px solid var(--theme-accent)';
+                        colorInput.style.boxShadow = '0 0 0 2px var(--theme-accent-transparent-20)';
+                    });
+                    colorInput.addEventListener('blur', () => {
+                        colorInput.style.border = '1px solid var(--theme-border)';
+                        colorInput.style.boxShadow = 'none';
+                    });
+                    
+                    colorInput.addEventListener("change", async () => {
+                        setting.value = colorInput.value;
+                        setting.callback.call(plugin);
+                        await this.storePluginSettings(plugin);
+                        console.log(setting);
+                    });
+
+                    // Add a label for the color input
+                    const colorLabel = document.createElement("label");
+                    colorLabel.innerText = finalizedSettingName;
+                    colorLabel.style.color = 'var(--theme-text-primary)';
+                    colorLabel.style.fontSize = '16px';
+                    colorLabel.style.margin = '0px';
+                    colorLabel.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    colorLabel.style.fontWeight = '500';
+                    colorLabel.style.letterSpacing = '0.025em';
+                    colorLabel.style.whiteSpace = 'nowrap';
+                    colorLabel.style.overflow = 'hidden';
+                    colorLabel.style.textOverflow = 'ellipsis';
+                    colorLabel.title = finalizedSettingName; // Show full text on hover
+                    
+                    colorContainer.appendChild(colorLabel);
+                    colorContainer.appendChild(colorInput);
+                    contentRow.appendChild(colorContainer);
+
+                    break;
+
+                case SettingsTypes.text:
+                    const textContainer = document.createElement("div");
+                    textContainer.style.display = 'flex';
+                    textContainer.style.flexDirection = 'column';
+                    textContainer.style.gap = '8px';
+                    
+                    const textInput = document.createElement("input");
+                    textInput.type = "text";
+                    textInput.value = setting.value as string || "";
+                    textInput.style.padding = '8px 12px';
+                    textInput.style.borderRadius = '6px';
+                    textInput.style.border = '1px solid var(--theme-border)';
+                    textInput.style.background = 'var(--theme-background)';
+                    textInput.style.color = 'var(--theme-text-primary)';
+                    textInput.style.fontSize = '14px';
+                    textInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    textInput.style.outline = 'none';
+                    textInput.style.transition = 'all 0.2s ease';
+                    
+                    // Add focus styling
+                    textInput.addEventListener('focus', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        textInput.style.border = '1px solid var(--theme-accent)';
+                        textInput.style.boxShadow = '0 0 0 2px var(--theme-accent-transparent-20)';
+                    });
+                    textInput.addEventListener('blur', () => {
+                        textInput.style.border = '1px solid var(--theme-border)';
+                        textInput.style.boxShadow = 'none';
+                    });
+                    
+                    textInput.addEventListener("change", async () => {
+                        setting.value = textInput.value;
+                        setting.callback.call(plugin);
+                        await this.storePluginSettings(plugin);
+                        console.log(setting);
+                    });
+
+                    // Add a label for the text input
+                    const textLabel = document.createElement("label");
+                    textLabel.innerText = finalizedSettingName;
+                    textLabel.style.color = 'var(--theme-text-primary)';
+                    textLabel.style.fontSize = '16px';
+                    textLabel.style.margin = '0px';
+                    textLabel.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    textLabel.style.fontWeight = '500';
+                    textLabel.style.letterSpacing = '0.025em';
+                    textLabel.style.whiteSpace = 'nowrap';
+                    textLabel.style.overflow = 'hidden';
+                    textLabel.style.textOverflow = 'ellipsis';
+                    textLabel.title = finalizedSettingName; // Show full text on hover
+                    
+                    textContainer.appendChild(textLabel);
+                    textContainer.appendChild(textInput);
+                    contentRow.appendChild(textContainer);
+
+                    break;
                 default:
                     console.log(`Unsupported setting type for ${settingKey}: ${typeof plugin.settings[settingKey]}`);
             }

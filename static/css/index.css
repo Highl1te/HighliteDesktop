@@ -41,7 +41,8 @@
     --vt-c-text-light-1: var(--theme-text-primary);
     --vt-c-text-light-2: var(--theme-text-secondary);
     --vt-c-text-dark-1: var(--theme-text-primary);
-    --vt-c-text-dark-2: var(--theme-text-secondary)
+    --vt-c-text-dark-2: var(--theme-text-secondary);
+    --titlebar-height: 28px
 }
 
 :root {
@@ -61,9 +62,9 @@ body {
 }
 
 .highlite_titlebar {
-    height: 28px;
-    min-height: 28px;
-    max-height: 28px;
+    height: var(--titlebar-height);
+    min-height: var(--titlebar-height);
+    max-height: var(--titlebar-height);
     background: #141414;
     width: 100vw;
     min-width: 100vw;
