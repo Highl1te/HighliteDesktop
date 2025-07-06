@@ -161,14 +161,31 @@ export class Nameplates extends Plugin {
 
         document.addEventListener('keyup', (e) => {
             if (e.key === 'Alt') {
-                this.altKeyPressed = false;
-                this.updatePriorityButtonsVisibility();
-                // Add a delay to allow button clicks to complete
-                setTimeout(() => {
-                    this.enableScreenMaskPointerEvents();
-                }, 200);
+                this.resetAltState();
             }
         });
+
+        // Handle window blur (alt-tab) and visibility change
+        window.addEventListener('blur', () => {
+            if (this.altKeyPressed) {
+                this.resetAltState();
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.altKeyPressed) {
+                this.resetAltState();
+            }
+        });
+    }
+
+    private resetAltState(): void {
+        this.altKeyPressed = false;
+        this.updatePriorityButtonsVisibility();
+        // Add a delay to allow button clicks to complete
+        setTimeout(() => {
+            this.enableScreenMaskPointerEvents();
+        }, 200);
     }
 
     private updatePriorityButtonsVisibility(): void {
