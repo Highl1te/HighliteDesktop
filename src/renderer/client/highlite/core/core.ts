@@ -22,11 +22,12 @@ export class Highlite {
     constructor() {
         console.info("[Highlite] Core Initializing!");
 
-        document.highlite = {};
-        document.highlite.managers = {};
-        document.highlite.gameHooks = {};
-        document.highlite.gameLookups = {};
-        document.highlite.plugins = [];
+        document.highlite = {
+            managers: {} as any,
+            gameHooks: {} as any,
+            gameLookups: {} as any,
+            plugins: [] as any,
+        }
 
         this.hookManager = new HookManager();
         this.contextMenuManager = new ContextMenuManager();

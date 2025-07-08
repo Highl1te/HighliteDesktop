@@ -15,7 +15,7 @@ export class UIManager {
       return UIManager.instance;
     }
     UIManager.instance = this;
-    (document as any).highlite.managers.UIManager = this;
+    document.highlite.managers.UIManager = this;
   }
 
   private preventDefault(e: Event) {

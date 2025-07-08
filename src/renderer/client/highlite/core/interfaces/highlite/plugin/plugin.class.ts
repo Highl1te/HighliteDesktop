@@ -29,19 +29,19 @@ export abstract class Plugin {
             this.stop();
         }
     }
-    
+
     postInit?(): void;
 
     get gameHooks() {
-        return (document as any).highlite?.gameHooks;
+        return document.highlite.gameHooks;
     }
-    
+
     get gameLookups() {
-        return (document as any).highlite?.gameLookups;
+        return document.highlite.gameLookups;
     }
-    
+
     get registerPlugin() {
-        return (document as any).highlite?.managers?.PluginManager?.registerPlugin?.bind((document as any).highlite.managers.PluginManager);
+        return document.highlite.managers.PluginManager.registerPlugin.bind(document.highlite.managers.PluginManager);
     }
 
     // Log seems to be broken from loading HighSpell Client
