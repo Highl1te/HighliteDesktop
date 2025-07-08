@@ -10,6 +10,7 @@ export abstract class Plugin {
     abstract init(): void;
     abstract start(): void;
     abstract stop(): void;
+
     settings: {
         enable: PluginSettings;
         [key: string]: PluginSettings;

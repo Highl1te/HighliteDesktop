@@ -76,9 +76,9 @@ export class UIManager {
     if (this.itemTooltip && this.itemTooltip.isAttached()) {
       return;
     }
-    
+
     // Create new tooltip instance
-    const screenMask = document.getElementById('hs-screen-mask');        
+    const screenMask = document.getElementById('hs-screen-mask');
     const container = screenMask || document.body;
     this.itemTooltip = new ItemTooltip(container);
   }
@@ -92,7 +92,7 @@ export class UIManager {
    */
   drawItemTooltip(itemId: number, x: number, y: number): { hide: () => void } {
     this.ensureItemTooltip();
-    
+
     if (!this.itemTooltip) {
       return { hide: () => {} };
     }

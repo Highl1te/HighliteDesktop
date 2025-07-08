@@ -23,10 +23,10 @@ export class Highlite {
         console.info("[Highlite] Core Initializing!");
 
         document.highlite = {
-            managers: {} as any,
-            gameHooks: {} as any,
-            gameLookups: {} as any,
-            plugins: [] as any,
+            managers: {} as typeof document.highlite.managers,
+            gameHooks: {} as typeof document.highlite.gameHooks,
+            gameLookups: {},
+            plugins: [],
         }
 
         this.hookManager = new HookManager();
@@ -63,7 +63,7 @@ export class Highlite {
         this.hookManager.registerClass('DP', 'ItemDefMap');
         // this.hookManager.registerClass("LF", "MainPlayer");
         this.hookManager.registerClass("eR", "GameCameraManager"); // Tip to find: contains call initializeCamera(e ,t)
-        this.hookManager.registerClass("Ck", "SpriteSheetManager"); //Tip to find: contains getter PlayerSpritesheetInfo 
+        this.hookManager.registerClass("Ck", "SpriteSheetManager"); //Tip to find: contains getter PlayerSpritesheetInfo
         this.hookManager.registerClass("EB", "NpcDefinitionManager");
         this.hookManager.registerClass("IV", "SpellDefinitionManager");
         this.hookManager.registerClass("tk", "AppearanceUtils");

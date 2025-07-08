@@ -7,7 +7,7 @@ export enum EntityType {
     GroundItem = 1,
     NPC = 2,
     Player = 3,
-    
+
 }
 
 export class ContextMenuManager {
@@ -62,7 +62,7 @@ export class ContextMenuManager {
 
     AddGameWorldMenuAction(actionName : string, handleFunction : Function, entityType: EntityType = EntityType.Any) : number {
         const ContextMenuActions = document.client.get('VA');
-    
+
         let actionNumber = -1;
         if (ContextMenuActions[actionName] === undefined) {
             ContextMenuActions[ContextMenuActions[actionName] = (Object.keys(ContextMenuActions).length) / 2] = actionName;
@@ -112,7 +112,7 @@ export class ContextMenuManager {
                 actionInfo.handleFunctions.splice(index, 1);
             }
         }
-        
+
         // If no handle functions left, remove the action
         if (this.inventoryActions[contextMenuType] && this.inventoryActions[contextMenuType][actionState] && this.inventoryActions[contextMenuType][actionState][actionName] && this.inventoryActions[contextMenuType][actionState][actionName].handleFunctions.length === 0) {
             delete this.inventoryActions[contextMenuType][actionState][actionName];
@@ -123,7 +123,7 @@ export class ContextMenuManager {
         }
         return true;
     }
-    
+
 
 
 
@@ -149,7 +149,7 @@ export class ContextMenuManager {
                     output.push(aG._contextMenuItemFactory.createInventoryItemContextMenuItem(this.inventoryActionHandler.bind(this, r, ActionState.Any), r, actionInformation.actionNumber, i, n, null, 0));
                 }
             }
-            
+
             const contextMenuActionsContextSpecificActionSpecific = this.inventoryActions[r][document.highlite.gameHooks.EntityManager.Instance._mainPlayer._currentState.getCurrentState()];
             if (contextMenuActionsContextSpecificActionSpecific) {
                 for (const [actionName, actionInformation] of Object.entries(contextMenuActionsContextSpecificActionSpecific)) {
@@ -209,10 +209,10 @@ export class ContextMenuManager {
             if (contextMenuActionsSpecific) {
                 for (const [actionName, actionInfo] of Object.entries(contextMenuActionsSpecific)) {
                     // TODO: Figure out if we ever need these nulls
-                    outputs.push(vG._contextMenuItemFactory.createGameWorldContextMenuItem(actionInfo.actionNumber, this.worldObjectActionHandler.bind(this, entity._entityType), entity, null, null, null));                    
+                    outputs.push(vG._contextMenuItemFactory.createGameWorldContextMenuItem(actionInfo.actionNumber, this.worldObjectActionHandler.bind(this, entity._entityType), entity, null, null, null));
                 }
             }
-            
+
 
             // EntityType.Any
             const contextMenuActionsAny = this.gameWorldActions[EntityType.Any];
@@ -339,7 +339,7 @@ export class ContextMenuManager {
         if (!dG || !dG._mousePointActionsAndEntitiesResult || !dG._mousePointActionsAndEntitiesResult._actionsAndEntities) {
             return;
         }
-        
+
         dG._mousePointActionsAndEntitiesResult._actionsAndEntities.sort((a, b) => {
             const aActionNumber = a.Action;
             const bActionNumber = b.Action;

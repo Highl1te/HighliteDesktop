@@ -111,7 +111,7 @@ export class DropLog extends Plugin {
 
     private trackCurrentTarget(): void {
         try {
-            const gameHooks = (document as any).highlite?.gameHooks;
+            const gameHooks = document.highlite.gameHooks;
             if (!gameHooks) return;
 
             const entityManager = gameHooks.EntityManager?.Instance;
@@ -209,7 +209,7 @@ export class DropLog extends Plugin {
         try {
             const tracker = this.npcHealthTrackers.get(entityId);
             if (tracker) {
-                const npc = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.NPCs?.get(entityId);
+                const npc = document.highlite.gameHooks?.EntityManager?.Instance?.NPCs?.get(entityId);
                 if (npc && npc.Hitpoints && npc.Hitpoints.OnReceivedDamageListener) {
                     npc.Hitpoints.OnReceivedDamageListener.remove(tracker.damageListener);
                 }
@@ -229,7 +229,7 @@ export class DropLog extends Plugin {
 
         for (const [entityId, tracker] of this.npcHealthTrackers) {
             try {
-                const npc = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.NPCs?.get(entityId);
+                const npc = document.highlite.gameHooks?.EntityManager?.Instance?.NPCs?.get(entityId);
 
                 if (!npc) {
                     trackersToRemove.push(entityId);
@@ -256,7 +256,7 @@ export class DropLog extends Plugin {
 
     private checkForDrops(): void {
         try {
-            const groundItems = (document as any).highlite?.gameHooks?.GroundItemManager?.Instance?._groundItems;
+            const groundItems = document.highlite.gameHooks?.GroundItemManager?.Instance?._groundItems;
             if (!groundItems) return;
 
             const itemsToMatch: Array<{ item: any, entityId: number }> = [];
@@ -616,7 +616,7 @@ export class DropLog extends Plugin {
             const sprite = document.createElement('div');
             sprite.className = 'drop-log-item-sprite';
             try {
-                const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(itemId));
+                const pos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(itemId));
                 if (pos) {
                     sprite.style.backgroundPosition = pos;
                 }
@@ -649,7 +649,7 @@ export class DropLog extends Plugin {
 
     private async ensureObjectStore(): Promise<boolean> {
         try {
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager as DatabaseManager;
             if (!dbManager || !dbManager.database) return false;
 
             if (!dbManager.database.objectStoreNames.contains(DropLog.DB_STORE_NAME)) return false;
@@ -665,7 +665,7 @@ export class DropLog extends Plugin {
         try {
             if (!(await this.ensureObjectStore())) return;
 
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager as DatabaseManager;
             const dataToSave = {
                 defId,
                 name: killData.name,
@@ -684,7 +684,7 @@ export class DropLog extends Plugin {
         try {
             if (!(await this.ensureObjectStore())) return;
 
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager as DatabaseManager;
             const allRecords = await dbManager.database.getAll(DropLog.DB_STORE_NAME);
 
             if (!allRecords || allRecords.length === 0) return;
@@ -715,7 +715,7 @@ export class DropLog extends Plugin {
         try {
             if (!(await this.ensureObjectStore())) return;
 
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager as DatabaseManager;
             await dbManager.database.delete(DropLog.DB_STORE_NAME, defId);
         } catch (error) {
             console.error("Error removing NPC from database", error);
@@ -726,7 +726,7 @@ export class DropLog extends Plugin {
         try {
             if (!(await this.ensureObjectStore())) return;
 
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager as DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager as DatabaseManager;
             await dbManager.database.clear(DropLog.DB_STORE_NAME);
         } catch (error) {
             console.error("Error clearing database", error);
@@ -1073,4 +1073,4 @@ export class DropLog extends Plugin {
             style.remove();
         }
     }
-} 
+}

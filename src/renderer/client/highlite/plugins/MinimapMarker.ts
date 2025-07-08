@@ -99,7 +99,7 @@ export class MinimapMarker extends Plugin {
 
     private refreshMarkerAndArrow() {
 
-        const mm = (document as any).highlite?.gameHooks?.HR?.Manager
+        const mm = document.highlite.gameHooks?.HR?.Manager
             ?.getController()?.MinimapQuadrantController
             ?.MinimapController?._minimap;
         if (!mm || !this.minimapMarkerEl || !this.minimapArrowEl) return;
@@ -211,4 +211,4 @@ export class MinimapMarker extends Plugin {
     SocketManager_loggedIn() {
         this.setMinimapContainer();
     }
-} 
+}

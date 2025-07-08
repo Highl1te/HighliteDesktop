@@ -20,19 +20,19 @@ interface XPDrop {
 export class XPOrb extends Plugin {
     pluginName = "XP Orb";
     author = "JayArrowz";
-    
+
     private xpOrbContainer: HTMLDivElement | null = null;
     private xpOrbElement: HTMLDivElement | null = null;
     private xpDropsContainer: HTMLDivElement | null = null;
     private totalXPDisplay: HTMLDivElement | null = null;
     private sessionXPDisplay: HTMLDivElement | null = null;
-    
+
     private skillXPData: Map<number, SkillXPData> = new Map();
     private activeXPDrops: XPDrop[] = [];
     private isOrbOpen: boolean = true;
     private totalXP: number = 0;
     private sessionXP: number = 0;
-    
+
     private readonly XP_DROP_DURATION = 3000; // 3 seconds
     private readonly XP_DROP_FADE_START = 2000; // Start fading after 2 seconds
     private readonly MAX_VISIBLE_DROPS = 5;
@@ -113,9 +113,9 @@ export class XPOrb extends Plugin {
         this.xpOrbContainer = document.createElement('div');
         this.xpOrbContainer.id = 'highlite-xp-tracker';
         this.xpOrbContainer.style.position = 'absolute';
-        
+
         this.xpOrbContainer.style.top = 'calc(var(--hs-compass-button-top) + var(--hs-action-menu-item-width) + 25px)';
-        this.xpOrbContainer.style.right = 'calc(var(--hs-compass-button-right) + 6px)'; 
+        this.xpOrbContainer.style.right = 'calc(var(--hs-compass-button-right) + 6px)';
         this.xpOrbContainer.style.zIndex = '9999';
         this.xpOrbContainer.style.fontFamily = 'Inter, sans-serif';
         this.xpOrbContainer.style.fontSize = '12px';
@@ -131,7 +131,7 @@ export class XPOrb extends Plugin {
         this.xpDropsContainer.style.position = 'absolute';
         this.xpDropsContainer.style.top = '0px';
         this.xpDropsContainer.style.left = '50%';
-        this.xpDropsContainer.style.transform = 'translateX(-100%)'; 
+        this.xpDropsContainer.style.transform = 'translateX(-100%)';
         this.xpDropsContainer.style.width = '120px';
         this.xpDropsContainer.style.pointerEvents = 'none';
         this.xpDropsContainer.style.zIndex = '10000';
@@ -175,7 +175,7 @@ export class XPOrb extends Plugin {
         this.totalXPDisplay.style.wordWrap = 'break-word';
         this.totalXPDisplay.style.maxWidth = '90%';
 
-        (document as any).highlite.managers.UIManager.bindOnClickBlockHsMask(this.xpOrbElement, () => {
+        document.highlite.managers.UIManager.bindOnClickBlockHsMask(this.xpOrbElement, () => {
             this.toggleOrb();
         });
 
@@ -230,7 +230,7 @@ export class XPOrb extends Plugin {
 
     private setupXPTracking(): void {
         try {
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+            const mainPlayer = document.highlite.gameHooks?.EntityManager?.Instance?.MainPlayer;
             if (!mainPlayer) {
                 return;
             }
@@ -282,7 +282,7 @@ export class XPOrb extends Plugin {
     }
 
     private onXPChange(skillId: number, newTotalXP: number, skillName: string): void {
-        
+
         const skillData = this.skillXPData.get(skillId);
         if (!skillData) {
             this.skillXPData.set(skillId, {
@@ -316,11 +316,11 @@ export class XPOrb extends Plugin {
     }
 
     private showXPDrop(skillId: number, xpGained: number, skillName: string): void {
-        
+
         if (!this.xpDropsContainer) {
             return;
         }
-        
+
         if (!this.settings.enable.value) {
             return;
         }
@@ -362,7 +362,7 @@ export class XPOrb extends Plugin {
 
         dropElement.appendChild(iconElement);
         dropElement.appendChild(xpText);
-        
+
         const dropIndex = this.activeXPDrops.length;
         dropElement.style.position = 'absolute';
         dropElement.style.top = `${dropIndex * 25}px`;
@@ -393,7 +393,7 @@ export class XPOrb extends Plugin {
         this.activeXPDrops.forEach((drop, index) => {
             const age = now - drop.timestamp;
 
-            if (age > this.XP_DROP_DURATION) {      
+            if (age > this.XP_DROP_DURATION) {
                 drop.element.remove();
                 dropsToRemove.push(index);
             } else if (age > this.XP_DROP_FADE_START) {
@@ -401,7 +401,7 @@ export class XPOrb extends Plugin {
                 const opacity = 1 - fadeProgress;
                 const extraY = fadeProgress * 20;
                 const scale = 1 - (fadeProgress * 0.2);
-                
+
                 drop.element.style.opacity = Math.max(0, opacity).toString();
                 drop.element.style.transform = `translateX(-50%) translateY(${index * 25 + 40 + extraY}px) scale(${scale})`;
             }
@@ -423,7 +423,7 @@ export class XPOrb extends Plugin {
 
     private updateTotalXPDisplay(): void {
         if (!this.totalXPDisplay) return;
-        
+
         if (this.isOrbOpen) {
             this.totalXPDisplay.innerHTML = `<div>XP</div>`;
             this.totalXPDisplay.style.display = 'block';
@@ -435,7 +435,7 @@ export class XPOrb extends Plugin {
 
     private toggleOrb(): void {
         this.isOrbOpen = !this.isOrbOpen;
-        
+
         if (this.xpOrbElement) {
             if (this.isOrbOpen) {
                 this.xpOrbElement.style.width = `35px`;
@@ -462,7 +462,7 @@ export class XPOrb extends Plugin {
     private toggleXPTracker(): void {
         if (this.settings.enable.value) {
             this.createXPTrackerUI();
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+            const mainPlayer = document.highlite.gameHooks?.EntityManager?.Instance?.MainPlayer;
             if (mainPlayer) {
                 this.setupXPTracking();
             }
@@ -500,7 +500,7 @@ export class XPOrb extends Plugin {
 
     private async saveSessionXPToDatabase(): Promise<void> {
         try {
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager;
             if (!dbManager || !dbManager.database) return;
 
             const sessionData = {
@@ -516,11 +516,11 @@ export class XPOrb extends Plugin {
 
     private async loadSessionXPFromDatabase(): Promise<void> {
         try {
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager;
+            const dbManager = document.highlite.managers?.DatabaseManager;
             if (!dbManager || !dbManager.database) return;
 
             const sessionData = await dbManager.database.get('settings', `${this.pluginName}_sessionXP`);
-            
+
             if (sessionData && typeof sessionData.sessionXP === 'number') {
                 this.sessionXP = sessionData.sessionXP;
                 this.updateSessionXPDisplay();
@@ -582,4 +582,4 @@ export class XPOrb extends Plugin {
         this.skillXPData.clear();
         this.totalXP = 0;
     }
-} 
+}

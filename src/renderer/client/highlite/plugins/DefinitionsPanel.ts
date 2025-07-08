@@ -276,7 +276,7 @@ export class DefinitionsPanel extends Plugin {
         if (this.itemsLoaded) return; // Already loaded
 
         try {
-            const itemDefMap = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap;
+            const itemDefMap = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap;
             if (!itemDefMap) {
                 this.error("ItemDefMap not found");
                 return;
@@ -311,7 +311,7 @@ export class DefinitionsPanel extends Plugin {
         if (this.npcsLoaded) return; // Already loaded
 
         try {
-            const npcDefMap = (document as any).highlite?.gameHooks?.NpcDefinitionManager?._npcDefMap;
+            const npcDefMap = document.highlite.gameHooks?.NpcDefinitionManager?._npcDefMap;
             if (!npcDefMap) {
                 this.error("NpcDefMap not found");
                 return;
@@ -368,7 +368,7 @@ export class DefinitionsPanel extends Plugin {
 
         // Find the NPC's loot table
         const npcLootTable = this.lootData.npcLootTables?.find((table: any) => table._id === lootTableId);
-        
+
         if (!npcLootTable) {
             return `
                 <div class="detail-section">
@@ -503,9 +503,9 @@ export class DefinitionsPanel extends Plugin {
 
     private generateLootItemHtml(item: any, percentage: string, isRare: boolean = false, isRoot: boolean = false): string {
         try {
-            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item.itemId);
+            const itemDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(item.itemId);
             const itemName = itemDef?._nameCapitalized || itemDef?._name || item.name || `Item ${item.itemId}`;
-            const itemPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item.itemId);
+            const itemPos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item.itemId);
             const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';
 
             let cssClass = 'loot-item';
@@ -726,11 +726,11 @@ export class DefinitionsPanel extends Plugin {
         if (!this.lootData || !this.allNpcs) return;
 
         const npcSpriteElements = container.querySelectorAll('[data-npc-sprite]');
-        
+
         npcSpriteElements.forEach(spriteElement => {
             const npcId = parseInt(spriteElement.getAttribute('data-npc-sprite') || '0');
             const npc = this.allNpcs.find(n => n._id === npcId);
-            
+
             if (!npc) return;
 
             const typeInfo = this.getNpcTypeInfo(npc);
@@ -750,7 +750,7 @@ export class DefinitionsPanel extends Plugin {
                 spriteContent.className = 'sprite-content';
 
                 // Get sprite info from SpritesheetManager
-                const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
+                const spritesheetManager = document.highlite.gameHooks?.SpriteSheetManager?.Instance;
                 const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
 
                 if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
@@ -768,7 +768,7 @@ export class DefinitionsPanel extends Plugin {
                         const spriteFrameIndex = 15 * creatureSpriteId;
                         const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
                         spriteContent.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
-                        
+
                         // Track sprite usage
                         (spriteElement as HTMLElement).setAttribute('data-sprite-modal', 'true');
                         this.trackSpriteUsage(spriteElement as HTMLElement, spriteInfo.SpritesheetURL, 'modal');
@@ -799,7 +799,7 @@ export class DefinitionsPanel extends Plugin {
                 (spriteElement as HTMLElement).dataset.npcId = npc._id.toString();
 
                 // Try to access cached human sprite from SpritesheetManager
-                const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
+                const spritesheetManager = document.highlite.gameHooks.SpriteSheetManager.Instance;
                 const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
 
                 if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
@@ -807,7 +807,7 @@ export class DefinitionsPanel extends Plugin {
                     (spriteElement as HTMLElement).style.backgroundImage = `url('${humanSpriteInfo.SpritesheetURL}')`;
                     (spriteElement as HTMLElement).style.backgroundPosition = "-71px 0px";
                     (spriteElement as HTMLElement).style.backgroundSize = "auto";
-                    
+
                     // Track sprite usage
                     (spriteElement as HTMLElement).setAttribute('data-sprite-modal', 'true');
                     this.trackSpriteUsage(spriteElement as HTMLElement, humanSpriteInfo.SpritesheetURL, 'modal');
@@ -1026,7 +1026,7 @@ export class DefinitionsPanel extends Plugin {
         const sprite = document.createElement("div");
         sprite.className = "item-sprite";
         try {
-            const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(item._id.toString()));
+            const pos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(item._id.toString()));
             if (pos) {
                 sprite.style.backgroundPosition = pos;
             }
@@ -1083,7 +1083,7 @@ export class DefinitionsPanel extends Plugin {
             const sizeClass = this.getCreatureSizeClass(creatureType);
 
             // Get sprite info from SpritesheetManager
-            const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
+            const spritesheetManager = document.highlite.gameHooks?.SpriteSheetManager?.Instance;
             const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
 
             if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
@@ -1118,7 +1118,7 @@ export class DefinitionsPanel extends Plugin {
                     const spriteFrameIndex = 15 * creatureSpriteId;
                     const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
                     sprite.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
-                    
+
                     // Track sprite usage
                     sprite.setAttribute('data-sprite-sidebar', 'true');
                     setTimeout(() => this.trackSpriteUsage(sprite, spriteInfo.SpritesheetURL, 'sidebar'), 0);
@@ -1174,7 +1174,7 @@ export class DefinitionsPanel extends Plugin {
             sprite.style.transform = 'translate(-50%, -50%) scale(0.7)';  // Scale down to fit better
 
             // Try to access cached human sprite from SpritesheetManager
-            const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
+            const spritesheetManager = document.highlite.gameHooks.SpriteSheetManager.Instance;
             const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
 
             if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
@@ -1184,7 +1184,7 @@ export class DefinitionsPanel extends Plugin {
                 // Adjust Y position to show head area (positive Y moves down)
                 sprite.style.backgroundPosition = "-65px 25px";
                 sprite.style.backgroundSize = "auto";
-                
+
                 // Track sprite usage
                 sprite.setAttribute('data-sprite-sidebar', 'true');
                 setTimeout(() => this.trackSpriteUsage(sprite, humanSpriteInfo.SpritesheetURL, 'sidebar'), 0);
@@ -1372,17 +1372,17 @@ export class DefinitionsPanel extends Plugin {
         try {
             if (!npc._appearance) return;
 
-            const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
+            const spritesheetManager = document.highlite.gameHooks.SpriteSheetManager.Instance;
             if (!spritesheetManager) return;
 
             // Get access to the game's tk class if available
-            const appearanceUtils = (document as any).highlite.gameHooks.AppearanceUtils;
+            const appearanceUtils = document.highlite.gameHooks.AppearanceUtils;
 
             // Build appearance arrays using the game's format
             const appearanceIds = new Array(5);
 
             // YP enum values from the game
-            const appearanceTypes = (document as any).highlite.gameLookups["AppearanceTypes"];
+            const appearanceTypes = document.highlite.gameLookups["AppearanceTypes"];
 
             appearanceIds[appearanceTypes.Hair] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Hair, npc._appearance._hairId ?? 0);
             appearanceIds[appearanceTypes.Beard] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Beard, npc._appearance._beardId ?? 0);
@@ -1406,7 +1406,7 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // PF enum from the game
-            const entityTypes = (document as any).highlite.gameLookups["EntityTypes"];
+            const entityTypes = document.highlite.gameLookups["EntityTypes"];
 
             // Generate a unique entity ID for this request
             const entityId = 20000 + npc._id;
@@ -1428,19 +1428,19 @@ export class DefinitionsPanel extends Plugin {
     // Sprite Reference Management
     private addSpriteReference(spriteUrl: string, context: 'sidebar' | 'modal'): void {
         if (!spriteUrl) return;
-        
+
         // Track the URL as one we've created
         this.activeSpriteUrls.add(spriteUrl);
-        
+
         // Increment reference count
         const currentCount = this.spriteReferences.get(spriteUrl) || 0;
         this.spriteReferences.set(spriteUrl, currentCount + 1);
-        
+
         // Store context information for this URL
         const existingContexts = this.spriteContexts.get(spriteUrl) || new Set<string>();
         existingContexts.add(context);
         this.spriteContexts.set(spriteUrl, existingContexts);
-        
+
         // Add context attribute to track where it's used
         const contextAttr = `data-sprite-${context}`;
         const elements = document.querySelectorAll(`[style*="${spriteUrl}"]`);
@@ -1451,7 +1451,7 @@ export class DefinitionsPanel extends Plugin {
 
     private removeSpriteReference(spriteUrl: string, context: 'sidebar' | 'modal'): void {
         if (!spriteUrl || !this.spriteReferences.has(spriteUrl)) return;
-        
+
         // Remove this context from the URL's context set
         const contexts = this.spriteContexts.get(spriteUrl);
         if (contexts) {
@@ -1460,10 +1460,10 @@ export class DefinitionsPanel extends Plugin {
                 this.spriteContexts.delete(spriteUrl);
             }
         }
-        
+
         const currentCount = this.spriteReferences.get(spriteUrl) || 0;
         const newCount = Math.max(0, currentCount - 1);
-        
+
         if (newCount === 0) {
             // Double-check that the URL is not still being used anywhere in the DOM
             const stillInUse = this.isSpriteStillInUse(spriteUrl);
@@ -1472,19 +1472,19 @@ export class DefinitionsPanel extends Plugin {
                 this.spriteReferences.set(spriteUrl, 1);
                 return;
             }
-            
+
             // No more references, clean up the URL
             this.spriteReferences.delete(spriteUrl);
             this.spriteContexts.delete(spriteUrl);
             this.activeSpriteUrls.delete(spriteUrl);
-            
+
             try {
-                const blobLoader = (document as any).highlite?.gameHooks?.BlobLoader?.Instance;
+                const blobLoader = document.highlite.gameHooks?.BlobLoader?.Instance;
                 if (blobLoader && blobLoader.revokeObjectURL) {
                     this.log(`Revoking sprite URL: ${spriteUrl}`);
                     blobLoader.revokeObjectURL(spriteUrl);
                 }
-                
+
                 // Remove from SpriteSheetManager caches (URL is definitely being revoked)
                 this.removeFromSpriteSheetManagerCache(spriteUrl, true);
             } catch (error) {
@@ -1498,16 +1498,16 @@ export class DefinitionsPanel extends Plugin {
     private cleanupSidebarSprites(preserveNpcIds?: Set<number>): void {
         // Find all sprites in sidebar and check which can be safely removed
         if (!this.itemListContainer) return;
-        
+
         const spriteElements = this.itemListContainer.querySelectorAll('[data-sprite-sidebar]');
-        
+
         spriteElements.forEach(el => {
             const style = (el as HTMLElement).style.backgroundImage;
             if (style && style.includes('blob:')) {
                 const urlMatch = style.match(/url\("?(blob:[^"]+)"?\)/);
                 if (urlMatch) {
                     const spriteUrl = urlMatch[1];
-                    
+
                     // Check if this sprite belongs to an NPC we want to preserve
                     let shouldPreserve = false;
                     if (preserveNpcIds) {
@@ -1523,10 +1523,10 @@ export class DefinitionsPanel extends Plugin {
                             shouldPreserve = true;
                         }
                     }
-                    
+
                     // Check if this URL is still being used in the modal
                     const stillUsedInModal = this.isSpriteUsedInModal(spriteUrl);
-                    
+
                     if (stillUsedInModal || shouldPreserve) {
                         this.log(`Preserving sprite URL ${stillUsedInModal ? '(used in modal)' : '(preserved NPC)'}: ${spriteUrl}`);
                         // Remove the context from our tracking but keep the reference count
@@ -1551,7 +1551,7 @@ export class DefinitionsPanel extends Plugin {
     private cleanupModalSprites(): void {
         // Find all sprites in modal and remove their references
         if (!this.modalOverlay) return;
-        
+
         const spriteElements = this.modalOverlay.querySelectorAll('[data-sprite-modal]');
         spriteElements.forEach(el => {
             const style = (el as HTMLElement).style.backgroundImage;
@@ -1568,19 +1568,19 @@ export class DefinitionsPanel extends Plugin {
         // Clean up all sprite references
         for (const spriteUrl of this.activeSpriteUrls) {
             try {
-                const blobLoader = (document as any).highlite?.gameHooks?.BlobLoader?.Instance;
+                const blobLoader = document.highlite.gameHooks?.BlobLoader?.Instance;
                 if (blobLoader && blobLoader.revokeObjectURL) {
                     this.log(`Revoking sprite URL: ${spriteUrl}`);
                     blobLoader.revokeObjectURL(spriteUrl);
                 }
-                
+
                 // Remove from SpriteSheetManager caches (force removal since we're cleaning up everything)
                 this.removeFromSpriteSheetManagerCache(spriteUrl, true);
             } catch (error) {
                 this.error(`Failed to revoke sprite URL: ${error}`);
             }
         }
-        
+
         this.spriteReferences.clear();
         this.spriteContexts.clear();
         this.activeSpriteUrls.clear();
@@ -1588,17 +1588,17 @@ export class DefinitionsPanel extends Plugin {
 
     private trackSpriteUsage(element: HTMLElement, spriteUrl: string, context: 'sidebar' | 'modal'): void {
         if (!spriteUrl) return;
-        
+
         // Add reference tracking
         this.addSpriteReference(spriteUrl, context);
-        
+
         // Mark element with context
         element.setAttribute(`data-sprite-${context}`, 'true');
     }
 
     private isSpriteUsedInModal(spriteUrl: string): boolean {
         if (!this.modalOverlay) return false;
-        
+
         // Check all elements in modal for this sprite URL (not just those with data-sprite-modal)
         const allModalElements = this.modalOverlay.querySelectorAll('*');
         for (const el of allModalElements) {
@@ -1607,7 +1607,7 @@ export class DefinitionsPanel extends Plugin {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -1625,14 +1625,14 @@ export class DefinitionsPanel extends Plugin {
 
     private removeFromSpriteSheetManagerCache(spriteUrl: string, forceRemove: boolean = false): void {
         try {
-            const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
+            const spritesheetManager = document.highlite.gameHooks?.SpriteSheetManager?.Instance;
             if (!spritesheetManager) return;
 
             // Only remove cache entries if this URL is no longer referenced anywhere OR if forced
             if (!forceRemove) {
                 // Check if any other sprites are still using this URL
                 const stillInUse = this.activeSpriteUrls.has(spriteUrl) || this.spriteReferences.has(spriteUrl);
-                
+
                 if (stillInUse) {
                     return;
                 }
@@ -1642,13 +1642,13 @@ export class DefinitionsPanel extends Plugin {
             if (spritesheetManager._humanNPCSpritesheetInfo) {
                 const humanCache = spritesheetManager._humanNPCSpritesheetInfo;
                 const keysToRemove: number[] = [];
-                
+
                 for (const [key, spriteInfo] of humanCache.entries()) {
                     if (spriteInfo && spriteInfo.SpritesheetURL === spriteUrl) {
                         keysToRemove.push(key);
                     }
                 }
-                
+
                 keysToRemove.forEach(key => {
                     this.log(`Removing NPC ${key} from human sprite cache (URL being revoked)`);
                     humanCache.delete(key);
@@ -1659,13 +1659,13 @@ export class DefinitionsPanel extends Plugin {
             if (spritesheetManager._playerSpritesheetInfo) {
                 const playerCache = spritesheetManager._playerSpritesheetInfo;
                 const keysToRemove: string[] = [];
-                
+
                 for (const [key, spriteInfo] of playerCache.entries()) {
                     if (spriteInfo && spriteInfo.SpritesheetURL === spriteUrl) {
                         keysToRemove.push(key);
                     }
                 }
-                
+
                 keysToRemove.forEach(key => {
                     this.log(`Removing player ${key} from player sprite cache (URL being revoked)`);
                     playerCache.delete(key);
@@ -1752,7 +1752,7 @@ export class DefinitionsPanel extends Plugin {
         modalContainer.className = 'item-modal-container';
 
         // Get UIManager for event binding
-        const uiManager = (document as any).highlite?.managers?.UIManager;
+        const uiManager = document.highlite.managers?.UIManager;
 
         // Close modal when clicking overlay
         if (uiManager) {
@@ -1803,7 +1803,7 @@ export class DefinitionsPanel extends Plugin {
             e.stopPropagation();
             const target = e.target as HTMLElement;
             const scrollableContainer = target.closest('.npc-drops-container, .drops-section-container');
-            
+
             if (scrollableContainer) {
                 const { scrollTop, scrollHeight, clientHeight } = scrollableContainer;
                 const delta = e.deltaY;
@@ -1863,14 +1863,14 @@ export class DefinitionsPanel extends Plugin {
 
     private loadItemDetailsIntoModal(container: HTMLElement, itemId: number): void {
         try {
-            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemId);
+            const itemDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemId);
             if (!itemDef) {
                 container.innerHTML = "<p class='detail-error'>Item not found</p>";
                 return;
             }
 
             let spritePosition = "";
-            const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemId);
+            const pos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemId);
             if (pos) {
                 spritePosition = `style="background-position: ${pos};"`;
             }
@@ -1976,9 +1976,9 @@ export class DefinitionsPanel extends Plugin {
                 `;
                 itemDef._recipe._ingredients.forEach((ingredient: any) => {
                     try {
-                        const ingredientDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(ingredient._itemId);
+                        const ingredientDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(ingredient._itemId);
                         const ingredientName = ingredientDef?._nameCapitalized || ingredientDef?._name || `Item ${ingredient._itemId}`;
-                        const ingredientPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(ingredient._itemId);
+                        const ingredientPos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(ingredient._itemId);
                         const spriteStyle = ingredientPos ? `style="background-position: ${ingredientPos};"` : '';
 
                         html += `
@@ -2016,9 +2016,9 @@ export class DefinitionsPanel extends Plugin {
                         <div class="recipe-grid">
                 `;
                 try {
-                    const resultDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemDef._edibleResult._itemId);
+                    const resultDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemDef._edibleResult._itemId);
                     const resultName = resultDef?._nameCapitalized || resultDef?._name || `Item ${itemDef._edibleResult._itemId}`;
-                    const resultPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemDef._edibleResult._itemId);
+                    const resultPos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemDef._edibleResult._itemId);
                     const spriteStyle = resultPos ? `style="background-position: ${resultPos};"` : '';
 
                     html += `
@@ -2151,7 +2151,7 @@ export class DefinitionsPanel extends Plugin {
             // Bind click events to recipe items and NPC drop items
             const recipeItems = container.querySelectorAll('.recipe-item');
             const npcDropItems = container.querySelectorAll('.npc-drop-item');
-            const uiManager = (document as any).highlite?.managers?.UIManager;
+            const uiManager = document.highlite.managers?.UIManager;
 
             recipeItems.forEach(item => {
                 const itemId = item.getAttribute('data-item-id');
@@ -2198,7 +2198,7 @@ export class DefinitionsPanel extends Plugin {
         modalContainer.className = 'item-modal-container';
 
         // Get UIManager for event binding
-        const uiManager = (document as any).highlite?.managers?.UIManager;
+        const uiManager = document.highlite.managers?.UIManager;
 
         // Close modal when clicking overlay
         if (uiManager) {
@@ -2252,7 +2252,7 @@ export class DefinitionsPanel extends Plugin {
             // Check if we're scrolling within a specific scrollable container
             const target = e.target as HTMLElement;
             const scrollableContainer = target.closest('.npc-drops-container, .drops-section-container');
-            
+
             if (scrollableContainer) {
                 // Allow scrolling within scrollable containers
                 const { scrollTop, scrollHeight, clientHeight } = scrollableContainer;
@@ -2314,7 +2314,7 @@ export class DefinitionsPanel extends Plugin {
 
     private loadNpcDetailsIntoModal(container: HTMLElement, npcId: number): void {
         try {
-            const npcDef = (document as any).highlite?.gameHooks?.NpcDefinitionManager?.getDefById(npcId);
+            const npcDef = document.highlite.gameHooks?.NpcDefinitionManager?.getDefById(npcId);
             if (!npcDef) {
                 container.innerHTML = "<p class='detail-error'>NPC not found</p>";
                 return;
@@ -2330,7 +2330,7 @@ export class DefinitionsPanel extends Plugin {
                 const sizeClass = this.getCreatureSizeClass(creatureType);
 
                 // Get sprite info from SpritesheetManager
-                const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
+                const spritesheetManager = document.highlite.gameHooks?.SpriteSheetManager?.Instance;
                 const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
 
                 if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
@@ -2357,7 +2357,7 @@ export class DefinitionsPanel extends Plugin {
                 }
             } else if (typeInfo.isHuman) {
                 // Try to get cached human sprite
-                const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
+                const spritesheetManager = document.highlite.gameHooks.SpriteSheetManager.Instance;
                 const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npcDef._id);
 
                 if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
@@ -2404,8 +2404,8 @@ export class DefinitionsPanel extends Plugin {
                     <div class="detail-title">
                         <h2>${npcDef._nameCapitalized || npcDef._name || `NPC ${npcId}`}</h2>
                         <p class="detail-id">ID: ${npcId}</p>
-                        ${npcDef._combat && npcDef._combat._combat && npcDef._combat._combat._combatLevel ? 
-                            `<p class="detail-level">Level: ${npcDef._combat._combat._combatLevel}</p>` : 
+                        ${npcDef._combat && npcDef._combat._combat && npcDef._combat._combat._combatLevel ?
+                            `<p class="detail-level">Level: ${npcDef._combat._combat._combatLevel}</p>` :
                             ''}
                     </div>
                 </div>
@@ -2633,7 +2633,7 @@ export class DefinitionsPanel extends Plugin {
                 `;
                 npcDef._combat._spellIds.forEach((spellId: number) => {
                     try {
-                        const spellDef = (document as any).highlite?.gameHooks?.SpellDefinitionManager?.getDefById(spellId);
+                        const spellDef = document.highlite.gameHooks?.SpellDefinitionManager?.getDefById(spellId);
                         const spellName = spellDef?.Name || `Unknown Spell`;
                         html += `<div class="detail-list-item">• ${spellName} (ID: ${spellId})</div>`;
                     } catch {
@@ -2675,7 +2675,7 @@ export class DefinitionsPanel extends Plugin {
                 const creatureTypeNames = {
                     '-1': 'Human',
                     '0': 'Small Creature',
-                    '1': 'Medium Creature', 
+                    '1': 'Medium Creature',
                     '2': 'Large Creature',
                     '3': 'Largest Creature'
                 };
@@ -2707,9 +2707,9 @@ export class DefinitionsPanel extends Plugin {
 
                     equippedItems.forEach((item: any) => {
                         try {
-                            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
+                            const itemDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
                             const itemName = itemDef?._nameCapitalized || itemDef?._name || `Item ${item._id}`;
-                            const itemPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
+                            const itemPos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
                             const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';
 
                             html += `
@@ -2847,9 +2847,9 @@ export class DefinitionsPanel extends Plugin {
 
             //             equippedItems.forEach((item: any) => {
             //                 try {
-            //                     const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
+            //                     const itemDef = document.highlite.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
             //                     const itemName = itemDef?._nameCapitalized || itemDef?._name || `Item ${item._id}`;
-            //                     const itemPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
+            //                     const itemPos = document.highlite.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
             //                     const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';
 
             //                     html += `
@@ -2916,7 +2916,7 @@ export class DefinitionsPanel extends Plugin {
 
             // Bind click events to equipped items and loot items
             const itemElements = container.querySelectorAll('.recipe-item, .loot-item');
-            const uiManager = (document as any).highlite?.managers?.UIManager;
+            const uiManager = document.highlite.managers?.UIManager;
 
             itemElements.forEach(item => {
                 const itemId = item.getAttribute('data-item-id');
@@ -2965,7 +2965,7 @@ export class DefinitionsPanel extends Plugin {
                 flex-direction: column;
                 overflow: hidden;
             }
-            
+
             /* Header */
             .item-panel-header {
                 padding: 12px 15px;
@@ -2976,13 +2976,13 @@ export class DefinitionsPanel extends Plugin {
                 flex-direction: column;
                 gap: 12px;
             }
-            
+
             .header-title-section {
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
             }
-            
+
             .item-panel-header h3 {
                 margin: 0;
                 color: #fff;
@@ -2991,7 +2991,7 @@ export class DefinitionsPanel extends Plugin {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
+
             /* View Toggle */
             .view-toggle-container {
                 display: flex;
@@ -3000,7 +3000,7 @@ export class DefinitionsPanel extends Plugin {
                 padding: 4px;
                 border-radius: 6px;
             }
-            
+
             .view-toggle-button {
                 padding: 6px 16px;
                 background: transparent;
@@ -3012,18 +3012,18 @@ export class DefinitionsPanel extends Plugin {
                 transition: all 0.2s;
                 white-space: nowrap;
             }
-            
+
             .view-toggle-button:hover {
                 color: #fff;
                 background: rgba(255, 255, 255, 0.1);
             }
-            
+
             .view-toggle-button.active {
                 background: rgba(74, 158, 255, 0.3);
                 border-color: #4a9eff;
                 color: #fff;
             }
-            
+
             .item-panel-stats {
                 display: flex;
                 gap: 20px;
@@ -3031,19 +3031,19 @@ export class DefinitionsPanel extends Plugin {
                 color: #aaa;
                 flex-wrap: wrap;
             }
-            
+
             .stat-type {
                 color: #4a9eff;
                 font-weight: 600;
             }
-            
+
             /* Search */
             .item-panel-search-container {
                 padding: 12px 15px;
                 border-bottom: 1px solid #333;
                 flex-shrink: 0;
             }
-            
+
             .item-panel-search {
                 width: 100%;
                 padding: 10px 15px;
@@ -3054,17 +3054,17 @@ export class DefinitionsPanel extends Plugin {
                 font-size: 14px;
                 box-sizing: border-box;
             }
-            
+
             .item-panel-search::placeholder {
                 color: #888;
             }
-            
+
             .item-panel-search:focus {
                 outline: none;
                 border-color: #4a9eff;
                 box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
             }
-            
+
             /* List Wrapper */
             .item-panel-list-wrapper {
                 display: flex;
@@ -3073,26 +3073,26 @@ export class DefinitionsPanel extends Plugin {
                 min-height: 0;
                 overflow: hidden;
             }
-            
+
             /* Scrollbars */
             .item-list-container::-webkit-scrollbar {
                 width: 10px;
             }
-            
+
             .item-list-container::-webkit-scrollbar-track {
                 background: rgba(255, 255, 255, 0.1);
                 border-radius: 4px;
             }
-            
+
             .item-list-container::-webkit-scrollbar-thumb {
                 background: #4a9eff;
                 border-radius: 4px;
             }
-            
+
             .item-list-container::-webkit-scrollbar-thumb:hover {
                 background: #66b3ff;
             }
-            
+
             /* Item List */
             .item-list-container {
                 flex: 1;
@@ -3116,13 +3116,13 @@ export class DefinitionsPanel extends Plugin {
                 width: 100%;
                 overflow: hidden;
             }
-            
+
             .item-list-item:hover {
                 background: rgba(74, 158, 255, 0.2);
                 border-color: #4a9eff;
                 transform: translateX(3px);
             }
-            
+
             .item-sprite {
                 width: var(--hs-inventory-item-size);
                 height: var(--hs-inventory-item-size);
@@ -3139,11 +3139,11 @@ export class DefinitionsPanel extends Plugin {
                 image-rendering: crisp-edges;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
             }
-            
+
             .item-list-item:hover .item-sprite {
                 border-color: #4a9eff;
             }
-            
+
             /* NPC Sprites for Modal */
             .npc-sprite-modal {
                 background-repeat: no-repeat;
@@ -3161,37 +3161,37 @@ export class DefinitionsPanel extends Plugin {
                 align-items: center;
                 justify-content: center;
             }
-            
+
             /* Fallback styles when SpritesheetManager not available */
             .npc-sprite-modal.npc-sprite-small {
                 background-image: var(--hs-url-small-creature1);
                 width: 64px;
                 height: 64px;
             }
-            
+
             .npc-sprite-modal.npc-sprite-medium {
                 background-image: var(--hs-url-medium-creature1);
                 width: 64px;
                 height: 128px;
             }
-            
+
             .npc-sprite-modal.npc-sprite-large {
                 background-image: var(--hs-url-large-creature1);
                 width: 128px;
                 height: 128px;
             }
-            
+
             .npc-sprite-modal.npc-sprite-largest {
                 background-image: var(--hs-url-largest-creature1);
                 width: 256px;
                 height: 184px;
             }
-            
+
             .npc-sprite-modal.npc-sprite-human {
                 width: 64px;
                 height: 128px;
             }
-            
+
             .npc-sprite-modal.npc-sprite-unknown {
                 width: 80px;
                 height: 80px;
@@ -3199,7 +3199,7 @@ export class DefinitionsPanel extends Plugin {
                 font-size: 48px;
                 color: #666;
             }
-            
+
             /* NPC Sprites for List */
             .npc-sprite-container {
                 position: relative;
@@ -3211,18 +3211,18 @@ export class DefinitionsPanel extends Plugin {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
                 overflow: hidden;
             }
-            
+
             /* Wrapper to allow badge overflow */
             .npc-sprite-wrapper {
                 position: relative;
                 display: inline-block;
                 margin-right: 15px;
             }
-            
+
             .item-list-item:hover .npc-sprite-container {
                 border-color: #4a9eff;
             }
-            
+
             .npc-sprite {
                 background-repeat: no-repeat;
                 image-rendering: pixelated;
@@ -3230,28 +3230,28 @@ export class DefinitionsPanel extends Plugin {
                 image-rendering: crisp-edges;
                 font-size: 24px;
             }
-            
+
             /* NPC sprite sizes based on creature type - fallback when SpritesheetManager not available */
             .npc-sprite-small {
                 background-image: var(--hs-url-small-creature1);
                 background-size: auto;
             }
-            
+
             .npc-sprite-medium {
                 background-image: var(--hs-url-medium-creature1);
                 background-size: auto;
             }
-            
+
             .npc-sprite-large {
                 background-image: var(--hs-url-large-creature1);
                 background-size: auto;
             }
-            
+
             .npc-sprite-largest {
                 background-image: var(--hs-url-largest-creature1);
                 background-size: auto;
             }
-            
+
             /* Human NPCs and unknown types */
             .npc-sprite-human,
             .npc-sprite-unknown {
@@ -3265,7 +3265,7 @@ export class DefinitionsPanel extends Plugin {
                 height: 100%;
                 position: relative;
             }
-            
+
             .npc-level-badge {
                 position: absolute;
                 top: -8px;
@@ -3280,16 +3280,16 @@ export class DefinitionsPanel extends Plugin {
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
                 z-index: 10;
             }
-            
 
-            
+
+
             /* Info section */
             .item-info {
                 flex: 1;
                 min-width: 0;
                 overflow: hidden;
             }
-            
+
             .item-name {
                 color: white;
                 font-size: 16px;
@@ -3299,7 +3299,7 @@ export class DefinitionsPanel extends Plugin {
                 text-overflow: ellipsis;
                 margin-bottom: 4px;
             }
-            
+
             .item-id {
                 color: #999;
                 font-size: 14px;
@@ -3307,24 +3307,24 @@ export class DefinitionsPanel extends Plugin {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
+
             .item-no-results, .item-loading {
                 text-align: center;
                 color: #666;
                 padding: 30px;
                 font-style: italic;
             }
-            
+
             .item-loading p {
                 margin: 10px 0;
                 font-size: 16px;
             }
-            
+
             .item-loading-hint {
                 font-size: 14px !important;
                 color: #555 !important;
             }
-            
+
             /* Pagination */
             .pagination-container {
                 padding: 12px;
@@ -3336,7 +3336,7 @@ export class DefinitionsPanel extends Plugin {
                 flex-shrink: 0;
                 background: rgba(0, 0, 0, 0.3);
             }
-            
+
             .pagination-button {
                 padding: 6px 12px;
                 background: rgba(74, 158, 255, 0.2);
@@ -3348,22 +3348,22 @@ export class DefinitionsPanel extends Plugin {
                 transition: all 0.2s;
                 flex-shrink: 0;
             }
-            
+
             .pagination-button:hover:not(:disabled) {
                 background: rgba(74, 158, 255, 0.4);
             }
-            
+
             .pagination-button:disabled {
                 opacity: 0.5;
                 cursor: not-allowed;
             }
-            
+
             .pagination-info {
                 color: white;
                 font-size: 14px;
                 white-space: nowrap;
             }
-            
+
             /* Modal Styles */
             .item-modal-overlay {
                 position: fixed;
@@ -3379,12 +3379,12 @@ export class DefinitionsPanel extends Plugin {
                 justify-content: center;
                 animation: fadeIn 0.2s ease-out;
             }
-            
+
             @keyframes fadeIn {
                 from { opacity: 0; }
                 to { opacity: 1; }
             }
-            
+
             .item-modal-container {
                 background: rgba(16, 16, 16, 0.95);
                 border: 2px solid #4a9eff;
@@ -3397,18 +3397,18 @@ export class DefinitionsPanel extends Plugin {
                 position: relative;
                 animation: slideIn 0.3s ease-out;
             }
-            
+
             @keyframes slideIn {
-                from { 
+                from {
                     opacity: 0;
                     transform: translateY(-20px);
                 }
-                to { 
+                to {
                     opacity: 1;
                     transform: translateY(0);
                 }
             }
-            
+
             .item-modal-close {
                 position: absolute;
                 top: 15px;
@@ -3429,38 +3429,38 @@ export class DefinitionsPanel extends Plugin {
                 z-index: 10;
                 line-height: 1;
             }
-            
+
             .item-modal-close:hover {
                 background: #ff6666;
                 transform: scale(1.1);
             }
-            
+
             .item-modal-content {
                 padding: 30px;
                 overflow-y: auto;
                 max-height: 90vh;
                 color: white;
             }
-            
+
             /* Modal scrollbar */
             .item-modal-content::-webkit-scrollbar {
                 width: 10px;
             }
-            
+
             .item-modal-content::-webkit-scrollbar-track {
                 background: rgba(255, 255, 255, 0.1);
                 border-radius: 4px;
             }
-            
+
             .item-modal-content::-webkit-scrollbar-thumb {
                 background: #4a9eff;
                 border-radius: 4px;
             }
-            
+
             .item-modal-content::-webkit-scrollbar-thumb:hover {
                 background: #66b3ff;
             }
-            
+
             /* Detail styles */
             .detail-error {
                 color: #888;
@@ -3468,7 +3468,7 @@ export class DefinitionsPanel extends Plugin {
                 padding: 30px;
                 font-size: 16px;
             }
-            
+
             .detail-header {
                 display: flex;
                 align-items: flex-start;
@@ -3476,7 +3476,7 @@ export class DefinitionsPanel extends Plugin {
                 padding-bottom: 25px;
                 border-bottom: 1px solid #333;
             }
-            
+
             .detail-sprite-large {
                 width: var(--hs-inventory-item-size);
                 height: var(--hs-inventory-item-size);
@@ -3493,13 +3493,13 @@ export class DefinitionsPanel extends Plugin {
                 flex-shrink: 0;
                 box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
             }
-            
+
             .detail-title {
                 flex: 1;
                 min-width: 0;
                 overflow: hidden;
             }
-            
+
             .detail-title h2 {
                 margin: 0;
                 color: white;
@@ -3510,20 +3510,20 @@ export class DefinitionsPanel extends Plugin {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
+
             .detail-id {
                 color: #aaa;
                 font-size: 18px;
                 margin: 0;
             }
-            
+
             .detail-level {
                 color: #4a9eff;
                 font-size: 16px;
                 margin: 4px 0 0 0;
                 font-weight: 600;
             }
-            
+
             .detail-section {
                 margin-bottom: 25px;
                 background: rgba(255, 255, 255, 0.02);
@@ -3532,7 +3532,7 @@ export class DefinitionsPanel extends Plugin {
                 border: 1px solid rgba(255, 255, 255, 0.05);
                 overflow: hidden;
             }
-            
+
             .detail-section h3 {
                 color: #4a9eff;
                 font-size: 20px;
@@ -3541,7 +3541,7 @@ export class DefinitionsPanel extends Plugin {
                 letter-spacing: 1px;
                 font-weight: 600;
             }
-            
+
             .detail-section p {
                 margin: 0;
                 line-height: 1.7;
@@ -3549,34 +3549,34 @@ export class DefinitionsPanel extends Plugin {
                 word-wrap: break-word;
                 font-size: 15px;
             }
-            
+
             .detail-note {
                 color: #aaa;
                 font-style: italic;
             }
-            
+
             .detail-cost {
                 color: #ffd700 !important;
                 font-size: 18px !important;
                 font-weight: 600;
             }
-            
+
             .detail-list {
                 display: flex;
                 flex-direction: column;
                 gap: 8px;
             }
-            
+
             .detail-list-item {
                 color: #ddd;
                 font-size: 15px;
                 line-height: 1.5;
             }
-            
+
             .detail-list-item.effect-positive {
                 color: #4ecdc4;
             }
-            
+
             /* Recipe Grid */
             .recipe-grid {
                 display: grid;
@@ -3584,7 +3584,7 @@ export class DefinitionsPanel extends Plugin {
                 gap: 12px;
                 margin-top: 10px;
             }
-            
+
             .recipe-item {
                 display: flex;
                 align-items: center;
@@ -3596,14 +3596,14 @@ export class DefinitionsPanel extends Plugin {
                 transition: all 0.2s;
                 overflow: hidden;
             }
-            
+
             .recipe-item:hover {
                 background: rgba(74, 158, 255, 0.2);
                 border-color: #4a9eff;
                 transform: translateY(-2px);
                 box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
             }
-            
+
             .recipe-item-sprite {
                 width: calc(var(--hs-inventory-item-size));
                 height: calc(var(--hs-inventory-item-size));
@@ -3619,17 +3619,17 @@ export class DefinitionsPanel extends Plugin {
                 image-rendering: -moz-crisp-edges;
                 image-rendering: crisp-edges;
             }
-            
+
             .recipe-item:hover .recipe-item-sprite {
                 border-color: #4a9eff;
             }
-            
+
             .recipe-item-info {
                 flex: 1;
                 min-width: 0;
                 overflow: hidden;
             }
-            
+
             .recipe-item-name {
                 color: white;
                 font-size: 14px;
@@ -3639,20 +3639,20 @@ export class DefinitionsPanel extends Plugin {
                 text-overflow: ellipsis;
                 margin-bottom: 2px;
             }
-            
+
             .recipe-item-amount {
                 color: #aaa;
                 font-size: 13px;
                 font-weight: 600;
             }
-            
+
             /* Properties Grid */
             .detail-properties {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
                 gap: 12px;
             }
-            
+
             .property {
                 display: flex;
                 justify-content: space-between;
@@ -3662,12 +3662,12 @@ export class DefinitionsPanel extends Plugin {
                 border: 1px solid rgba(255, 255, 255, 0.08);
                 overflow: hidden;
             }
-            
+
             .property:hover {
                 background: rgba(255, 255, 255, 0.08);
                 border-color: rgba(74, 158, 255, 0.3);
             }
-            
+
             .property-label {
                 color: #999;
                 font-size: 15px;
@@ -3677,7 +3677,7 @@ export class DefinitionsPanel extends Plugin {
                 text-overflow: ellipsis;
                 margin-right: 10px;
             }
-            
+
             .property-value {
                 color: white;
                 font-size: 15px;
@@ -3686,19 +3686,19 @@ export class DefinitionsPanel extends Plugin {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-            
+
             .property-value.gold {
                 color: #ffd700;
             }
-            
+
             .property-value.yes {
                 color: #4ecdc4;
             }
-            
+
             .property-value.no {
                 color: #ff6b6b;
             }
-            
+
             /* Tags */
             .detail-tags {
                 display: flex;
@@ -3710,7 +3710,7 @@ export class DefinitionsPanel extends Plugin {
                 border-radius: 10px;
                 border: 1px solid rgba(255, 255, 255, 0.05);
             }
-            
+
             .detail-tag {
                 padding: 6px 14px;
                 border-radius: 20px;
@@ -3720,92 +3720,92 @@ export class DefinitionsPanel extends Plugin {
                 letter-spacing: 0.5px;
                 border: 1px solid;
             }
-            
+
             .detail-tag.members {
                 background: rgba(255, 165, 0, 0.2);
                 color: #ffa500;
                 border-color: rgba(255, 165, 0, 0.4);
             }
-            
+
             .detail-tag.stackable {
                 background: rgba(76, 175, 80, 0.2);
                 color: #4caf50;
                 border-color: rgba(76, 175, 80, 0.4);
             }
-            
+
             .detail-tag.tradeable {
                 background: rgba(33, 150, 243, 0.2);
                 color: #2196f3;
                 border-color: rgba(33, 150, 243, 0.4);
             }
-            
+
             .detail-tag.noteable {
                 background: rgba(156, 39, 176, 0.2);
                 color: #9c27b0;
                 border-color: rgba(156, 39, 176, 0.4);
             }
-            
+
             .detail-tag.iou {
                 background: rgba(244, 67, 54, 0.2);
                 color: #f44336;
                 border-color: rgba(244, 67, 54, 0.4);
             }
-            
+
             .detail-tag.shopkeeper {
                 background: rgba(255, 235, 59, 0.2);
                 color: #ffeb3b;
                 border-color: rgba(255, 235, 59, 0.4);
             }
-            
+
             .detail-tag.pickpocket {
                 background: rgba(121, 85, 72, 0.2);
                 color: #8d6e63;
                 border-color: rgba(121, 85, 72, 0.4);
             }
-            
+
             .detail-tag.aggressive {
                 background: rgba(229, 57, 53, 0.2);
                 color: #e53935;
                 border-color: rgba(229, 57, 53, 0.4);
             }
-            
+
             .detail-tag.magic {
                 background: rgba(156, 39, 176, 0.2);
                 color: #9c27b0;
                 border-color: rgba(156, 39, 176, 0.4);
             }
-            
+
             .detail-tag.creature {
                 background: rgba(121, 85, 72, 0.2);
                 color: #8d6e63;
                 border-color: rgba(121, 85, 72, 0.4);
             }
-            
+
             .detail-tag.human {
                 background: rgba(33, 150, 243, 0.2);
                 color: #2196f3;
                 border-color: rgba(33, 150, 243, 0.4);
             }
-            
+
             .detail-tag.combat {
                 background: rgba(255, 87, 34, 0.2);
                 color: #ff5722;
                 border-color: rgba(255, 87, 34, 0.4);
             }
-            
+
             .detail-tag.peaceful {
                 background: rgba(76, 175, 80, 0.2);
                 color: #4caf50;
                 border-color: rgba(76, 175, 80, 0.4);
             }
-            
+
             /* Actions */
             .detail-actions {
                 display: flex;
                 gap: 12px;
                 flex-wrap: wrap;
             }
-            
+
             .action-button {
                 padding: 12px 24px;
                 background: rgba(74, 158, 255, 0.2);
@@ -3818,13 +3818,13 @@ export class DefinitionsPanel extends Plugin {
                 transition: all 0.2s;
                 white-space: nowrap;
             }
-            
+
             .action-button:hover {
                 background: rgba(74, 158, 255, 0.4);
                 transform: translateY(-2px);
                 box-shadow: 0 4px 8px rgba(74, 158, 255, 0.3);
             }
-            
+
             .action-button:active {
                 transform: translateY(0);
                 box-shadow: 0 2px 4px rgba(74, 158, 255, 0.3);
@@ -4288,4 +4288,4 @@ export class DefinitionsPanel extends Plugin {
         this.spriteContexts.clear();
         this.activeSpriteUrls.clear();
     }
-} 
+}

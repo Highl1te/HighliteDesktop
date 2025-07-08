@@ -9,8 +9,6 @@ import type { SettingsManager } from "src/renderer/client/highlite/core/managers
 import type { SoundManager } from "src/renderer/client/highlite/core/managers/highlite/soundsManager";
 import type { UIManager } from "src/renderer/client/highlite/core/managers/highlite/uiManager";
 
-export {};
-
 declare global {
     interface Window {
         [key: string]: any,

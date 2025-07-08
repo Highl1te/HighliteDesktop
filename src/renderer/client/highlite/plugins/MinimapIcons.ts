@@ -1,7 +1,7 @@
 import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
 import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings.interface";
 import bankIcon from "@static/icons/minimap/Bank_icon.png";
-import anvilIcon from "@static/icons/minimap/Anvil_icon.png";   
+import anvilIcon from "@static/icons/minimap/Anvil_icon.png";
 import furnaceIcon from "@static/icons/minimap/Furnace_icon.png";
 import rockIcon from "@static/icons/minimap/Rock_icon.png";
 import coalIcon from "@static/icons/minimap/Coal_icon.png";
@@ -67,10 +67,10 @@ interface MinimapIcon {
 export class MinimapIcons extends Plugin {
     pluginName = "Minimap Icons";
     author = "JayArrowz";
-    
+
     private minimapContainer: HTMLDivElement | null = null;
     private minimapIcons: Map<number, MinimapIcon> = new Map();
-    
+
     // Icon configuration array
     private iconConfigs: IconConfig[] = [
         { field: CompareField.Description, compareType: CompareType.Equals, value: "jack's axes", icon: axeShopIcon },
@@ -78,7 +78,7 @@ export class MinimapIcons extends Plugin {
         { field: CompareField.Description, compareType: CompareType.Equals, value: "greg's legs", icon: platelegsShopIcon },
         { field: CompareField.Description, compareType: CompareType.Equals, value: "arthur's quality weaponry", icon: swordShopIcon },
         { field: CompareField.Action, compareType: CompareType.Equals, value: "harvest", icon: farmingIcon },
-        
+
         { field: CompareField.Name, compareType: CompareType.Equals, value: "bartender", icon: anvilIcon },
         { field: CompareField.Name, compareType: CompareType.Equals, value: "shop owner", icon: shopIcon },
         { field: CompareField.Name, compareType: CompareType.Equals, value: "rock", icon: rockIcon },
@@ -94,7 +94,7 @@ export class MinimapIcons extends Plugin {
         { field: CompareField.Name, compareType: CompareType.Equals, value: "ladder", icon: ladderIcon },
         { field: CompareField.Name, compareType: CompareType.Equals, value: "cave", icon: dungeonIcon },
         { field: CompareField.Name, compareType: CompareType.Equals, value: "fishing spot", icon: fishingSpotIcon },
-        
+
         { field: CompareField.Name, compareType: CompareType.Includes, value: "banker", icon: bankIcon },
         { field: CompareField.Name, compareType: CompareType.Includes, value: "anvil", icon: anvilIcon },
         { field: CompareField.Name, compareType: CompareType.Includes, value: "furnace", icon: furnaceIcon },
@@ -116,44 +116,44 @@ export class MinimapIcons extends Plugin {
 
     constructor() {
         super();
-        
+
         this.settings.enable = {
             text: "Enable Minimap Icons",
             type: SettingsTypes.checkbox,
             value: true,
             callback: () => this.toggleVisibility()
         };
-        
+
         this.settings.showNPCs = {
             text: "Show NPC Icons",
             type: SettingsTypes.checkbox,
             value: true,
             callback: () => this.updateIconVisibility()
         };
-        
+
         this.settings.showObjects = {
             text: "Show Object Icons",
             type: SettingsTypes.checkbox,
             value: true,
             callback: () => this.updateIconVisibility()
         };
-        
+
         this.settings.iconSize = {
             text: "Icon Size (8-20px)",
             type: SettingsTypes.range,
             value: 15,
             callback: () => this.updateIconSizes()
         };
-        
 
-        
+
+
         this.settings.maxDistance = {
             text: "Max Display Distance",
             type: SettingsTypes.range,
             value: 50,
             callback: () => {}
         };
-        
+
         this.settings.clusterDistance = {
             text: "Cluster Distance (prevent nearby duplicates)",
             type: SettingsTypes.range,
@@ -170,7 +170,7 @@ export class MinimapIcons extends Plugin {
         this.log("Started Minimap Icons");
         this.setMinimapContainer();
         this.addCSSStyles();
-        
+
         if (this.settings.enable.value) {
             this.updateIconVisibility();
         }
@@ -196,7 +196,7 @@ export class MinimapIcons extends Plugin {
 
     GameLoop_draw(): void {
         if (!this.settings.enable.value || !this.minimapContainer) return;
-        
+
         this.updateNPCIcons();
         this.updateObjectIcons();
         this.updateIconPositions();
@@ -215,11 +215,11 @@ export class MinimapIcons extends Plugin {
         if(!actions) return false;
 
         for(const action of actions) {
-            if((document as any).highlite.gameLookups.GameWorldActions[action].toLowerCase() === actionName.toLowerCase()) {
+            if(document.highlite.gameLookups.GameWorldActions[action].toLowerCase() === actionName.toLowerCase()) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -266,31 +266,31 @@ export class MinimapIcons extends Plugin {
 
     private updateNPCIcons(): void {
         if (!this.settings.showNPCs.value) return;
-        
+
         try {
-            const npcs = (document as any).highlite?.gameHooks?.EntityManager?.Instance?._npcs;
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
-            
+            const npcs = document.highlite.gameHooks?.EntityManager?.Instance?._npcs;
+            const mainPlayer = document.highlite.gameHooks?.EntityManager?.Instance?.MainPlayer;
+
             if (!npcs || !mainPlayer) return;
-            
+
             const playerPos = mainPlayer.CurrentGamePosition;
             const maxDistance = this.settings.maxDistance.value as number;
-            
+
             for (const [entityId, npc] of npcs) {
                 if (!npc || !npc._def) continue;
-                
+
                 const defId = npc._def._id;
-                
+
                 // Check distance
                 const npcPos = npc._currentGamePosition || npc._lastGamePosition;
                 if (npcPos && playerPos) {
                     const distance = Math.sqrt(
-                        Math.pow(npcPos._x - playerPos.X, 2) + 
+                        Math.pow(npcPos._x - playerPos.X, 2) +
                         Math.pow(npcPos._z - playerPos.Z, 2)
                     );
                     if (distance > maxDistance) continue;
                 }
-                
+
                 if (!this.minimapIcons.has(entityId)) {
                     const entityPos = npcPos || { _x: 0, _z: 0 };
                     if (!this.shouldCreateIcon('npc', npc, entityPos)) continue;
@@ -304,31 +304,31 @@ export class MinimapIcons extends Plugin {
 
     private updateObjectIcons(): void {
         if (!this.settings.showObjects.value) return;
-        
+
         try {
-            const objects = (document as any).highlite?.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
-            
+            const objects = document.highlite.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
+            const mainPlayer = document.highlite.gameHooks?.EntityManager?.Instance?.MainPlayer;
+
             if (!objects || !mainPlayer) return;
-            
+
             const playerPos = mainPlayer.CurrentGamePosition;
             const maxDistance = this.settings.maxDistance.value as number;
-            
+
             for (const [entityId, obj] of objects) {
                 if (!obj || !obj._def) continue;
-                
+
                 const defId = obj._def._id;
-                
+
                 // Check distance
                 const objPos = obj._currentGamePosition || obj._lastGamePosition;
                 if (objPos && playerPos) {
                     const distance = Math.sqrt(
-                        Math.pow(objPos._x - playerPos.X, 2) + 
+                        Math.pow(objPos._x - playerPos.X, 2) +
                         Math.pow(objPos._z - playerPos.Z, 2)
                     );
                     if (distance > maxDistance) continue;
                 }
-                
+
                 if (!this.minimapIcons.has(entityId)) {
                     const entityPos = objPos || { _x: 0, _z: 0 };
                     if (!this.shouldCreateIcon('object', obj, entityPos)) continue;
@@ -341,19 +341,19 @@ export class MinimapIcons extends Plugin {
     }
 
     private shouldCreateIcon(entityType: 'npc' | 'object', entity: any, entityPos: any): boolean {
-        
+
         const iconType = this.getMinimapIcon(entity);
-        
+
         if(!iconType || iconType === "") return false;
 
         const currentPos = { x: entityPos._x, z: entityPos._z };
         const entityName = entity._name || entity._def._name || entity.Name || "";
-        
+
         // Check if there's already an icon of the same type within cluster distance
         for (const [existingId, existingIcon] of this.minimapIcons) {
             if (existingIcon.iconType === iconType) {
                 const distance = Math.sqrt(
-                    Math.pow(currentPos.x - existingIcon.position.x, 2) + 
+                    Math.pow(currentPos.x - existingIcon.position.x, 2) +
                     Math.pow(currentPos.z - existingIcon.position.z, 2)
                 );
                 if (distance <= (this.settings.clusterDistance.value as number)) {
@@ -366,7 +366,7 @@ export class MinimapIcons extends Plugin {
 
     private createIcon(entityId: number, entityType: 'npc' | 'object', defId: number, name: string, entity: any, entityPos: any): void {
         if (!this.minimapContainer) return;
-        
+
         const iconContainer = document.createElement("div");
         iconContainer.className = `minimap-icon minimap-icon-${entityType}`;
         iconContainer.style.position = "absolute";
@@ -375,7 +375,7 @@ export class MinimapIcons extends Plugin {
         iconContainer.style.flexDirection = "column";
         iconContainer.style.alignItems = "center";
         iconContainer.style.transform = "translate(-50%, -50%)";
-        
+
         // Create the icon image
         const iconImg = document.createElement("img");
         iconImg.className = `minimap-icon-img minimap-icon-img-${entityType}`;
@@ -383,9 +383,9 @@ export class MinimapIcons extends Plugin {
         iconImg.style.width = `${this.settings.iconSize.value}px`;
         iconImg.style.height = `${this.settings.iconSize.value}px`;
         iconImg.style.borderRadius = "3px";
-        
+
         iconContainer.appendChild(iconImg);
-        
+
         // Create name label (hidden by default, shown on hover)
         const nameLabel = document.createElement("div");
         nameLabel.className = "minimap-icon-name";
@@ -400,14 +400,14 @@ export class MinimapIcons extends Plugin {
         nameLabel.style.overflow = "hidden";
         nameLabel.style.textOverflow = "ellipsis";
         nameLabel.style.display = "none"; // Hidden by default
-        
+
         iconContainer.appendChild(nameLabel);
-        
+
         // Add tooltip
         iconContainer.title = `${name} (${entityType.toUpperCase()} ID: ${defId})`;
-        
+
         this.minimapContainer.appendChild(iconContainer);
-        
+
         const icon: MinimapIcon = {
             element: iconContainer,
             entityId,
@@ -417,25 +417,25 @@ export class MinimapIcons extends Plugin {
             iconType: this.getMinimapIcon(entity),
             position: { x: entityPos._x, z: entityPos._z }
         };
-        
+
         this.minimapIcons.set(entityId, icon);
     }
 
     private updateIconPositions(): void {
         try {
-            const mm = (document as any).highlite?.gameHooks?.HR?.Manager
+            const mm = document.highlite.gameHooks?.HR?.Manager
                 ?.getController()?.MinimapQuadrantController
                 ?.MinimapController?._minimap;
-            
+
             if (!mm) return;
-            
-            const npcs = (document as any).highlite?.gameHooks?.EntityManager?.Instance?._npcs;
-            const objects = (document as any).highlite?.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
-            
+
+            const npcs = document.highlite.gameHooks?.EntityManager?.Instance?._npcs;
+            const objects = document.highlite.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
+
             for (const [entityId, icon] of this.minimapIcons) {
                 let entity: any = null;
                 let entityPos: any = null;
-                
+
                 if (icon.entityType === 'npc' && npcs) {
                     entity = npcs.get(entityId);
                     entityPos = entity?._currentGamePosition || entity?._lastGamePosition;
@@ -443,29 +443,29 @@ export class MinimapIcons extends Plugin {
                     entity = objects.get(entityId);
                     entityPos = entity?._currentGamePosition || entity?._lastGamePosition;
                 }
-                
+
                 if (!entity || !entityPos) {
                     icon.element.style.visibility = "hidden";
                     continue;
                 }
-                
+
                 const off = { X: 0, Y: 0 };
                 const x = entityPos._x + 0.5;
                 const z = entityPos._z + 0.5;
-                
+
                 mm._calculatePosition(
                     (x - mm._currentMiniMapCenter.X) * mm._mapZoomFactor,
                     (mm._currentMiniMapCenter.Y - z) * mm._mapZoomFactor,
                     0, 0, off
                 );
-                
+
                 const left = mm._minimapHalfWidthPx + off.X;
                 const top = mm._minimapHalfHeightPx + off.Y;
-                
+
                 icon.element.style.left = `${left}px`;
                 icon.element.style.top = `${top}px`;
                 icon.element.style.visibility = 'visible';
-                
+
                 // Update stored position for clustering calculations
                 icon.position = { x: entityPos._x, z: entityPos._z };
             }
@@ -476,25 +476,25 @@ export class MinimapIcons extends Plugin {
 
     private cleanupStaleIcons(): void {
         try {
-            const npcs = (document as any).highlite?.gameHooks?.EntityManager?.Instance?._npcs;
-            const objects = (document as any).highlite?.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
-            
+            const npcs = document.highlite.gameHooks?.EntityManager?.Instance?._npcs;
+            const objects = document.highlite.gameHooks?.WorldEntityManager?.Instance?._worldEntities;
+
             const toRemove: number[] = [];
-            
+
             for (const [entityId, icon] of this.minimapIcons) {
                 let entityExists = false;
-                
+
                 if (icon.entityType === 'npc' && npcs) {
                     entityExists = npcs.has(entityId);
                 } else if (icon.entityType === 'object' && objects) {
                     entityExists = objects.has(entityId);
                 }
-                
+
                 if (!entityExists) {
                     toRemove.push(entityId);
                 }
             }
-            
+
             toRemove.forEach(entityId => {
                 this.removeIcon(entityId);
             });
@@ -535,19 +535,19 @@ export class MinimapIcons extends Plugin {
             this.cleanupAllIcons();
             return;
         }
-        
+
         // Remove icons for disabled types
         const toRemove: number[] = [];
-        
+
         for (const [entityId, icon] of this.minimapIcons) {
             const shouldShow = (icon.entityType === 'npc' && this.settings.showNPCs.value) ||
                               (icon.entityType === 'object' && this.settings.showObjects.value);
-            
+
             if (!shouldShow) {
                 toRemove.push(entityId);
             }
         }
-        
+
         toRemove.forEach(entityId => {
             this.removeIcon(entityId);
         });
@@ -555,7 +555,7 @@ export class MinimapIcons extends Plugin {
 
     private updateIconSizes(): void {
         const newSize = this.settings.iconSize.value as number;
-        
+
         this.minimapIcons.forEach(icon => {
             const img = icon.element.querySelector('.minimap-icon-img') as HTMLImageElement;
             if (img) {
@@ -569,7 +569,7 @@ export class MinimapIcons extends Plugin {
 
     private addCSSStyles(): void {
         if (document.getElementById('minimap-icons-styles')) return;
-        
+
         const style = document.createElement('style');
         style.id = 'minimap-icons-styles';
         style.textContent = `
@@ -577,15 +577,15 @@ export class MinimapIcons extends Plugin {
                 transform-origin: center;
                 transition: transform 0.2s ease;
             }
-            
+
             .minimap-icon:hover {
                 transform: scale(1.2);
             }
-            
+
             .minimap-icon:hover .minimap-icon-name {
                 display: block !important;
             }
-                        
+
             .minimap-icon-name {
                 background: rgba(0, 0, 0, 0.7);
                 padding: 1px 3px;
@@ -602,4 +602,4 @@ export class MinimapIcons extends Plugin {
             style.remove();
         }
     }
-} 
+}

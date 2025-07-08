@@ -7,11 +7,11 @@ export class Nameplates extends Plugin {
     pluginName = "Nameplates";
     author = "Highlite";
     DOMElement: HTMLDivElement | null = null;
-    
+
     // Priority system properties
     private altKeyPressed: boolean = false;
     private uiManager: UIManager;
-    
+
     constructor() {
         super();
 
@@ -25,40 +25,40 @@ export class Nameplates extends Plugin {
         this.settings.groundItemNameplates = { text: "Ground Item Nameplates", type: SettingsTypes.checkbox, value: true, callback: () => {} };
 
         // Size settings
-        this.settings.playerNameplateSize = { 
-            text: "Player Nameplate Text Size", 
-            type: SettingsTypes.range, 
-            value: 12, 
+        this.settings.playerNameplateSize = {
+            text: "Player Nameplate Text Size",
+            type: SettingsTypes.range,
+            value: 12,
             callback: () => this.updateAllFontSizes(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 8 && numValue <= 24;
             }
         };
-        this.settings.npcNameplateSize = { 
-            text: "NPC Nameplate Text Size", 
-            type: SettingsTypes.range, 
-            value: 12, 
+        this.settings.npcNameplateSize = {
+            text: "NPC Nameplate Text Size",
+            type: SettingsTypes.range,
+            value: 12,
             callback: () => this.updateAllFontSizes(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 8 && numValue <= 24;
             }
         };
-        this.settings.youNameplateSize = { 
-            text: "You Nameplate Text Size", 
-            type: SettingsTypes.range, 
-            value: 12, 
+        this.settings.youNameplateSize = {
+            text: "You Nameplate Text Size",
+            type: SettingsTypes.range,
+            value: 12,
             callback: () => this.updateAllFontSizes(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 8 && numValue <= 24;
             }
         };
-        this.settings.groundItemNameplateSize = { 
-            text: "Ground Item Nameplate Text Size", 
-            type: SettingsTypes.range, 
-            value: 12, 
+        this.settings.groundItemNameplateSize = {
+            text: "Ground Item Nameplate Text Size",
+            type: SettingsTypes.range,
+            value: 12,
             callback: () => this.updateAllFontSizes(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
@@ -73,30 +73,30 @@ export class Nameplates extends Plugin {
         this.settings.showShadows = { text: "Show Text Shadows", type: SettingsTypes.checkbox, value: true, callback: () => this.updateAllElementThemes() };
 
         // Stack limit settings
-        this.settings.maxNPCStack = { 
-            text: "Max NPC Stack Display", 
-            type: SettingsTypes.range, 
-            value: 5, 
+        this.settings.maxNPCStack = {
+            text: "Max NPC Stack Display",
+            type: SettingsTypes.range,
+            value: 5,
             callback: () => this.updateStackLimits(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 0 && numValue <= 20;
             }
         };
-        this.settings.maxPlayerStack = { 
-            text: "Max Player Stack Display", 
-            type: SettingsTypes.range, 
-            value: 5, 
+        this.settings.maxPlayerStack = {
+            text: "Max Player Stack Display",
+            type: SettingsTypes.range,
+            value: 5,
             callback: () => this.updateStackLimits(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 0 && numValue <= 20;
             }
         };
-        this.settings.maxGroundItemStack = { 
-            text: "Max Ground Item Stack Display", 
-            type: SettingsTypes.range, 
-            value: 8, 
+        this.settings.maxGroundItemStack = {
+            text: "Max Ground Item Stack Display",
+            type: SettingsTypes.range,
+            value: 8,
             callback: () => this.updateStackLimits(),
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
@@ -112,11 +112,11 @@ export class Nameplates extends Plugin {
     NPCDomElements: {
         [key: string]: { element: HTMLDivElement, position: Vector3 }
     } = {}
-    
+
     PlayerDomElements: {
         [key: string]: { element: HTMLDivElement, position: Vector3 }
     } = {}
-    
+
     GroundItemDomElements: {
         [key: string]: { element: HTMLDivElement, position: Vector3, itemName: string, quantity: number, positionKey: string }
     } = {}
@@ -219,27 +219,27 @@ export class Nameplates extends Plugin {
     private updateIgnoredItemsVisibility(): void {
         const ignoredItems = this.getIgnoredItemsSet();
         const maxGroundItemStack = this.settings.maxGroundItemStack!.value as number;
-        
+
         // Update all existing ground item elements
         for (const key in this.GroundItemDomElements) {
             const element = this.GroundItemDomElements[key].element;
             const itemContainers = element.children;
-            
+
             // Remove any existing stack indicators
             const existingIndicators = element.querySelectorAll('.ground-stack-indicator');
             existingIndicators.forEach(indicator => indicator.remove());
-            
+
             let visibleItemCount = 0;
             let hiddenItemCount = 0;
             let stackIndicatorAdded = false;
-            
+
             for (let i = 0; i < itemContainers.length; i++) {
                 const container = itemContainers[i] as HTMLElement;
                 const textSpan = container.querySelector('span');
                 if (!textSpan) continue;
-                
+
                 const itemName = textSpan.innerText.split(' [x')[0]; // Extract item name without quantity
-                
+
                 if (ignoredItems.has(itemName)) {
                     if (this.altKeyPressed) {
                         // Show ignored item when ALT is pressed (no stack limits)
@@ -258,7 +258,7 @@ export class Nameplates extends Plugin {
                     if (!this.altKeyPressed && visibleItemCount >= maxGroundItemStack) {
                         container.style.display = 'none';
                         hiddenItemCount++;
-                        
+
                         // Add stack indicator to the last visible item if not already added
                         if (!stackIndicatorAdded && visibleItemCount === maxGroundItemStack) {
                             this.addGroundItemStackIndicator(element, hiddenItemCount);
@@ -271,7 +271,7 @@ export class Nameplates extends Plugin {
                 }
             }
         }
-        
+
         // Reapply theming to all ground item elements after visibility changes
         for (const key in this.GroundItemDomElements) {
             this.applyGroundItemElementTheme(this.GroundItemDomElements[key].element);
@@ -329,11 +329,11 @@ export class Nameplates extends Plugin {
     private getItemPriorities(): Map<string, number> {
         const prioritiesStr = this.settings.itemPriorities!.value as string;
         const priorities = new Map<string, number>();
-        
+
         if (!prioritiesStr) return priorities;
-        
+
         const entries = prioritiesStr.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
-        
+
         for (const entry of entries) {
             const [itemName, levelStr] = entry.split(':');
             if (itemName && levelStr) {
@@ -343,65 +343,65 @@ export class Nameplates extends Plugin {
                 }
             }
         }
-        
+
         return priorities;
     }
 
     private getPriorityItemsSet(): Set<string> {
         const priorities = this.getItemPriorities();
         const priorityItems = new Set<string>();
-        
+
         for (const [itemName, level] of priorities) {
             if (level === 1) {
                 priorityItems.add(itemName);
             }
         }
-        
+
         return priorityItems;
     }
 
     private getIgnoredItemsSet(): Set<string> {
         const priorities = this.getItemPriorities();
         const ignoredItems = new Set<string>();
-        
+
         for (const [itemName, level] of priorities) {
             if (level === -1) {
                 ignoredItems.add(itemName);
             }
         }
-        
+
         return ignoredItems;
     }
 
     private toggleItemPriority(itemName: string): void {
         const priorities = this.getItemPriorities();
         const currentLevel = priorities.get(itemName) || 0;
-        
+
         // Shift priority level up by 1, wrapping from 1 back to 0
         const newLevel = currentLevel === 1 ? 0 : currentLevel + 1;
         priorities.set(itemName, newLevel);
-        
+
         // Update settings
         this.settings.itemPriorities!.value = Array.from(priorities.entries())
             .map(([item, level]) => `${item}:${level}`)
             .join(', ');
-        
+
         this.updateAllGroundItemElements();
     }
 
     private toggleItemIgnored(itemName: string): void {
         const priorities = this.getItemPriorities();
         const currentLevel = priorities.get(itemName) || 0;
-        
+
         // Shift priority level down by 1, wrapping from -1 back to 0
         const newLevel = currentLevel === -1 ? 0 : currentLevel - 1;
         priorities.set(itemName, newLevel);
-        
+
         // Update settings
         this.settings.itemPriorities!.value = Array.from(priorities.entries())
             .map(([item, level]) => `${item}:${level}`)
             .join(', ');
-        
+
         this.updateAllGroundItemElements();
     }
 
@@ -417,7 +417,7 @@ export class Nameplates extends Plugin {
         if (this.settings.priorityItemCustomColor && this.settings.priorityItemCustomColor.value) {
             return this.settings.priorityItemCustomColor.value as string;
         }
-        
+
         return "#ff0000"; // Default red color
     }
 
@@ -427,7 +427,7 @@ export class Nameplates extends Plugin {
         const MainPlayer = this.gameHooks.EntityManager.Instance.MainPlayer;
         const GroundItems = this.gameHooks.GroundItemManager.Instance.GroundItems;
         const playerFriends = this.gameHooks.ChatManager.Instance._friends;
-        const BW = (document as any).client.get("BW");
+        const BW = document.client.get("BW");
 
         if (!this.settings.enable.value) {
             this.cleanupAllElements();
@@ -482,7 +482,7 @@ export class Nameplates extends Plugin {
             const worldPos = this.getEntityWorldPosition(npc, 'npc');
             if (worldPos) {
                 this.NPCDomElements[key].position = worldPos;
-                
+
                 // Track position for stacking
                 const positionKey = this.getPositionKey(worldPos);
                 const currentCount = this.positionTracker.get(positionKey) || 0;
@@ -490,7 +490,7 @@ export class Nameplates extends Plugin {
             }
 
             const npcMesh = npc._appearance._haloNode;
-            
+
             try {
                 this.updateElementPosition(npcMesh, this.NPCDomElements[key]);
             } catch (e) {
@@ -511,7 +511,7 @@ export class Nameplates extends Plugin {
                 const element = this.PlayerDomElements[player._entityId].element;
                 const isMainPlayer = element.id.includes(`player-${MainPlayer._entityId}`);
                 element.style.color = isFriend ? "lightgreen" : (isMainPlayer ? "cyan" : "white");
-                
+
                 // Reapply theming to update colors properly
                 this.applyPlayerElementTheme(element, isMainPlayer);
 
@@ -519,7 +519,7 @@ export class Nameplates extends Plugin {
                 const worldPos = this.getEntityWorldPosition(player, 'player');
                 if (worldPos) {
                     this.PlayerDomElements[player._entityId].position = worldPos;
-                    
+
                     // Track position for stacking
                     const positionKey = this.getPositionKey(worldPos);
                     const currentCount = this.positionTracker.get(positionKey) || 0;
@@ -552,7 +552,7 @@ export class Nameplates extends Plugin {
             const worldPos = this.getEntityWorldPosition(MainPlayer, 'player');
             if (worldPos) {
                 this.PlayerDomElements[MainPlayer._entityId].position = worldPos;
-                
+
                 // Track position for stacking
                 const positionKey = this.getPositionKey(worldPos);
                 const currentCount = this.positionTracker.get(positionKey) || 0;
@@ -588,10 +588,10 @@ export class Nameplates extends Plugin {
 
         for (const [positionKey, positionGroup] of positionGroups) {
             const representativeKey = positionGroup.firstKey;
-            
+
             // Check if element exists and if the content has changed
             const existingElement = this.GroundItemDomElements[representativeKey];
-            const needsUpdate = !existingElement || 
+            const needsUpdate = !existingElement ||
                                existingElement.quantity !== positionGroup.totalItems ||
                                existingElement.itemName !== `${positionGroup.items.size} types`;
 
@@ -600,26 +600,26 @@ export class Nameplates extends Plugin {
                 if (existingElement) {
                     this.disposeElementFromCollection(this.GroundItemDomElements, representativeKey);
                 }
-                
+
                 // Create new element
                 this.createGroundItemElement(representativeKey, positionGroup, positionKey);
             }
 
             const firstItem = Array.from(positionGroup.items.values())[0].items[0];
-            
+
             // Update position for stacking calculation
             const worldPos = this.getEntityWorldPosition(firstItem.item, 'grounditem');
             if (worldPos) {
                 this.GroundItemDomElements[representativeKey].position = worldPos;
-                
+
                 // Track position for stacking
                 const stackingPositionKey = this.getPositionKey(worldPos);
                 const currentCount = this.positionTracker.get(stackingPositionKey) || 0;
                 this.positionTracker.set(stackingPositionKey, currentCount + 1);
             }
-            
+
             const groundItemMesh = firstItem.item._appearance._billboardMesh;
-            
+
             try {
                 this.updateElementPosition(groundItemMesh, this.GroundItemDomElements[representativeKey]);
             } catch (e) {
@@ -711,18 +711,18 @@ export class Nameplates extends Plugin {
         element.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
 
         const entries = Array.from(positionGroup.items.entries()) as [string, any][];
-        
+
         // Sort by priority: priority items first, then by name
         const priorityItems = this.getPriorityItemsSet();
         const ignoredItems = this.getIgnoredItemsSet();
-        
+
         entries.sort(([a, aGroup], [b, bGroup]) => {
             const aIsPriority = priorityItems.has(a);
             const bIsPriority = priorityItems.has(b);
-            
+
             if (aIsPriority && !bIsPriority) return -1;
             if (!aIsPriority && bIsPriority) return 1;
-            
+
             return a.localeCompare(b);
         });
 
@@ -735,9 +735,9 @@ export class Nameplates extends Plugin {
             const itemDiv = document.createElement("div");
             itemDiv.style.textAlign = "center";
             itemDiv.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
-            
+
             const itemText = itemGroup.count > 1 ? `${itemName} [x${itemGroup.count}]` : itemName;
-            
+
             // Create container for item text and buttons
             const itemContainer = document.createElement("div");
             itemContainer.style.display = "flex";
@@ -751,7 +751,7 @@ export class Nameplates extends Plugin {
             // Item text
             const textSpan = document.createElement("span");
             textSpan.innerText = itemText;
-            
+
             // Set color based on priority and ignore status
             if (ignoredItems.has(itemName)) {
                 textSpan.style.color = "gray";
@@ -770,7 +770,7 @@ export class Nameplates extends Plugin {
             } else {
                 textSpan.style.color = "orange";
             }
-            
+
             itemContainer.appendChild(textSpan);
 
             // Priority buttons (always show when ALT is pressed)
@@ -792,7 +792,7 @@ export class Nameplates extends Plugin {
             priorityBtn.style.zIndex = "1001";
             priorityBtn.style.userSelect = "none";
             priorityBtn.title = currentLevel === 1 ? "Remove Priority" : "Add Priority";
-            
+
             // Use UIManager to bind the click event properly
             this.uiManager.bindOnClickBlockHsMask(priorityBtn, () => {
                 this.toggleItemPriority(itemName);
@@ -815,7 +815,7 @@ export class Nameplates extends Plugin {
             ignoreBtn.style.zIndex = "1001";
             ignoreBtn.style.userSelect = "none";
             ignoreBtn.title = currentLevel === -1 ? "Un-ignore Item" : "Hide Item";
-            
+
             // Use UIManager to bind the click event properly
             this.uiManager.bindOnClickBlockHsMask(ignoreBtn, () => {
                 this.toggleItemIgnored(itemName);
@@ -827,7 +827,7 @@ export class Nameplates extends Plugin {
             // Apply stack limit logic for ground items
             const isIgnored = ignoredItems.has(itemName);
             const shouldShowIgnored = this.altKeyPressed;
-            
+
             if (isIgnored && !shouldShowIgnored) {
                 // Hidden ignored item
                 itemContainer.style.display = "none";
@@ -838,7 +838,7 @@ export class Nameplates extends Plugin {
                     // Hide this item due to stack limit (only when ALT is not pressed)
                     itemContainer.style.display = "none";
                     hiddenItemCount++;
-                    
+
                     // Add stack indicator to the last visible item if not already added
                     if (!stackIndicatorAdded && visibleItemCount === maxGroundItemStack) {
                         this.addGroundItemStackIndicator(element, hiddenItemCount);
@@ -883,7 +883,7 @@ export class Nameplates extends Plugin {
             for (const [existingKey, existingGroup] of positionGroups) {
                 const [existingX, existingZ] = existingKey.split('_').map(Number);
                 const distance = Math.sqrt(
-                    Math.pow(worldPos.x - existingX, 2) + 
+                    Math.pow(worldPos.x - existingX, 2) +
                     Math.pow(worldPos.z - existingZ, 2)
                 );
 
@@ -921,7 +921,7 @@ export class Nameplates extends Plugin {
         for (const [, positionGroup] of positionGroups) {
             activeRepresentativeKeys.add(positionGroup.firstKey);
         }
-        
+
         // Remove elements that are no longer active
         for (const key in this.GroundItemDomElements) {
             if (!activeRepresentativeKeys.has(key)) {
@@ -970,13 +970,13 @@ export class Nameplates extends Plugin {
 
         // Calculate stacking offset and visibility
         const stackingResult = this.calculateStackingOffset(domElement);
-        
+
         // Apply frustum culling first - if not in frustum, hide regardless of stack limits
         if (!isInFrustrum) {
             domElement.element.style.visibility = "hidden";
             return;
         }
-        
+
         // Handle visibility based on stack limits (only if in frustum)
         if (!stackingResult.shouldShow) {
             domElement.element.style.visibility = "hidden";
@@ -997,10 +997,10 @@ export class Nameplates extends Plugin {
         }
 
         const positionKey = this.getPositionKey(domElement.position);
-        
+
         // Collect all elements at this position
         const elementsAtPosition: Array<{ element: HTMLDivElement, id: string, type: string }> = [];
-        
+
         // Add NPCs at this position
         for (const [key, npcElement] of Object.entries(this.NPCDomElements)) {
             if (npcElement.position && this.getPositionKey(npcElement.position) === positionKey) {
@@ -1011,7 +1011,7 @@ export class Nameplates extends Plugin {
                 });
             }
         }
-        
+
         // Add Players at this position
         for (const [key, playerElement] of Object.entries(this.PlayerDomElements)) {
             if (playerElement.position && this.getPositionKey(playerElement.position) === positionKey) {
@@ -1022,7 +1022,7 @@ export class Nameplates extends Plugin {
                 });
             }
         }
-        
+
         // Add Ground Items at this position
         for (const [key, groundElement] of Object.entries(this.GroundItemDomElements)) {
             if (groundElement.position && this.getPositionKey(groundElement.position) === positionKey) {
@@ -1044,45 +1044,45 @@ export class Nameplates extends Plugin {
             const typePriority = { ground: 0, npc: 1, player: 2 };
             const priorityDiff = typePriority[a.type as keyof typeof typePriority] - typePriority[b.type as keyof typeof typePriority];
             if (priorityDiff !== 0) return priorityDiff;
-            
+
             // Check if either element is the main player
-            const isMainPlayerA = a.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+            const isMainPlayerA = a.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer &&
                                  a.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
-            const isMainPlayerB = b.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+            const isMainPlayerB = b.type === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer &&
                                  b.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
-            
+
             // Main player should always be first (lowest index = highest position)
             if (isMainPlayerA && !isMainPlayerB) return -1;
             if (!isMainPlayerA && isMainPlayerB) return 1;
-            
+
             return a.id.localeCompare(b.id);
         });
 
         // Find the index of the current element
         const currentElementId = domElement.element.id;
         const index = elementsAtPosition.findIndex(el => el.element.id === currentElementId);
-        
+
         // Determine element type and max stack limit
-        const elementType = domElement.element.id.includes('npc') ? 'npc' : 
+        const elementType = domElement.element.id.includes('npc') ? 'npc' :
                            domElement.element.id.includes('player') ? 'player' : 'ground';
-        
+
         // Check if this is the main player
-        const isMainPlayer = elementType === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer && 
+        const isMainPlayer = elementType === 'player' && this.gameHooks.EntityManager.Instance.MainPlayer &&
                             domElement.element.id.includes(`player-${this.gameHooks.EntityManager.Instance.MainPlayer._entityId}`);
-        
+
         // Main player should never be subject to stack limits and should have a fixed high position
         if (isMainPlayer) {
             return { offset: 50, shouldShow: true };
         }
-        
+
         const maxStack = elementType === 'npc' ? (this.settings.maxNPCStack!.value as number) :
                         elementType === 'player' ? (this.settings.maxPlayerStack!.value as number) :
                         (this.settings.maxGroundItemStack!.value as number);
-        
+
         // For ground items, we need to count individual items within the nameplate
         let effectiveIndex = index;
         let effectiveTotal = elementsAtPosition.length;
-        
+
         if (elementType === 'ground') {
             // Ground items are handled differently - the stack limit applies to items within the nameplate
             // This is handled in the createGroundItemElement method, not here
@@ -1092,43 +1092,43 @@ export class Nameplates extends Plugin {
             effectiveIndex = groundIndex;
             effectiveTotal = groundElementsAtPosition.length;
         }
-        
+
         // Check if this element should be shown based on stack limits
         if (effectiveIndex >= maxStack) {
-            return { 
-                offset: 0, 
+            return {
+                offset: 0,
                 shouldShow: false,
-                stackInfo: { 
-                    total: effectiveTotal, 
-                    hidden: effectiveTotal - maxStack, 
-                    type: elementType 
+                stackInfo: {
+                    total: effectiveTotal,
+                    hidden: effectiveTotal - maxStack,
+                    type: elementType
                 }
             };
         }
-        
+
         // If this is the last visible element and there are hidden elements, add stack info
         if (effectiveIndex === maxStack - 1 && effectiveTotal > maxStack) {
-            return { 
-                offset: index * 25, 
+            return {
+                offset: index * 25,
                 shouldShow: true,
-                stackInfo: { 
-                    total: effectiveTotal, 
-                    hidden: effectiveTotal - maxStack, 
-                    type: elementType 
+                stackInfo: {
+                    total: effectiveTotal,
+                    hidden: effectiveTotal - maxStack,
+                    type: elementType
                 }
             };
         }
-        
+
         return { offset: (index as number) * 25, shouldShow: true };
     }
 
     private addGroundItemStackIndicator(element: HTMLDivElement, hiddenCount: number): void {
         // Find the last visible item container
         const itemContainers = Array.from(element.children) as HTMLElement[];
-        const lastVisibleContainer = itemContainers.find(container => 
+        const lastVisibleContainer = itemContainers.find(container =>
             container.style.display !== 'none'
         );
-        
+
         if (lastVisibleContainer) {
             // Create stack indicator
             const stackIndicator = document.createElement('div');
@@ -1149,7 +1149,7 @@ export class Nameplates extends Plugin {
             stackIndicator.style.padding = '1px 3px';
             stackIndicator.style.borderRadius = '2px';
             stackIndicator.style.backdropFilter = 'blur(1px)';
-            
+
             // Format the text
             if (hiddenCount === 1) {
                 stackIndicator.textContent = '+1';
@@ -1158,7 +1158,7 @@ export class Nameplates extends Plugin {
             } else {
                 stackIndicator.textContent = `+${hiddenCount}+`;
             }
-            
+
             lastVisibleContainer.appendChild(stackIndicator);
         }
     }
@@ -1175,7 +1175,7 @@ export class Nameplates extends Plugin {
 
         // Check if stack indicator already exists
         let stackIndicator = domElement.element.querySelector('.stack-indicator');
-        
+
         if (!stackIndicator) {
             // Create new stack indicator
             stackIndicator = document.createElement('div');
@@ -1190,11 +1190,11 @@ export class Nameplates extends Plugin {
             stackIndicator.style.pointerEvents = 'none';
             stackIndicator.style.letterSpacing = '0.5px';
             stackIndicator.style.textTransform = 'uppercase';
-            
+
             // Apply theming based on element type
-            const elementType = domElement.element.id.includes('npc') ? 'npc' : 
+            const elementType = domElement.element.id.includes('npc') ? 'npc' :
                                domElement.element.id.includes('player') ? 'player' : 'ground';
-            
+
             if (elementType === 'npc') {
                 stackIndicator.style.color = '#FFD700';
                 stackIndicator.style.textShadow = '0 0 4px rgba(255, 215, 0, 0.8)';
@@ -1205,16 +1205,16 @@ export class Nameplates extends Plugin {
                 stackIndicator.style.color = '#FFA500';
                 stackIndicator.style.textShadow = '0 0 4px rgba(255, 165, 0, 0.8)';
             }
-            
+
             // Add subtle background glow
             stackIndicator.style.background = 'rgba(0, 0, 0, 0.3)';
             stackIndicator.style.padding = '1px 4px';
             stackIndicator.style.borderRadius = '2px';
             stackIndicator.style.backdropFilter = 'blur(2px)';
-            
+
             domElement.element.appendChild(stackIndicator);
         }
-        
+
         // Update the indicator text with better formatting
         const count = stackInfo.hidden;
         if (count === 1) {
@@ -1235,7 +1235,7 @@ export class Nameplates extends Plugin {
         for (const key in this.NPCDomElements) {
             const element = this.NPCDomElements[key].element;
             element.style.fontSize = `${this.settings.npcNameplateSize!.value}px`;
-            
+
             // Update all child elements (name and level) font sizes as well
             const childElements = element.children;
             for (let i = 0; i < childElements.length; i++) {
@@ -1256,7 +1256,7 @@ export class Nameplates extends Plugin {
         for (const key in this.GroundItemDomElements) {
             const element = this.GroundItemDomElements[key].element;
             element.style.fontSize = `${this.settings.groundItemNameplateSize!.value}px`;
-            
+
             // Update all child elements (individual item lines) font sizes as well
             const childElements = element.children;
             for (let i = 0; i < childElements.length; i++) {
@@ -1271,7 +1271,7 @@ export class Nameplates extends Plugin {
         for (const key in this.GroundItemDomElements) {
             this.disposeElementFromCollection(this.GroundItemDomElements, key);
         }
-        
+
         this.log("Stack limits updated, forcing ground item recreation");
     }
 
@@ -1463,20 +1463,20 @@ export class Nameplates extends Plugin {
     private hasVisibleGroundItems(element: HTMLDivElement): boolean {
         const ignoredItems = this.getIgnoredItemsSet();
         const itemContainers = element.children;
-        
+
         for (let i = 0; i < itemContainers.length; i++) {
             const container = itemContainers[i] as HTMLElement;
             const textSpan = container.querySelector('span');
             if (!textSpan) continue;
-            
+
             const itemName = textSpan.innerText.split(' [x')[0];
-            
+
             // Check if this item is visible (not ignored, or ALT is pressed)
             if (!ignoredItems.has(itemName) || this.altKeyPressed) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -1513,7 +1513,7 @@ export class Nameplates extends Plugin {
 
     private setupAllElements(): void {
         this.cleanupAllElements();
-        
+
         // Use UIManager to create the container with ClientRelative scope
         this.DOMElement = this.uiManager.createElement(UIManagerScope.ClientRelative) as HTMLDivElement;
         if (this.DOMElement) {
@@ -1528,7 +1528,7 @@ export class Nameplates extends Plugin {
             this.DOMElement.style.fontFamily = "Inter";
             this.DOMElement.style.fontSize = "12px";
             this.DOMElement.style.fontWeight = "bold";
-            
+
             // Inject CSS variables from screen mask to ensure proper styling
             this.injectCSSVariables();
         }

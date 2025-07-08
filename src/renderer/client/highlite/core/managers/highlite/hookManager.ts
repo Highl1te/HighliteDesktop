@@ -20,7 +20,7 @@ export class HookManager {
         document.highlite.gameHooks[mappedName] = classInstance;
         return true;
     }
-    
+
     public registerClassHook(sourceClass : string, fnName : string, hookFn = this.hook) : boolean {
         const self = this;
         const classObject = document.highlite.gameHooks[sourceClass].prototype;
