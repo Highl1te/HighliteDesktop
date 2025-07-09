@@ -52,6 +52,9 @@ const PLUGIN_REGISTRY = [
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'}
 ];
 
+const worldId = new URL(import.meta.url).searchParams.get('worldId');
+console.log(`Selected world: ${worldId}`);
+
 async function obtainGameClient() {
     const highspellAssetsURL = "https://highspell.com:3002/assetsClient";
     const highliteDB = new IndexDBWrapper();
@@ -103,9 +106,9 @@ async function generatePage() {
     }
     // POST Request to https://highspell.com/game
     const urlencoded = new URLSearchParams();
-    urlencoded.append("submit", "World+1");
-    urlencoded.append("serverid", "1");
-    urlencoded.append("serverurl", "https://server1.highspell.com:8888");
+    urlencoded.append("submit", `World+${worldId}`);
+    urlencoded.append("serverid", `${worldId}`);
+    urlencoded.append("serverurl", `https://server${worldId}.highspell.com:8888`);
 
     const response = await fetch("https://highspell.com/game", { method: "POST", headers: {"Content-Type": "application/x-www-form-urlencoded"}, body: urlencoded, redirect: "follow"});
     const text = await response.text();
@@ -116,7 +119,7 @@ async function generatePage() {
     if (clientJS) {
         clientJS.remove();
     }
-    
+
     // Replace head and body content (non-script)
     Array.from(doc.head.children).forEach(child => {
         if (child.tagName.toLowerCase() !== "script") {
@@ -228,7 +231,7 @@ async function generatePage() {
         plugins.forEach(plugin => {
             highlite.pluginManager.registerPlugin(plugin.class as any);
         });
-      
+
         // Start the highlite instance
         highlite.start();
     }
@@ -246,7 +249,7 @@ async function generatePage() {
         bubbles: true,
         cancelable: true
     }));
-    
+
     // Mark page as generated
     setPageGenerated(true);
 }
@@ -259,62 +262,62 @@ if (!(import.meta as any).hot || !getPageGenerated()) {
 // Setup HMR outside of generatePage to ensure it persists across hot reloads
 if (import.meta.hot && import.meta.env.DEV) {
     console.log('[HMR] Setting up persistent hot module replacement...');
-    
+
     // Get plugins from global state
     const getPlugins = () => (window as any).__highlite_plugins || [];
     const getHighlite = () => (window as any).__highlite_core;
-    
+
     const pluginPaths = PLUGIN_REGISTRY.map(p => p.path);
     import.meta.hot.accept(pluginPaths, () => {
         console.log('[HMR] Plugin modules updated, handled by custom hot reload system');
     });
-    
+
     const setupPluginHotReload = () => {
         const plugins = getPlugins() as Array<{class: any}>;
         const highlite = getHighlite();
-        
+
         if (!plugins.length || !highlite) {
             console.log('[HMR] Waiting for plugins and highlite to be available...');
             return;
         }
-        
+
         console.log('[HMR] Setting up plugin hot reloading...');
-        
+
         const pluginMap = new Map(plugins.map((p: {class: any}) => {
             const className = p.class.name;
             return [className, p];
         }));
-        
+
         const reloadingPlugins = new Set<string>();
-        
+
         import.meta.hot!.on('plugin-hot-reload', async (data: { pluginName: string, file: string }) => {
             console.log(`[Plugin HMR] Hot reload event received for: ${data.pluginName}`);
-            
+
             // Prevent duplicate reloads for the same plugin
             if (reloadingPlugins.has(data.pluginName)) {
                 console.log(`[Plugin HMR] Already reloading ${data.pluginName}, skipping...`);
                 return;
             }
-            
+
             const plugin = pluginMap.get(data.pluginName);
             if (!plugin) {
                 console.error(`[Plugin HMR] Plugin ${data.pluginName} not found in registry`);
                 return;
             }
-            
+
             reloadingPlugins.add(data.pluginName);
-            
+
             try {
                 if (!highlite || !highlite.pluginManager) {
                     console.error(`[Plugin HMR] Highlite or plugin manager not available`);
                     return;
                 }
-                
+
                 const moduleUrl = `./highlite/plugins/${data.file}.ts?t=${Date.now()}`;
                 console.log(`[Plugin HMR] Importing updated module: ${moduleUrl}`);
                 const reloadedModule = await import(/* @vite-ignore */ moduleUrl);
                 const pluginClass = reloadedModule[data.pluginName];
-                
+
                 if (pluginClass && typeof highlite.pluginManager.hotReloadPlugin === 'function') {
                     console.log(`[Plugin HMR] Hot reloading ${data.pluginName}`);
                     const success = highlite.pluginManager.hotReloadPlugin(pluginClass);
@@ -333,9 +336,9 @@ if (import.meta.hot && import.meta.env.DEV) {
                 reloadingPlugins.delete(data.pluginName);
             }
         });
-        
+
     };
-    
+
     // Check if we need to set up hot reload immediately or wait
     if (getPlugins().length > 0 && getHighlite()) {
         setupPluginHotReload();

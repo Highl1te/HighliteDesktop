@@ -26,7 +26,14 @@
         <video width="100%" height="100%" autoplay muted loop class="video-background">
             <source src="/media/login_screen.mp4" type="video/mp4">
         </video>
-        <script type="module" src="client/client.ts"></script>
+        <script type="module">
+            const urlParams = new URLSearchParams(window.location.search);
+            const worldId = urlParams.get('worldId');
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = `client/client.ts?worldId=${worldId}`;
+            document.body.appendChild(script);
+        </script>
     </body>
 
     <style>

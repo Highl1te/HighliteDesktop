@@ -1,9 +1,21 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
     <head>
         <meta charset="UTF-8">
         <!-- Local Iconify script -->
     </head>
     <body>
-        <div>SELECT WORLD</div>
+        <button id="world-1">World 1</button>
+        <button id="world-2">World 2</button>
+
+        <script>
+            document.getElementById('world-1').addEventListener('click', () => {
+                window.location.href = `client.html?worldId=1`;
+            });
+
+            document.getElementById('world-2').addEventListener('click', () => {
+                window.location.href = `client.html?worldId=2`;
+            });
+        </script>
     </body>
 </html>
