@@ -20,6 +20,7 @@ import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
+import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 
 import "@static/css/index.css"
 import "@static/css/overrides.css"
@@ -201,6 +202,8 @@ async function generatePage() {
         }
     });
 
+    // Inject World Selector into Login Screen
+    setupWorldSelectorObserver();
 
     // Page Setup Completed, Add Game Client Script
     const clientScript = document.createElement("script");
