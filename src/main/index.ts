@@ -1,13 +1,12 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
 import { createUpdateWindow } from './windows/updater';
 import { createClientWindow } from './windows/client';
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { electronApp, optimizer, is } from '@electron-toolkit/utils';
 import log from 'electron-log';
 
 log.initialize({ spyRendererConsole: true });
 log.transports.console.level = 'info';
 log.transports.file.level = 'debug';
-
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
@@ -15,8 +14,8 @@ if (!gotTheLock) {
 }
 
 app.whenReady().then(async () => {
-    electronApp.setAppUserModelId('com.highlite')
-    const updateWindow : BrowserWindow = await createUpdateWindow();
+    electronApp.setAppUserModelId('com.highlite');
+    const updateWindow: BrowserWindow = await createUpdateWindow();
 
     ipcMain.once('delay-update', async () => {
         await createClientWindow();
@@ -27,7 +26,6 @@ app.whenReady().then(async () => {
         await createClientWindow();
         updateWindow.close();
     });
-
 
     app.on('activate', () => {
         // On macOS it's common to re-create a window in the app when the

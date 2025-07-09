@@ -1,6 +1,6 @@
-import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
-import { SettingsTypes } from "../core/interfaces/highlite/plugin/pluginSettings.interface";
-import { getSkillName } from "../core/utilities/lookupUtils";
+import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
+import { getSkillName } from '../core/utilities/lookupUtils';
 
 interface SkillXPData {
     skillId: number;
@@ -18,21 +18,21 @@ interface XPDrop {
 }
 
 export class XPOrb extends Plugin {
-    pluginName = "XP Orb";
-    author = "JayArrowz";
-    
+    pluginName = 'XP Orb';
+    author = 'JayArrowz';
+
     private xpOrbContainer: HTMLDivElement | null = null;
     private xpOrbElement: HTMLDivElement | null = null;
     private xpDropsContainer: HTMLDivElement | null = null;
     private totalXPDisplay: HTMLDivElement | null = null;
     private sessionXPDisplay: HTMLDivElement | null = null;
-    
+
     private skillXPData: Map<number, SkillXPData> = new Map();
     private activeXPDrops: XPDrop[] = [];
     private isOrbOpen: boolean = true;
     private totalXP: number = 0;
     private sessionXP: number = 0;
-    
+
     private readonly XP_DROP_DURATION = 3000; // 3 seconds
     private readonly XP_DROP_FADE_START = 2000; // Start fading after 2 seconds
     private readonly MAX_VISIBLE_DROPS = 5;
@@ -40,25 +40,25 @@ export class XPOrb extends Plugin {
     constructor() {
         super();
         this.settings.enable = {
-            text: "Enable XP Orb",
+            text: 'Enable XP Orb',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: () => this.toggleXPTracker()
+            callback: () => this.toggleXPTracker(),
         };
         this.settings.xpDrops = {
-            text: "Show XP Drops",
+            text: 'Show XP Drops',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: () => {}
+            callback: () => {},
         };
         this.settings.showSessionXP = {
-            text: "Show Session XP",
+            text: 'Show Session XP',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: () => this.updateSessionXPVisibility()
+            callback: () => this.updateSessionXPVisibility(),
         };
         this.settings.resetSessionXP = {
-            text: "Reset Session XP",
+            text: 'Reset Session XP',
             type: SettingsTypes.checkbox,
             value: false,
             callback: () => {
@@ -66,27 +66,27 @@ export class XPOrb extends Plugin {
                     this.resetSessionXP();
                     this.settings.resetSessionXP.value = false;
                 }
-            }
+            },
         };
     }
 
     init(): void {
-        this.log("Initializing XP Orb");
+        this.log('Initializing XP Orb');
     }
 
     start(): void {
-        this.log("Started XP Orb");
+        this.log('Started XP Orb');
         this.createXPTrackerUI();
     }
 
     stop(): void {
-        this.log("Stopped XP Orb");
+        this.log('Stopped XP Orb');
         this.saveSessionXPToDatabase();
         this.cleanup();
     }
 
     SocketManager_loggedIn(): void {
-        this.log("Player logged in, setting up XP tracking");
+        this.log('Player logged in, setting up XP tracking');
         setTimeout(() => {
             this.loadSessionXPFromDatabase();
             this.setupXPTracking();
@@ -95,7 +95,7 @@ export class XPOrb extends Plugin {
     }
 
     SocketManager_handleLoggedOut(): void {
-        this.log("Player logged out, cleaning up XP tracking");
+        this.log('Player logged out, cleaning up XP tracking');
         this.saveSessionXPToDatabase();
         this.cleanup();
     }
@@ -113,9 +113,11 @@ export class XPOrb extends Plugin {
         this.xpOrbContainer = document.createElement('div');
         this.xpOrbContainer.id = 'highlite-xp-tracker';
         this.xpOrbContainer.style.position = 'absolute';
-        
-        this.xpOrbContainer.style.top = 'calc(var(--hs-compass-button-top) + var(--hs-action-menu-item-width) + 25px)';
-        this.xpOrbContainer.style.right = 'calc(var(--hs-compass-button-right) + 6px)'; 
+
+        this.xpOrbContainer.style.top =
+            'calc(var(--hs-compass-button-top) + var(--hs-action-menu-item-width) + 25px)';
+        this.xpOrbContainer.style.right =
+            'calc(var(--hs-compass-button-right) + 6px)';
         this.xpOrbContainer.style.zIndex = '9999';
         this.xpOrbContainer.style.fontFamily = 'Inter, sans-serif';
         this.xpOrbContainer.style.fontSize = '12px';
@@ -131,7 +133,7 @@ export class XPOrb extends Plugin {
         this.xpDropsContainer.style.position = 'absolute';
         this.xpDropsContainer.style.top = '0px';
         this.xpDropsContainer.style.left = '50%';
-        this.xpDropsContainer.style.transform = 'translateX(-100%)'; 
+        this.xpDropsContainer.style.transform = 'translateX(-100%)';
         this.xpDropsContainer.style.width = '120px';
         this.xpDropsContainer.style.pointerEvents = 'none';
         this.xpDropsContainer.style.zIndex = '10000';
@@ -145,8 +147,6 @@ export class XPOrb extends Plugin {
 
         this.updateTotalXP();
     }
-
-
 
     private createXPOrb(): void {
         if (!this.xpOrbContainer) return;
@@ -175,14 +175,18 @@ export class XPOrb extends Plugin {
         this.totalXPDisplay.style.wordWrap = 'break-word';
         this.totalXPDisplay.style.maxWidth = '90%';
 
-        (document as any).highlite.managers.UIManager.bindOnClickBlockHsMask(this.xpOrbElement, () => {
-            this.toggleOrb();
-        });
+        (document as any).highlite.managers.UIManager.bindOnClickBlockHsMask(
+            this.xpOrbElement,
+            () => {
+                this.toggleOrb();
+            }
+        );
 
         this.xpOrbElement.addEventListener('mouseenter', () => {
             if (this.xpOrbElement) {
                 this.xpOrbElement.style.transform = 'scale(1.1)';
-                this.xpOrbElement.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+                this.xpOrbElement.style.boxShadow =
+                    '0 0 20px rgba(255, 215, 0, 0.5)';
             }
         });
 
@@ -230,7 +234,8 @@ export class XPOrb extends Plugin {
 
     private setupXPTracking(): void {
         try {
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+            const mainPlayer = (document as any).highlite?.gameHooks
+                ?.EntityManager?.Instance?.MainPlayer;
             if (!mainPlayer) {
                 return;
             }
@@ -256,9 +261,7 @@ export class XPOrb extends Plugin {
                     }
                 }
             }
-
-        } catch (error) {
-        }
+        } catch (error) {}
     }
 
     private trackSkill(skill: any, skillName: string): void {
@@ -268,28 +271,35 @@ export class XPOrb extends Plugin {
             skillId,
             previousXP: currentXP,
             currentXP: currentXP,
-            skillName
+            skillName,
         });
 
         try {
-            if (skill.OnExpChangeListener && typeof skill.OnExpChangeListener.add === 'function') {
-                skill.OnExpChangeListener.add((changedSkill: any, totalXp: number) => {
-                    this.onXPChange(skillId, totalXp, skillName);
-                });
+            if (
+                skill.OnExpChangeListener &&
+                typeof skill.OnExpChangeListener.add === 'function'
+            ) {
+                skill.OnExpChangeListener.add(
+                    (changedSkill: any, totalXp: number) => {
+                        this.onXPChange(skillId, totalXp, skillName);
+                    }
+                );
             }
-        } catch (error) {
-        }
+        } catch (error) {}
     }
 
-    private onXPChange(skillId: number, newTotalXP: number, skillName: string): void {
-        
+    private onXPChange(
+        skillId: number,
+        newTotalXP: number,
+        skillName: string
+    ): void {
         const skillData = this.skillXPData.get(skillId);
         if (!skillData) {
             this.skillXPData.set(skillId, {
                 skillId,
                 previousXP: 0,
                 currentXP: newTotalXP,
-                skillName
+                skillName,
             });
             return;
         }
@@ -312,15 +322,17 @@ export class XPOrb extends Plugin {
         if (this.settings.xpDrops.value && this.isOrbOpen) {
             this.showXPDrop(skillId, xpGained, skillName);
         }
-
     }
 
-    private showXPDrop(skillId: number, xpGained: number, skillName: string): void {
-        
+    private showXPDrop(
+        skillId: number,
+        xpGained: number,
+        skillName: string
+    ): void {
         if (!this.xpDropsContainer) {
             return;
         }
-        
+
         if (!this.settings.enable.value) {
             return;
         }
@@ -350,24 +362,30 @@ export class XPOrb extends Plugin {
         const iconElement = document.createElement('div');
         iconElement.style.marginRight = '4px';
         iconElement.style.flexShrink = '0';
-        iconElement.classList.add('hs-icon-background', 'hs-stat-menu-item__icon', `hs-stat-menu-item__icon--${skillName.toLowerCase()}`);
+        iconElement.classList.add(
+            'hs-icon-background',
+            'hs-stat-menu-item__icon',
+            `hs-stat-menu-item__icon--${skillName.toLowerCase()}`
+        );
 
         const xpText = document.createElement('span');
         xpText.style.color = '#00ff00';
         xpText.style.fontSize = '10px';
         xpText.style.fontWeight = 'bold';
-        xpText.style.textShadow = '2px 2px 4px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.8)';
+        xpText.style.textShadow =
+            '2px 2px 4px rgba(0,0,0,1), 0 0 6px rgba(0,0,0,0.8)';
         xpText.style.whiteSpace = 'nowrap';
         xpText.textContent = `+${xpGained.toLocaleString()}`;
 
         dropElement.appendChild(iconElement);
         dropElement.appendChild(xpText);
-        
+
         const dropIndex = this.activeXPDrops.length;
         dropElement.style.position = 'absolute';
         dropElement.style.top = `${dropIndex * 25}px`;
         dropElement.style.left = '50%';
-        dropElement.style.transform = 'translateX(-50%) translateY(-20px) scale(0.8)';
+        dropElement.style.transform =
+            'translateX(-50%) translateY(-20px) scale(0.8)';
 
         this.xpDropsContainer.appendChild(dropElement);
 
@@ -381,7 +399,7 @@ export class XPOrb extends Plugin {
             xpGained,
             skillName,
             timestamp: Date.now(),
-            element: dropElement
+            element: dropElement,
         };
         this.activeXPDrops.push(xpDrop);
     }
@@ -393,28 +411,30 @@ export class XPOrb extends Plugin {
         this.activeXPDrops.forEach((drop, index) => {
             const age = now - drop.timestamp;
 
-            if (age > this.XP_DROP_DURATION) {      
+            if (age > this.XP_DROP_DURATION) {
                 drop.element.remove();
                 dropsToRemove.push(index);
             } else if (age > this.XP_DROP_FADE_START) {
-                const fadeProgress = (age - this.XP_DROP_FADE_START) / (this.XP_DROP_DURATION - this.XP_DROP_FADE_START);
+                const fadeProgress =
+                    (age - this.XP_DROP_FADE_START) /
+                    (this.XP_DROP_DURATION - this.XP_DROP_FADE_START);
                 const opacity = 1 - fadeProgress;
                 const extraY = fadeProgress * 20;
-                const scale = 1 - (fadeProgress * 0.2);
-                
+                const scale = 1 - fadeProgress * 0.2;
+
                 drop.element.style.opacity = Math.max(0, opacity).toString();
                 drop.element.style.transform = `translateX(-50%) translateY(${index * 25 + 40 + extraY}px) scale(${scale})`;
             }
         });
 
-        dropsToRemove.reverse().forEach(index => {
+        dropsToRemove.reverse().forEach((index) => {
             this.activeXPDrops.splice(index, 1);
         });
     }
 
     private updateTotalXP(): void {
         this.totalXP = 0;
-        this.skillXPData.forEach(skillData => {
+        this.skillXPData.forEach((skillData) => {
             this.totalXP += skillData.currentXP;
         });
 
@@ -423,7 +443,7 @@ export class XPOrb extends Plugin {
 
     private updateTotalXPDisplay(): void {
         if (!this.totalXPDisplay) return;
-        
+
         if (this.isOrbOpen) {
             this.totalXPDisplay.innerHTML = `<div>XP</div>`;
             this.totalXPDisplay.style.display = 'block';
@@ -435,7 +455,7 @@ export class XPOrb extends Plugin {
 
     private toggleOrb(): void {
         this.isOrbOpen = !this.isOrbOpen;
-        
+
         if (this.xpOrbElement) {
             if (this.isOrbOpen) {
                 this.xpOrbElement.style.width = `35px`;
@@ -447,11 +467,13 @@ export class XPOrb extends Plugin {
         }
 
         if (this.xpDropsContainer) {
-            this.xpDropsContainer.style.display = this.isOrbOpen ? 'block' : 'none';
+            this.xpDropsContainer.style.display = this.isOrbOpen
+                ? 'block'
+                : 'none';
         }
 
         if (!this.isOrbOpen) {
-            this.activeXPDrops.forEach(drop => drop.element.remove());
+            this.activeXPDrops.forEach((drop) => drop.element.remove());
             this.activeXPDrops = [];
         }
 
@@ -462,7 +484,8 @@ export class XPOrb extends Plugin {
     private toggleXPTracker(): void {
         if (this.settings.enable.value) {
             this.createXPTrackerUI();
-            const mainPlayer = (document as any).highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+            const mainPlayer = (document as any).highlite?.gameHooks
+                ?.EntityManager?.Instance?.MainPlayer;
             if (mainPlayer) {
                 this.setupXPTracking();
             }
@@ -495,39 +518,51 @@ export class XPOrb extends Plugin {
 
     private updateSessionXPVisibility(): void {
         if (!this.sessionXPDisplay) return;
-        this.sessionXPDisplay.style.display = (this.isOrbOpen && this.settings.showSessionXP.value) ? 'block' : 'none';
+        this.sessionXPDisplay.style.display =
+            this.isOrbOpen && this.settings.showSessionXP.value
+                ? 'block'
+                : 'none';
     }
 
     private async saveSessionXPToDatabase(): Promise<void> {
         try {
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager;
+            const dbManager = (document as any).highlite?.managers
+                ?.DatabaseManager;
             if (!dbManager || !dbManager.database) return;
 
             const sessionData = {
                 sessionXP: this.sessionXP,
-                lastUpdated: Date.now()
+                lastUpdated: Date.now(),
             };
 
-            await dbManager.database.put('settings', sessionData, `${this.pluginName}_sessionXP`);
+            await dbManager.database.put(
+                'settings',
+                sessionData,
+                `${this.pluginName}_sessionXP`
+            );
         } catch (error) {
-            console.error("Error saving session XP to database:", error);
+            console.error('Error saving session XP to database:', error);
         }
     }
 
     private async loadSessionXPFromDatabase(): Promise<void> {
         try {
-            const dbManager = (document as any).highlite?.managers?.DatabaseManager;
+            const dbManager = (document as any).highlite?.managers
+                ?.DatabaseManager;
             if (!dbManager || !dbManager.database) return;
 
-            const sessionData = await dbManager.database.get('settings', `${this.pluginName}_sessionXP`);
-            
+            const sessionData = await dbManager.database.get(
+                'settings',
+                `${this.pluginName}_sessionXP`
+            );
+
             if (sessionData && typeof sessionData.sessionXP === 'number') {
                 this.sessionXP = sessionData.sessionXP;
                 this.updateSessionXPDisplay();
                 this.log(`Loaded session XP from database: ${this.sessionXP}`);
             }
         } catch (error) {
-            console.error("Error loading session XP from database:", error);
+            console.error('Error loading session XP from database:', error);
         }
     }
 
@@ -536,9 +571,9 @@ export class XPOrb extends Plugin {
             this.sessionXP = 0;
             this.updateSessionXPDisplay();
             await this.saveSessionXPToDatabase();
-            this.log("Session XP reset to 0");
+            this.log('Session XP reset to 0');
         } catch (error) {
-            console.error("Error resetting session XP:", error);
+            console.error('Error resetting session XP:', error);
         }
     }
 
@@ -547,7 +582,7 @@ export class XPOrb extends Plugin {
             this.xpOrbContainer.parentNode.removeChild(this.xpOrbContainer);
         }
 
-        this.activeXPDrops.forEach(drop => {
+        this.activeXPDrops.forEach((drop) => {
             if (drop.element && drop.element.parentNode) {
                 drop.element.parentNode.removeChild(drop.element);
             }
@@ -562,12 +597,12 @@ export class XPOrb extends Plugin {
     }
 
     private cleanup(): void {
-        this.log("cleanup called - clearing all data");
+        this.log('cleanup called - clearing all data');
         if (this.xpOrbContainer && this.xpOrbContainer.parentNode) {
             this.xpOrbContainer.parentNode.removeChild(this.xpOrbContainer);
         }
 
-        this.activeXPDrops.forEach(drop => {
+        this.activeXPDrops.forEach((drop) => {
             if (drop.element && drop.element.parentNode) {
                 drop.element.parentNode.removeChild(drop.element);
             }
@@ -582,4 +617,4 @@ export class XPOrb extends Plugin {
         this.skillXPData.clear();
         this.totalXP = 0;
     }
-} 
+}

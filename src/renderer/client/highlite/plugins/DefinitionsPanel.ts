@@ -1,10 +1,13 @@
-import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
-import { PanelManager } from "../core/managers/highlite/panelManager";
-import { getEquipmentTypeName, getSkillName } from "../core/utilities/lookupUtils";
+import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { PanelManager } from '../core/managers/highlite/panelManager';
+import {
+    getEquipmentTypeName,
+    getSkillName,
+} from '../core/utilities/lookupUtils';
 
 export class DefinitionsPanel extends Plugin {
-    pluginName = "Definitions Panel";
-    author = "Highlite";
+    pluginName = 'Definitions Panel';
+    author = 'Highlite';
     panelManager: PanelManager = new PanelManager();
     panelContent: HTMLElement | null = null;
     itemListContainer: HTMLDivElement | null = null;
@@ -29,14 +32,14 @@ export class DefinitionsPanel extends Plugin {
     private activeSpriteUrls: Set<string> = new Set(); // Track URLs we've created
 
     init(): void {
-        this.log("Definitions Panel initialized");
+        this.log('Definitions Panel initialized');
 
         // Add global reference for button onclick handlers
         (window as any).highliteItemPanel = this;
     }
 
     start(): void {
-        this.log("Definitions Panel started");
+        this.log('Definitions Panel started');
         if (!this.settings.enable.value) {
             return;
         }
@@ -95,9 +98,12 @@ export class DefinitionsPanel extends Plugin {
     private createPanel(): void {
         try {
             // Request panel menu item
-            const panelItems = this.panelManager.requestMenuItem("📦", "Definitions");
+            const panelItems = this.panelManager.requestMenuItem(
+                '📦',
+                'Definitions'
+            );
             if (!panelItems) {
-                this.error("Failed to create Definition panel menu item");
+                this.error('Failed to create Definition panel menu item');
                 return;
             }
 
@@ -211,9 +217,10 @@ export class DefinitionsPanel extends Plugin {
 
         // Update search placeholder
         if (this.searchInput) {
-            this.searchInput.placeholder = view === 'items'
-                ? 'Search items by name or ID...'
-                : 'Search NPCs by name or ID...';
+            this.searchInput.placeholder =
+                view === 'items'
+                    ? 'Search items by name or ID...'
+                    : 'Search NPCs by name or ID...';
             this.searchInput.value = '';
         }
 
@@ -253,11 +260,11 @@ export class DefinitionsPanel extends Plugin {
                 '--hs-url-small-creature1',
                 '--hs-url-medium-creature1',
                 '--hs-url-large-creature1',
-                '--hs-url-largest-creature1'
+                '--hs-url-largest-creature1',
             ];
 
             let styleString = '';
-            cssVariables.forEach(variable => {
+            cssVariables.forEach((variable) => {
                 const value = computedStyle.getPropertyValue(variable);
                 if (value) {
                     styleString += `${variable}: ${value}; `;
@@ -276,9 +283,10 @@ export class DefinitionsPanel extends Plugin {
         if (this.itemsLoaded) return; // Already loaded
 
         try {
-            const itemDefMap = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap;
+            const itemDefMap = (document as any).highlite?.gameHooks?.ItemDefMap
+                ?.ItemDefMap;
             if (!itemDefMap) {
-                this.error("ItemDefMap not found");
+                this.error('ItemDefMap not found');
                 return;
             }
 
@@ -311,9 +319,10 @@ export class DefinitionsPanel extends Plugin {
         if (this.npcsLoaded) return; // Already loaded
 
         try {
-            const npcDefMap = (document as any).highlite?.gameHooks?.NpcDefinitionManager?._npcDefMap;
+            const npcDefMap = (document as any).highlite?.gameHooks
+                ?.NpcDefinitionManager?._npcDefMap;
             if (!npcDefMap) {
-                this.error("NpcDefMap not found");
+                this.error('NpcDefMap not found');
                 return;
             }
 
@@ -345,9 +354,13 @@ export class DefinitionsPanel extends Plugin {
     private async loadLootData(): Promise<void> {
         try {
             this.log('Loading loot data...');
-            const response = await fetch('https://highspell.com:8887/static/npcloot.16.carbon');
+            const response = await fetch(
+                'https://highspell.com:8887/static/npcloot.16.carbon'
+            );
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                throw new Error(
+                    `HTTP ${response.status}: ${response.statusText}`
+                );
             }
             this.lootData = await response.json();
             this.log('Loot data loaded successfully');
@@ -367,8 +380,10 @@ export class DefinitionsPanel extends Plugin {
         }
 
         // Find the NPC's loot table
-        const npcLootTable = this.lootData.npcLootTables?.find((table: any) => table._id === lootTableId);
-        
+        const npcLootTable = this.lootData.npcLootTables?.find(
+            (table: any) => table._id === lootTableId
+        );
+
         if (!npcLootTable) {
             return `
                 <div class="detail-section">
@@ -412,10 +427,14 @@ export class DefinitionsPanel extends Plugin {
             `;
 
             // Sort by odds (highest first)
-            const sortedLoot = [...npcLootTable.loot].sort((a, b) => (b.odds || 0) - (a.odds || 0));
+            const sortedLoot = [...npcLootTable.loot].sort(
+                (a, b) => (b.odds || 0) - (a.odds || 0)
+            );
 
             sortedLoot.forEach((item: any) => {
-                const percentage = item.odds ? `${(item.odds * 100).toFixed(2)}%` : 'Unknown';
+                const percentage = item.odds
+                    ? `${(item.odds * 100).toFixed(2)}%`
+                    : 'Unknown';
                 html += this.generateLootItemHtml(item, percentage);
             });
 
@@ -426,7 +445,11 @@ export class DefinitionsPanel extends Plugin {
         }
 
         // Rare Loot Table
-        if (npcLootTable.rareLootProbability && npcLootTable.rareLootProbability > 0 && this.lootData.rareLootTable) {
+        if (
+            npcLootTable.rareLootProbability &&
+            npcLootTable.rareLootProbability > 0 &&
+            this.lootData.rareLootTable
+        ) {
             html += `
                 <div class="loot-subsection">
                     <h4>Rare Drops (${(npcLootTable.rareLootProbability * 100).toFixed(2)}% chance to roll)</h4>
@@ -434,11 +457,14 @@ export class DefinitionsPanel extends Plugin {
             `;
 
             if (this.lootData.rareLootTable.loot) {
-                const sortedRareLoot = [...this.lootData.rareLootTable.loot].sort((a, b) => (b.odds || 0) - (a.odds || 0));
+                const sortedRareLoot = [
+                    ...this.lootData.rareLootTable.loot,
+                ].sort((a, b) => (b.odds || 0) - (a.odds || 0));
 
                 sortedRareLoot.forEach((item: any) => {
-                    const basePercentage = item.odds ? (item.odds * 100) : 0;
-                    const actualPercentage = basePercentage * npcLootTable.rareLootProbability;
+                    const basePercentage = item.odds ? item.odds * 100 : 0;
+                    const actualPercentage =
+                        basePercentage * npcLootTable.rareLootProbability;
                     const percentage = `${actualPercentage.toFixed(4)}%`;
                     html += this.generateLootItemHtml(item, percentage, true);
                 });
@@ -452,7 +478,9 @@ export class DefinitionsPanel extends Plugin {
 
         // Root Loot
         if (npcLootTable.rootLoot && this.lootData.rootLootTables) {
-            const rootTable = this.lootData.rootLootTables.find((table: any) => table._id === npcLootTable.rootLoot.tableId);
+            const rootTable = this.lootData.rootLootTables.find(
+                (table: any) => table._id === npcLootTable.rootLoot.tableId
+            );
             if (rootTable) {
                 html += `
                     <div class="loot-subsection">
@@ -462,13 +490,21 @@ export class DefinitionsPanel extends Plugin {
                 `;
 
                 if (rootTable.loot) {
-                    const sortedRootLoot = [...rootTable.loot].sort((a, b) => (b.odds || 0) - (a.odds || 0));
+                    const sortedRootLoot = [...rootTable.loot].sort(
+                        (a, b) => (b.odds || 0) - (a.odds || 0)
+                    );
 
                     sortedRootLoot.forEach((item: any) => {
-                        const basePercentage = item.odds ? (item.odds * 100) : 0;
-                        const actualPercentage = basePercentage * npcLootTable.rootLoot.probability;
+                        const basePercentage = item.odds ? item.odds * 100 : 0;
+                        const actualPercentage =
+                            basePercentage * npcLootTable.rootLoot.probability;
                         const percentage = `${actualPercentage.toFixed(4)}%`;
-                        html += this.generateLootItemHtml(item, percentage, false, true);
+                        html += this.generateLootItemHtml(
+                            item,
+                            percentage,
+                            false,
+                            true
+                        );
                     });
                 }
 
@@ -501,12 +537,29 @@ export class DefinitionsPanel extends Plugin {
         return html;
     }
 
-    private generateLootItemHtml(item: any, percentage: string, isRare: boolean = false, isRoot: boolean = false): string {
+    private generateLootItemHtml(
+        item: any,
+        percentage: string,
+        isRare: boolean = false,
+        isRoot: boolean = false
+    ): string {
         try {
-            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item.itemId);
-            const itemName = itemDef?._nameCapitalized || itemDef?._name || item.name || `Item ${item.itemId}`;
-            const itemPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item.itemId);
-            const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';
+            const itemDef = (
+                document as any
+            ).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item.itemId);
+            const itemName =
+                itemDef?._nameCapitalized ||
+                itemDef?._name ||
+                item.name ||
+                `Item ${item.itemId}`;
+            const itemPos = (
+                document as any
+            ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                item.itemId
+            );
+            const spriteStyle = itemPos
+                ? `style="background-position: ${itemPos};"`
+                : '';
 
             let cssClass = 'loot-item';
             if (isRare) cssClass += ' rare-loot';
@@ -556,12 +609,18 @@ export class DefinitionsPanel extends Plugin {
         }> = [];
 
         // Check each NPC for drops of this item
-        this.allNpcs.forEach(npc => {
-            if (!npc._combat || !npc._combat._lootTableId || npc._combat._lootTableId === -1) {
+        this.allNpcs.forEach((npc) => {
+            if (
+                !npc._combat ||
+                !npc._combat._lootTableId ||
+                npc._combat._lootTableId === -1
+            ) {
                 return;
             }
 
-            const npcLootTable = this.lootData.npcLootTables?.find((table: any) => table._id === npc._combat._lootTableId);
+            const npcLootTable = this.lootData.npcLootTables?.find(
+                (table: any) => table._id === npc._combat._lootTableId
+            );
             if (!npcLootTable) {
                 return;
             }
@@ -576,7 +635,7 @@ export class DefinitionsPanel extends Plugin {
                             type: 'base',
                             percentage: '100%',
                             amount: item.amount || 1,
-                            isIOU: item.isIOU || false
+                            isIOU: item.isIOU || false,
                         });
                     }
                 });
@@ -586,28 +645,35 @@ export class DefinitionsPanel extends Plugin {
             if (npcLootTable.loot) {
                 npcLootTable.loot.forEach((item: any) => {
                     if (item.itemId === itemId) {
-                        const percentage = item.odds ? `${(item.odds * 100).toFixed(2)}%` : 'Unknown';
+                        const percentage = item.odds
+                            ? `${(item.odds * 100).toFixed(2)}%`
+                            : 'Unknown';
                         dropInfo.push({
                             type: 'regular',
                             percentage,
                             amount: item.amount || 1,
-                            isIOU: item.isIOU || false
+                            isIOU: item.isIOU || false,
                         });
                     }
                 });
             }
 
             // Check rare loot
-            if (npcLootTable.rareLootProbability && npcLootTable.rareLootProbability > 0 && this.lootData.rareLootTable?.loot) {
+            if (
+                npcLootTable.rareLootProbability &&
+                npcLootTable.rareLootProbability > 0 &&
+                this.lootData.rareLootTable?.loot
+            ) {
                 this.lootData.rareLootTable.loot.forEach((item: any) => {
                     if (item.itemId === itemId) {
-                        const basePercentage = item.odds ? (item.odds * 100) : 0;
-                        const actualPercentage = basePercentage * npcLootTable.rareLootProbability;
+                        const basePercentage = item.odds ? item.odds * 100 : 0;
+                        const actualPercentage =
+                            basePercentage * npcLootTable.rareLootProbability;
                         dropInfo.push({
                             type: 'rare',
                             percentage: `${actualPercentage.toFixed(4)}%`,
                             amount: item.amount || 1,
-                            isIOU: item.isIOU || false
+                            isIOU: item.isIOU || false,
                         });
                     }
                 });
@@ -615,17 +681,23 @@ export class DefinitionsPanel extends Plugin {
 
             // Check root loot
             if (npcLootTable.rootLoot && this.lootData.rootLootTables) {
-                const rootTable = this.lootData.rootLootTables.find((table: any) => table._id === npcLootTable.rootLoot.tableId);
+                const rootTable = this.lootData.rootLootTables.find(
+                    (table: any) => table._id === npcLootTable.rootLoot.tableId
+                );
                 if (rootTable?.loot) {
                     rootTable.loot.forEach((item: any) => {
                         if (item.itemId === itemId) {
-                            const basePercentage = item.odds ? (item.odds * 100) : 0;
-                            const actualPercentage = basePercentage * npcLootTable.rootLoot.probability;
+                            const basePercentage = item.odds
+                                ? item.odds * 100
+                                : 0;
+                            const actualPercentage =
+                                basePercentage *
+                                npcLootTable.rootLoot.probability;
                             dropInfo.push({
                                 type: 'root',
                                 percentage: `${actualPercentage.toFixed(4)}%`,
                                 amount: item.amount || 1,
-                                isIOU: item.isIOU || false
+                                isIOU: item.isIOU || false,
                             });
                         }
                     });
@@ -644,10 +716,14 @@ export class DefinitionsPanel extends Plugin {
         // Sort NPCs by best drop rate (highest percentage first)
         droppingNpcs.sort((a, b) => {
             const getBestRate = (drops: any[]) => {
-                return Math.max(...drops.map(drop => {
-                    if (drop.percentage === '100%') return 100;
-                    return parseFloat(drop.percentage.replace('%', '')) || 0;
-                }));
+                return Math.max(
+                    ...drops.map((drop) => {
+                        if (drop.percentage === '100%') return 100;
+                        return (
+                            parseFloat(drop.percentage.replace('%', '')) || 0
+                        );
+                    })
+                );
             };
             return getBestRate(b.dropInfo) - getBestRate(a.dropInfo);
         });
@@ -725,12 +801,15 @@ export class DefinitionsPanel extends Plugin {
     private createNpcDropSprites(container: HTMLElement): void {
         if (!this.lootData || !this.allNpcs) return;
 
-        const npcSpriteElements = container.querySelectorAll('[data-npc-sprite]');
-        
-        npcSpriteElements.forEach(spriteElement => {
-            const npcId = parseInt(spriteElement.getAttribute('data-npc-sprite') || '0');
-            const npc = this.allNpcs.find(n => n._id === npcId);
-            
+        const npcSpriteElements =
+            container.querySelectorAll('[data-npc-sprite]');
+
+        npcSpriteElements.forEach((spriteElement) => {
+            const npcId = parseInt(
+                spriteElement.getAttribute('data-npc-sprite') || '0'
+            );
+            const npc = this.allNpcs.find((n) => n._id === npcId);
+
             if (!npc) return;
 
             const typeInfo = this.getNpcTypeInfo(npc);
@@ -743,19 +822,26 @@ export class DefinitionsPanel extends Plugin {
 
                 // Set basic sprite properties
                 spriteElement.className = `npc-drop-sprite npc-sprite-${sizeClass}`;
-                (spriteElement as HTMLElement).dataset.creatureType = creatureType.toString();
+                (spriteElement as HTMLElement).dataset.creatureType =
+                    creatureType.toString();
 
                 // Create inner sprite content element for scaling
                 const spriteContent = document.createElement('div');
                 spriteContent.className = 'sprite-content';
 
                 // Get sprite info from SpritesheetManager
-                const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
-                const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
+                const spritesheetManager = (document as any).highlite?.gameHooks
+                    ?.SpriteSheetManager?.Instance;
+                const creatureSpritesheetInfo =
+                    spritesheetManager?.CreatureSpritesheetInfo;
 
-                if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
+                if (
+                    creatureSpritesheetInfo &&
+                    creatureSpritesheetInfo[creatureType]
+                ) {
                     const sheetIndex = 0;
-                    const spriteInfo = creatureSpritesheetInfo[creatureType][sheetIndex];
+                    const spriteInfo =
+                        creatureSpritesheetInfo[creatureType][sheetIndex];
 
                     if (spriteInfo) {
                         // Set background from sprite info on the content element
@@ -766,16 +852,29 @@ export class DefinitionsPanel extends Plugin {
 
                         // Calculate sprite position
                         const spriteFrameIndex = 15 * creatureSpriteId;
-                        const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                        const spritePos = this.calculateSpritePositionFromId(
+                            spriteFrameIndex,
+                            creatureType
+                        );
                         spriteContent.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
-                        
+
                         // Track sprite usage
-                        (spriteElement as HTMLElement).setAttribute('data-sprite-modal', 'true');
-                        this.trackSpriteUsage(spriteElement as HTMLElement, spriteInfo.SpritesheetURL, 'modal');
+                        (spriteElement as HTMLElement).setAttribute(
+                            'data-sprite-modal',
+                            'true'
+                        );
+                        this.trackSpriteUsage(
+                            spriteElement as HTMLElement,
+                            spriteInfo.SpritesheetURL,
+                            'modal'
+                        );
                     } else {
                         // Fallback to CSS approach
                         const spriteFrameIndex = 15 * creatureSpriteId;
-                        const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                        const spritePos = this.calculateSpritePositionFromId(
+                            spriteFrameIndex,
+                            creatureType
+                        );
                         spriteContent.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
                         spriteContent.style.backgroundRepeat = 'no-repeat';
                         spriteContent.style.imageRendering = 'pixelated';
@@ -783,7 +882,10 @@ export class DefinitionsPanel extends Plugin {
                 } else {
                     // Fallback to CSS approach
                     const spriteFrameIndex = 15 * creatureSpriteId;
-                    const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                    const spritePos = this.calculateSpritePositionFromId(
+                        spriteFrameIndex,
+                        creatureType
+                    );
                     spriteContent.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
                     spriteContent.style.backgroundRepeat = 'no-repeat';
                     spriteContent.style.imageRendering = 'pixelated';
@@ -792,53 +894,81 @@ export class DefinitionsPanel extends Plugin {
                 // Clear any existing content and add the sprite content
                 spriteElement.innerHTML = '';
                 spriteElement.appendChild(spriteContent);
-
             } else if (typeInfo.isHuman) {
                 // Human NPCs
-                spriteElement.className = "npc-drop-sprite npc-sprite-human";
-                (spriteElement as HTMLElement).dataset.npcId = npc._id.toString();
+                spriteElement.className = 'npc-drop-sprite npc-sprite-human';
+                (spriteElement as HTMLElement).dataset.npcId =
+                    npc._id.toString();
 
                 // Try to access cached human sprite from SpritesheetManager
-                const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
-                const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
+                const spritesheetManager = (document as any).highlite.gameHooks
+                    .SpriteSheetManager.Instance;
+                const humanSpriteInfo =
+                    spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
 
                 if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
                     // Use existing sprite URL
-                    (spriteElement as HTMLElement).style.backgroundImage = `url('${humanSpriteInfo.SpritesheetURL}')`;
-                    (spriteElement as HTMLElement).style.backgroundPosition = "-71px 0px";
-                    (spriteElement as HTMLElement).style.backgroundSize = "auto";
-                    
+                    (spriteElement as HTMLElement).style.backgroundImage =
+                        `url('${humanSpriteInfo.SpritesheetURL}')`;
+                    (spriteElement as HTMLElement).style.backgroundPosition =
+                        '-71px 0px';
+                    (spriteElement as HTMLElement).style.backgroundSize =
+                        'auto';
+
                     // Track sprite usage
-                    (spriteElement as HTMLElement).setAttribute('data-sprite-modal', 'true');
-                    this.trackSpriteUsage(spriteElement as HTMLElement, humanSpriteInfo.SpritesheetURL, 'modal');
+                    (spriteElement as HTMLElement).setAttribute(
+                        'data-sprite-modal',
+                        'true'
+                    );
+                    this.trackSpriteUsage(
+                        spriteElement as HTMLElement,
+                        humanSpriteInfo.SpritesheetURL,
+                        'modal'
+                    );
                 } else {
                     // No cached sprite, show placeholder initially
-                    spriteElement.innerHTML = "👤";
-                    (spriteElement as HTMLElement).style.backgroundColor = "#f0f0f0";
-                    (spriteElement as HTMLElement).style.display = "flex";
-                    (spriteElement as HTMLElement).style.alignItems = "center";
-                    (spriteElement as HTMLElement).style.justifyContent = "center";
-                    (spriteElement as HTMLElement).style.fontSize = "20px";
-                    (spriteElement as HTMLElement).style.color = "#666";
+                    spriteElement.innerHTML = '👤';
+                    (spriteElement as HTMLElement).style.backgroundColor =
+                        '#f0f0f0';
+                    (spriteElement as HTMLElement).style.display = 'flex';
+                    (spriteElement as HTMLElement).style.alignItems = 'center';
+                    (spriteElement as HTMLElement).style.justifyContent =
+                        'center';
+                    (spriteElement as HTMLElement).style.fontSize = '20px';
+                    (spriteElement as HTMLElement).style.color = '#666';
 
                     // Request sprite generation through the game's system
                     this.requestHumanSprite(npc);
 
                     // Poll for the sprite
                     const pollInterval = setInterval(() => {
-                        const spriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
+                        const spriteInfo =
+                            spritesheetManager?.HumanNPCSpritesheetInfo?.get(
+                                npc._id
+                            );
                         if (spriteInfo && spriteInfo.SpritesheetURL) {
                             clearInterval(pollInterval);
-                            const targetElement = container.querySelector(`[data-npc-sprite="${npc._id}"]`) as HTMLElement;
+                            const targetElement = container.querySelector(
+                                `[data-npc-sprite="${npc._id}"]`
+                            ) as HTMLElement;
                             if (targetElement) {
-                                targetElement.innerHTML = "";
+                                targetElement.innerHTML = '';
                                 targetElement.style.backgroundImage = `url('${spriteInfo.SpritesheetURL}')`;
-                                targetElement.style.backgroundPosition = "-70px 0px";
-                                targetElement.style.backgroundSize = "auto";
-                                targetElement.style.backgroundColor = "transparent";
-                                targetElement.setAttribute('data-sprite-modal', 'true');
+                                targetElement.style.backgroundPosition =
+                                    '-70px 0px';
+                                targetElement.style.backgroundSize = 'auto';
+                                targetElement.style.backgroundColor =
+                                    'transparent';
+                                targetElement.setAttribute(
+                                    'data-sprite-modal',
+                                    'true'
+                                );
                                 // Track sprite usage
-                                this.trackSpriteUsage(targetElement, spriteInfo.SpritesheetURL, 'modal');
+                                this.trackSpriteUsage(
+                                    targetElement,
+                                    spriteInfo.SpritesheetURL,
+                                    'modal'
+                                );
                             }
                         }
                     }, 100); // Poll every 100ms
@@ -848,8 +978,8 @@ export class DefinitionsPanel extends Plugin {
                 }
             } else {
                 // Unknown or simple NPCs
-                spriteElement.className = "npc-drop-sprite npc-sprite-unknown";
-                spriteElement.innerHTML = "?";
+                spriteElement.className = 'npc-drop-sprite npc-sprite-unknown';
+                spriteElement.innerHTML = '?';
             }
         });
     }
@@ -866,26 +996,34 @@ export class DefinitionsPanel extends Plugin {
                 isCreature: true,
                 isHuman: false,
                 creatureType: npc._creatureAppearance._creatureType || 0,
-                creatureSpriteId: npc._creatureAppearance._creatureSpriteId || 0
+                creatureSpriteId:
+                    npc._creatureAppearance._creatureSpriteId || 0,
             };
         }
 
         // Check if this looks like a creature based on _creatureType
-        if (npc._creatureType !== undefined && npc._creatureType !== null && npc._creatureType !== -1) {
+        if (
+            npc._creatureType !== undefined &&
+            npc._creatureType !== null &&
+            npc._creatureType !== -1
+        ) {
             // This is a creature NPC (creatureType >= 0)
             return {
                 isCreature: true,
                 isHuman: false,
                 creatureType: npc._creatureType,
-                creatureSpriteId: 0 // Default sprite ID if not specified
+                creatureSpriteId: 0, // Default sprite ID if not specified
             };
         }
 
         // If creatureType is -1 (OM.none) or has human appearance, it's human
-        if (npc._creatureType === -1 || (npc._appearance && (
-            npc._appearance._hairId !== undefined ||
-            npc._appearance._bodyId !== undefined ||
-            npc._appearance._equippedItems))) {
+        if (
+            npc._creatureType === -1 ||
+            (npc._appearance &&
+                (npc._appearance._hairId !== undefined ||
+                    npc._appearance._bodyId !== undefined ||
+                    npc._appearance._equippedItems))
+        ) {
             return { isCreature: false, isHuman: true };
         }
 
@@ -899,10 +1037,12 @@ export class DefinitionsPanel extends Plugin {
 
         if (this.currentView === 'items') {
             if (totalEl) totalEl.textContent = this.allItems.length.toString();
-            if (showingEl) showingEl.textContent = this.filteredItems.length.toString();
+            if (showingEl)
+                showingEl.textContent = this.filteredItems.length.toString();
         } else {
             if (totalEl) totalEl.textContent = this.allNpcs.length.toString();
-            if (showingEl) showingEl.textContent = this.filteredNpcs.length.toString();
+            if (showingEl)
+                showingEl.textContent = this.filteredNpcs.length.toString();
         }
     }
 
@@ -914,9 +1054,10 @@ export class DefinitionsPanel extends Plugin {
         if (!searchTerm) {
             this.filteredItems = [...this.allItems];
         } else {
-            this.filteredItems = this.allItems.filter(item => {
+            this.filteredItems = this.allItems.filter((item) => {
                 const idMatch = item._id.toString().includes(searchTerm);
-                const nameMatch = item._name?.toLowerCase().includes(searchTerm) ||
+                const nameMatch =
+                    item._name?.toLowerCase().includes(searchTerm) ||
                     item._nameCapitalized?.toLowerCase().includes(searchTerm);
                 return idMatch || nameMatch;
             });
@@ -935,9 +1076,10 @@ export class DefinitionsPanel extends Plugin {
         if (!searchTerm) {
             this.filteredNpcs = [...this.allNpcs];
         } else {
-            this.filteredNpcs = this.allNpcs.filter(npc => {
+            this.filteredNpcs = this.allNpcs.filter((npc) => {
                 const idMatch = npc._id.toString().includes(searchTerm);
-                const nameMatch = npc._name?.toLowerCase().includes(searchTerm) ||
+                const nameMatch =
+                    npc._name?.toLowerCase().includes(searchTerm) ||
                     npc._nameCapitalized?.toLowerCase().includes(searchTerm);
                 return idMatch || nameMatch;
             });
@@ -952,16 +1094,19 @@ export class DefinitionsPanel extends Plugin {
         if (!this.itemListContainer) return;
 
         const startIndex = this.currentPage * this.itemsPerPage;
-        const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredItems.length);
+        const endIndex = Math.min(
+            startIndex + this.itemsPerPage,
+            this.filteredItems.length
+        );
         const pageItems = this.filteredItems.slice(startIndex, endIndex);
 
         // Get item IDs that will be displayed in the new render (items don't need sprite preservation like NPCs)
         // Clean up sprites from previous render
         this.cleanupSidebarSprites();
 
-        this.itemListContainer.innerHTML = "";
+        this.itemListContainer.innerHTML = '';
 
-        pageItems.forEach(item => {
+        pageItems.forEach((item) => {
             const itemElement = this.createItemElement(item);
             if (this.itemListContainer) {
                 this.itemListContainer.appendChild(itemElement);
@@ -971,9 +1116,11 @@ export class DefinitionsPanel extends Plugin {
         this.updatePagination();
 
         if (this.filteredItems.length === 0) {
-            const noResults = document.createElement("div");
-            noResults.className = "item-no-results";
-            noResults.textContent = this.searchInput?.value ? "No items found" : "No items loaded";
+            const noResults = document.createElement('div');
+            noResults.className = 'item-no-results';
+            noResults.textContent = this.searchInput?.value
+                ? 'No items found'
+                : 'No items loaded';
             this.itemListContainer.appendChild(noResults);
         }
     }
@@ -984,23 +1131,29 @@ export class DefinitionsPanel extends Plugin {
         // Only clean up sprites if the container is not empty (avoid cleaning during initial load)
         if (this.itemListContainer.children.length > 0) {
             const startIndex = this.currentPage * this.itemsPerPage;
-            const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredNpcs.length);
+            const endIndex = Math.min(
+                startIndex + this.itemsPerPage,
+                this.filteredNpcs.length
+            );
             const pageNpcs = this.filteredNpcs.slice(startIndex, endIndex);
 
             // Get NPC IDs that will be displayed in the new render
-            const newNpcIds = new Set(pageNpcs.map(npc => npc._id));
+            const newNpcIds = new Set(pageNpcs.map((npc) => npc._id));
 
             // Clean up sprites from previous render, but preserve ones we'll reuse
             this.cleanupSidebarSprites(newNpcIds);
         }
 
-        this.itemListContainer.innerHTML = "";
+        this.itemListContainer.innerHTML = '';
 
         const startIndex = this.currentPage * this.itemsPerPage;
-        const endIndex = Math.min(startIndex + this.itemsPerPage, this.filteredNpcs.length);
+        const endIndex = Math.min(
+            startIndex + this.itemsPerPage,
+            this.filteredNpcs.length
+        );
         const pageNpcs = this.filteredNpcs.slice(startIndex, endIndex);
 
-        pageNpcs.forEach(npc => {
+        pageNpcs.forEach((npc) => {
             const npcElement = this.createNpcElement(npc);
             if (this.itemListContainer) {
                 this.itemListContainer.appendChild(npcElement);
@@ -1010,23 +1163,29 @@ export class DefinitionsPanel extends Plugin {
         this.updatePagination();
 
         if (this.filteredNpcs.length === 0) {
-            const noResults = document.createElement("div");
-            noResults.className = "item-no-results";
-            noResults.textContent = this.searchInput?.value ? "No NPCs found" : "No NPCs loaded";
+            const noResults = document.createElement('div');
+            noResults.className = 'item-no-results';
+            noResults.textContent = this.searchInput?.value
+                ? 'No NPCs found'
+                : 'No NPCs loaded';
             this.itemListContainer.appendChild(noResults);
         }
     }
 
     private createItemElement(item: any): HTMLDivElement {
-        const itemEl = document.createElement("div");
-        itemEl.className = "item-list-item";
+        const itemEl = document.createElement('div');
+        itemEl.className = 'item-list-item';
         itemEl.dataset.itemId = item._id.toString();
 
         // Item sprite
-        const sprite = document.createElement("div");
-        sprite.className = "item-sprite";
+        const sprite = document.createElement('div');
+        sprite.className = 'item-sprite';
         try {
-            const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(parseInt(item._id.toString()));
+            const pos = (
+                document as any
+            ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                parseInt(item._id.toString())
+            );
             if (pos) {
                 sprite.style.backgroundPosition = pos;
             }
@@ -1036,16 +1195,17 @@ export class DefinitionsPanel extends Plugin {
         itemEl.appendChild(sprite);
 
         // Item info
-        const info = document.createElement("div");
-        info.className = "item-info";
+        const info = document.createElement('div');
+        info.className = 'item-info';
 
-        const name = document.createElement("div");
-        name.className = "item-name";
-        name.textContent = item._nameCapitalized || item._name || `Item ${item._id}`;
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent =
+            item._nameCapitalized || item._name || `Item ${item._id}`;
         info.appendChild(name);
 
-        const id = document.createElement("div");
-        id.className = "item-id";
+        const id = document.createElement('div');
+        id.className = 'item-id';
         id.textContent = `ID: ${item._id}`;
         info.appendChild(id);
 
@@ -1059,22 +1219,22 @@ export class DefinitionsPanel extends Plugin {
     }
 
     private createNpcElement(npc: any): HTMLDivElement {
-        const npcEl = document.createElement("div");
-        npcEl.className = "item-list-item npc-list-item";
+        const npcEl = document.createElement('div');
+        npcEl.className = 'item-list-item npc-list-item';
         npcEl.dataset.npcId = npc._id.toString();
 
         // NPC sprite wrapper (for badge overflow)
-        const spriteWrapper = document.createElement("div");
-        spriteWrapper.className = "npc-sprite-wrapper";
+        const spriteWrapper = document.createElement('div');
+        spriteWrapper.className = 'npc-sprite-wrapper';
 
         // NPC sprite container
-        const spriteContainer = document.createElement("div");
-        spriteContainer.className = "npc-sprite-container";
+        const spriteContainer = document.createElement('div');
+        spriteContainer.className = 'npc-sprite-container';
 
         // Determine NPC type
         const typeInfo = this.getNpcTypeInfo(npc);
 
-        const sprite = document.createElement("div");
+        const sprite = document.createElement('div');
 
         if (typeInfo.isCreature && typeInfo.creatureType !== undefined) {
             // Creature NPCs
@@ -1083,13 +1243,19 @@ export class DefinitionsPanel extends Plugin {
             const sizeClass = this.getCreatureSizeClass(creatureType);
 
             // Get sprite info from SpritesheetManager
-            const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
-            const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
+            const spritesheetManager = (document as any).highlite?.gameHooks
+                ?.SpriteSheetManager?.Instance;
+            const creatureSpritesheetInfo =
+                spritesheetManager?.CreatureSpritesheetInfo;
 
-            if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
+            if (
+                creatureSpritesheetInfo &&
+                creatureSpritesheetInfo[creatureType]
+            ) {
                 // Use sprite sheet 0 (first sheet) as default
                 const sheetIndex = 0;
-                const spriteInfo = creatureSpritesheetInfo[creatureType][sheetIndex];
+                const spriteInfo =
+                    creatureSpritesheetInfo[creatureType][sheetIndex];
 
                 if (spriteInfo) {
                     sprite.className = `npc-sprite npc-sprite-${sizeClass}`;
@@ -1116,12 +1282,23 @@ export class DefinitionsPanel extends Plugin {
 
                     // Based on createNPCFromPacketData, the game uses: 15 * CreatureSpriteID
                     const spriteFrameIndex = 15 * creatureSpriteId;
-                    const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                    const spritePos = this.calculateSpritePositionFromId(
+                        spriteFrameIndex,
+                        creatureType
+                    );
                     sprite.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
-                    
+
                     // Track sprite usage
                     sprite.setAttribute('data-sprite-sidebar', 'true');
-                    setTimeout(() => this.trackSpriteUsage(sprite, spriteInfo.SpritesheetURL, 'sidebar'), 0);
+                    setTimeout(
+                        () =>
+                            this.trackSpriteUsage(
+                                sprite,
+                                spriteInfo.SpritesheetURL,
+                                'sidebar'
+                            ),
+                        0
+                    );
                 } else {
                     // Fallback to CSS approach if sprite info not available
                     sprite.className = `npc-sprite npc-sprite-${sizeClass}`;
@@ -1138,7 +1315,10 @@ export class DefinitionsPanel extends Plugin {
                     else if (sizeClass === 'largest') scale = 0.35;
                     sprite.style.transform = `translate(-50%, -50%) scale(${scale})`;
                     const spriteFrameIndex = 15 * creatureSpriteId;
-                    const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                    const spritePos = this.calculateSpritePositionFromId(
+                        spriteFrameIndex,
+                        creatureType
+                    );
                     sprite.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
                 }
             } else {
@@ -1157,12 +1337,15 @@ export class DefinitionsPanel extends Plugin {
                 else if (sizeClass === 'largest') scale = 0.35;
                 sprite.style.transform = `translate(-50%, -50%) scale(${scale})`;
                 const spriteFrameIndex = 15 * creatureSpriteId;
-                const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                const spritePos = this.calculateSpritePositionFromId(
+                    spriteFrameIndex,
+                    creatureType
+                );
                 sprite.style.backgroundPosition = `-${spritePos.x}px -${spritePos.y}px`;
             }
         } else if (typeInfo.isHuman) {
             // Human NPCs with customizable appearance
-            sprite.className = "npc-sprite npc-sprite-human";
+            sprite.className = 'npc-sprite npc-sprite-human';
             sprite.dataset.npcId = npc._id.toString();
 
             // Human sprites are 64x128
@@ -1171,50 +1354,73 @@ export class DefinitionsPanel extends Plugin {
             sprite.style.position = 'absolute';
             sprite.style.left = '50%';
             sprite.style.top = '50%';
-            sprite.style.transform = 'translate(-50%, -50%) scale(0.7)';  // Scale down to fit better
+            sprite.style.transform = 'translate(-50%, -50%) scale(0.7)'; // Scale down to fit better
 
             // Try to access cached human sprite from SpritesheetManager
-            const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
-            const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
+            const spritesheetManager = (document as any).highlite.gameHooks
+                .SpriteSheetManager.Instance;
+            const humanSpriteInfo =
+                spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
 
             if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
                 // Use existing sprite URL
                 sprite.style.backgroundImage = `url('${humanSpriteInfo.SpritesheetURL}')`;
                 // Human sprites are 64x128, facing south (direction offset 1)
                 // Adjust Y position to show head area (positive Y moves down)
-                sprite.style.backgroundPosition = "-65px 25px";
-                sprite.style.backgroundSize = "auto";
-                
+                sprite.style.backgroundPosition = '-65px 25px';
+                sprite.style.backgroundSize = 'auto';
+
                 // Track sprite usage
                 sprite.setAttribute('data-sprite-sidebar', 'true');
-                setTimeout(() => this.trackSpriteUsage(sprite, humanSpriteInfo.SpritesheetURL, 'sidebar'), 0);
+                setTimeout(
+                    () =>
+                        this.trackSpriteUsage(
+                            sprite,
+                            humanSpriteInfo.SpritesheetURL,
+                            'sidebar'
+                        ),
+                    0
+                );
             } else {
                 // No cached sprite, show placeholder initially
-                sprite.innerHTML = "👤";
-                sprite.style.backgroundColor = "#f0f0f0";
-                sprite.style.display = "flex";
-                sprite.style.alignItems = "center";
-                sprite.style.justifyContent = "center";
-                sprite.style.fontSize = "24px";
+                sprite.innerHTML = '👤';
+                sprite.style.backgroundColor = '#f0f0f0';
+                sprite.style.display = 'flex';
+                sprite.style.alignItems = 'center';
+                sprite.style.justifyContent = 'center';
+                sprite.style.fontSize = '24px';
 
                 // Request sprite generation through the game's system
                 this.requestHumanSprite(npc);
 
                 // Poll for the sprite
                 const pollInterval = setInterval(() => {
-                    const spriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npc._id);
+                    const spriteInfo =
+                        spritesheetManager?.HumanNPCSpritesheetInfo?.get(
+                            npc._id
+                        );
                     if (spriteInfo && spriteInfo.SpritesheetURL) {
                         clearInterval(pollInterval);
-                        const spriteElement = document.querySelector(`.npc-sprite-human[data-npc-id="${npc._id}"]`) as HTMLElement;
+                        const spriteElement = document.querySelector(
+                            `.npc-sprite-human[data-npc-id="${npc._id}"]`
+                        ) as HTMLElement;
                         if (spriteElement) {
-                            spriteElement.innerHTML = "";
+                            spriteElement.innerHTML = '';
                             spriteElement.style.backgroundImage = `url('${spriteInfo.SpritesheetURL}')`;
-                            spriteElement.style.backgroundPosition = "-64px 25px";
-                            spriteElement.style.backgroundSize = "auto";
-                            spriteElement.style.backgroundColor = "transparent";
-                            spriteElement.setAttribute('data-sprite-sidebar', 'true');
+                            spriteElement.style.backgroundPosition =
+                                '-64px 25px';
+                            spriteElement.style.backgroundSize = 'auto';
+                            spriteElement.style.backgroundColor = 'transparent';
+                            spriteElement.setAttribute(
+                                'data-sprite-sidebar',
+                                'true'
+                            );
                             // Track sprite usage
-                            this.trackSpriteUsage(spriteElement, spriteInfo.SpritesheetURL, 'sidebar');
+                            this.trackSpriteUsage(
+                                spriteElement,
+                                spriteInfo.SpritesheetURL,
+                                'sidebar'
+                            );
                         }
                     }
                 }, 100); // Poll every 100ms
@@ -1224,14 +1430,14 @@ export class DefinitionsPanel extends Plugin {
             }
         } else {
             // Unknown or simple NPCs
-            sprite.className = "npc-sprite npc-sprite-unknown";
-            sprite.innerHTML = "?";
+            sprite.className = 'npc-sprite npc-sprite-unknown';
+            sprite.innerHTML = '?';
         }
 
         // Combat level badge
         if (npc._combat && npc._combat._combat) {
-            const levelBadge = document.createElement("div");
-            levelBadge.className = "npc-level-badge";
+            const levelBadge = document.createElement('div');
+            levelBadge.className = 'npc-level-badge';
             levelBadge.textContent = npc._combat._combat._combatLevel || '?';
             spriteWrapper.appendChild(levelBadge);
         }
@@ -1241,16 +1447,17 @@ export class DefinitionsPanel extends Plugin {
         npcEl.appendChild(spriteWrapper);
 
         // NPC info
-        const info = document.createElement("div");
-        info.className = "item-info";
+        const info = document.createElement('div');
+        info.className = 'item-info';
 
-        const name = document.createElement("div");
-        name.className = "item-name";
-        name.textContent = npc._nameCapitalized || npc._name || `NPC ${npc._id}`;
+        const name = document.createElement('div');
+        name.className = 'item-name';
+        name.textContent =
+            npc._nameCapitalized || npc._name || `NPC ${npc._id}`;
         info.appendChild(name);
 
-        const details = document.createElement("div");
-        details.className = "item-id";
+        const details = document.createElement('div');
+        details.className = 'item-id';
         details.textContent = `ID: ${npc._id}`;
         if (npc._combat && npc._combat._combat) {
             details.textContent += ` • Level ${npc._combat._combat._combatLevel}`;
@@ -1269,11 +1476,16 @@ export class DefinitionsPanel extends Plugin {
     private getCreatureSizeClass(creatureType: number): string {
         // Based on OM enum: small=0, medium=1, large=2, largest=3
         switch (creatureType) {
-            case 0: return 'small';
-            case 1: return 'medium';
-            case 2: return 'large';
-            case 3: return 'largest';
-            default: return 'small'; // Default to small if unknown
+            case 0:
+                return 'small';
+            case 1:
+                return 'medium';
+            case 2:
+                return 'large';
+            case 3:
+                return 'largest';
+            default:
+                return 'small'; // Default to small if unknown
         }
     }
 
@@ -1289,24 +1501,48 @@ export class DefinitionsPanel extends Plugin {
         // Based on the game's exact dimensions from sprite sheet info
         // Small creatures: 1920x192, 64x64 sprites, 30 columns, 3 rows
         const spriteDimensions = {
-            small: { width: 64, height: 64, sheetWidth: 1920, sheetHeight: 192 },
-            medium: { width: 64, height: 128, sheetWidth: 1920, sheetHeight: 512 },
-            large: { width: 128, height: 128, sheetWidth: 1920, sheetHeight: 512 },
-            largest: { width: 256, height: 184, sheetWidth: 2048, sheetHeight: 736 }
+            small: {
+                width: 64,
+                height: 64,
+                sheetWidth: 1920,
+                sheetHeight: 192,
+            },
+            medium: {
+                width: 64,
+                height: 128,
+                sheetWidth: 1920,
+                sheetHeight: 512,
+            },
+            large: {
+                width: 128,
+                height: 128,
+                sheetWidth: 1920,
+                sheetHeight: 512,
+            },
+            largest: {
+                width: 256,
+                height: 184,
+                sheetWidth: 2048,
+                sheetHeight: 736,
+            },
         };
 
-        const dims = spriteDimensions[sizeClass as keyof typeof spriteDimensions];
+        const dims =
+            spriteDimensions[sizeClass as keyof typeof spriteDimensions];
 
         return {
             sizeClass,
             spriteWidth: dims.width,
             spriteHeight: dims.height,
             sheetWidth: dims.sheetWidth,
-            sheetHeight: dims.sheetHeight
+            sheetHeight: dims.sheetHeight,
         };
     }
 
-    private calculateSpritePosition(creatureType: number): { x: number; y: number } {
+    private calculateSpritePosition(creatureType: number): {
+        x: number;
+        y: number;
+    } {
         const info = this.getCreatureSpriteInfo(creatureType);
 
         // Simplified calculation - in the actual game this would use proper sprite mappings
@@ -1319,11 +1555,15 @@ export class DefinitionsPanel extends Plugin {
 
         return {
             x: col * info.spriteWidth,
-            y: row * info.spriteHeight
+            y: row * info.spriteHeight,
         };
     }
 
-    private calculateSpritePositionFromId(spriteId: number, creatureType: number, direction: number = 1): { x: number; y: number } {
+    private calculateSpritePositionFromId(
+        spriteId: number,
+        creatureType: number,
+        direction: number = 1
+    ): { x: number; y: number } {
         // Based on _getCSSBackgroundPositionForCreatureDirection from the game code
         let spriteWidth = 0;
         let spriteHeight = 0;
@@ -1364,7 +1604,7 @@ export class DefinitionsPanel extends Plugin {
 
         return {
             x: col * spriteWidth,
-            y: row * spriteHeight
+            y: row * spriteHeight,
         };
     }
 
@@ -1372,31 +1612,57 @@ export class DefinitionsPanel extends Plugin {
         try {
             if (!npc._appearance) return;
 
-            const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
+            const spritesheetManager = (document as any).highlite.gameHooks
+                .SpriteSheetManager.Instance;
             if (!spritesheetManager) return;
 
             // Get access to the game's tk class if available
-            const appearanceUtils = (document as any).highlite.gameHooks.AppearanceUtils;
+            const appearanceUtils = (document as any).highlite.gameHooks
+                .AppearanceUtils;
 
             // Build appearance arrays using the game's format
             const appearanceIds = new Array(5);
 
             // YP enum values from the game
-            const appearanceTypes = (document as any).highlite.gameLookups["AppearanceTypes"];
+            const appearanceTypes = (document as any).highlite.gameLookups[
+                'AppearanceTypes'
+            ];
 
-            appearanceIds[appearanceTypes.Hair] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Hair, npc._appearance._hairId ?? 0);
-            appearanceIds[appearanceTypes.Beard] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Beard, npc._appearance._beardId ?? 0);
-            appearanceIds[appearanceTypes.Shirt] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Shirt, npc._appearance._shirtId ?? 0);
-            appearanceIds[appearanceTypes.Body] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Body, npc._appearance._bodyId ?? 0);
-            appearanceIds[appearanceTypes.Pants] = appearanceUtils.appearanceIdToAppearanceArray(appearanceTypes.Pants, npc._appearance._legsId ?? 0);
-
+            appearanceIds[appearanceTypes.Hair] =
+                appearanceUtils.appearanceIdToAppearanceArray(
+                    appearanceTypes.Hair,
+                    npc._appearance._hairId ?? 0
+                );
+            appearanceIds[appearanceTypes.Beard] =
+                appearanceUtils.appearanceIdToAppearanceArray(
+                    appearanceTypes.Beard,
+                    npc._appearance._beardId ?? 0
+                );
+            appearanceIds[appearanceTypes.Shirt] =
+                appearanceUtils.appearanceIdToAppearanceArray(
+                    appearanceTypes.Shirt,
+                    npc._appearance._shirtId ?? 0
+                );
+            appearanceIds[appearanceTypes.Body] =
+                appearanceUtils.appearanceIdToAppearanceArray(
+                    appearanceTypes.Body,
+                    npc._appearance._bodyId ?? 0
+                );
+            appearanceIds[appearanceTypes.Pants] =
+                appearanceUtils.appearanceIdToAppearanceArray(
+                    appearanceTypes.Pants,
+                    npc._appearance._legsId ?? 0
+                );
 
             // Build equipped items arrays
             let equippedItemIds: number[][] = [];
 
             if (npc._appearance._equippedItems) {
                 // Try to map equipped items properly
-                equippedItemIds = npc._appearance._equippedItems.map((item: any) => appearanceUtils.inventoryItemToEquippedItemsArray(item));
+                equippedItemIds = npc._appearance._equippedItems.map(
+                    (item: any) =>
+                        appearanceUtils.inventoryItemToEquippedItemsArray(item)
+                );
             } else {
                 // Create empty equipment array
                 equippedItemIds = new Array(10);
@@ -1406,19 +1672,21 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // PF enum from the game
-            const entityTypes = (document as any).highlite.gameLookups["EntityTypes"];
+            const entityTypes = (document as any).highlite.gameLookups[
+                'EntityTypes'
+            ];
 
             // Generate a unique entity ID for this request
             const entityId = 20000 + npc._id;
 
             // Call the game's sprite sheet generation
             spritesheetManager.loadHumanSpritesheet(
-                entityTypes.NPC,           // EntityType
-                null,             // Name (null for NPCs)
-                entityId,         // EntityID (unique)
-                npc._id,          // EntityTypeID (the NPC definition ID)
-                appearanceIds,    // AppearanceIDs
-                equippedItemIds   // EquippedItemIDs
+                entityTypes.NPC, // EntityType
+                null, // Name (null for NPCs)
+                entityId, // EntityID (unique)
+                npc._id, // EntityTypeID (the NPC definition ID)
+                appearanceIds, // AppearanceIDs
+                equippedItemIds // EquippedItemIDs
             );
         } catch (error) {
             this.error(`Failed to request human sprite: ${error}`);
@@ -1426,32 +1694,39 @@ export class DefinitionsPanel extends Plugin {
     }
 
     // Sprite Reference Management
-    private addSpriteReference(spriteUrl: string, context: 'sidebar' | 'modal'): void {
+    private addSpriteReference(
+        spriteUrl: string,
+        context: 'sidebar' | 'modal'
+    ): void {
         if (!spriteUrl) return;
-        
+
         // Track the URL as one we've created
         this.activeSpriteUrls.add(spriteUrl);
-        
+
         // Increment reference count
         const currentCount = this.spriteReferences.get(spriteUrl) || 0;
         this.spriteReferences.set(spriteUrl, currentCount + 1);
-        
+
         // Store context information for this URL
-        const existingContexts = this.spriteContexts.get(spriteUrl) || new Set<string>();
+        const existingContexts =
+            this.spriteContexts.get(spriteUrl) || new Set<string>();
         existingContexts.add(context);
         this.spriteContexts.set(spriteUrl, existingContexts);
-        
+
         // Add context attribute to track where it's used
         const contextAttr = `data-sprite-${context}`;
         const elements = document.querySelectorAll(`[style*="${spriteUrl}"]`);
-        elements.forEach(el => {
+        elements.forEach((el) => {
             (el as HTMLElement).setAttribute(contextAttr, 'true');
         });
     }
 
-    private removeSpriteReference(spriteUrl: string, context: 'sidebar' | 'modal'): void {
+    private removeSpriteReference(
+        spriteUrl: string,
+        context: 'sidebar' | 'modal'
+    ): void {
         if (!spriteUrl || !this.spriteReferences.has(spriteUrl)) return;
-        
+
         // Remove this context from the URL's context set
         const contexts = this.spriteContexts.get(spriteUrl);
         if (contexts) {
@@ -1460,10 +1735,10 @@ export class DefinitionsPanel extends Plugin {
                 this.spriteContexts.delete(spriteUrl);
             }
         }
-        
+
         const currentCount = this.spriteReferences.get(spriteUrl) || 0;
         const newCount = Math.max(0, currentCount - 1);
-        
+
         if (newCount === 0) {
             // Double-check that the URL is not still being used anywhere in the DOM
             const stillInUse = this.isSpriteStillInUse(spriteUrl);
@@ -1472,19 +1747,20 @@ export class DefinitionsPanel extends Plugin {
                 this.spriteReferences.set(spriteUrl, 1);
                 return;
             }
-            
+
             // No more references, clean up the URL
             this.spriteReferences.delete(spriteUrl);
             this.spriteContexts.delete(spriteUrl);
             this.activeSpriteUrls.delete(spriteUrl);
-            
+
             try {
-                const blobLoader = (document as any).highlite?.gameHooks?.BlobLoader?.Instance;
+                const blobLoader = (document as any).highlite?.gameHooks
+                    ?.BlobLoader?.Instance;
                 if (blobLoader && blobLoader.revokeObjectURL) {
                     this.log(`Revoking sprite URL: ${spriteUrl}`);
                     blobLoader.revokeObjectURL(spriteUrl);
                 }
-                
+
                 // Remove from SpriteSheetManager caches (URL is definitely being revoked)
                 this.removeFromSpriteSheetManagerCache(spriteUrl, true);
             } catch (error) {
@@ -1498,23 +1774,29 @@ export class DefinitionsPanel extends Plugin {
     private cleanupSidebarSprites(preserveNpcIds?: Set<number>): void {
         // Find all sprites in sidebar and check which can be safely removed
         if (!this.itemListContainer) return;
-        
-        const spriteElements = this.itemListContainer.querySelectorAll('[data-sprite-sidebar]');
-        
-        spriteElements.forEach(el => {
+
+        const spriteElements = this.itemListContainer.querySelectorAll(
+            '[data-sprite-sidebar]'
+        );
+
+        spriteElements.forEach((el) => {
             const style = (el as HTMLElement).style.backgroundImage;
             if (style && style.includes('blob:')) {
                 const urlMatch = style.match(/url\("?(blob:[^"]+)"?\)/);
                 if (urlMatch) {
                     const spriteUrl = urlMatch[1];
-                    
+
                     // Check if this sprite belongs to an NPC we want to preserve
                     let shouldPreserve = false;
                     if (preserveNpcIds) {
                         // Look for data-npc-id on the sprite element or its parent NPC element
-                        let npcId = (el as HTMLElement).getAttribute('data-npc-id');
+                        let npcId = (el as HTMLElement).getAttribute(
+                            'data-npc-id'
+                        );
                         if (!npcId) {
-                            const npcElement = (el as HTMLElement).closest('[data-npc-id]');
+                            const npcElement = (el as HTMLElement).closest(
+                                '[data-npc-id]'
+                            );
                             if (npcElement) {
                                 npcId = npcElement.getAttribute('data-npc-id');
                             }
@@ -1523,12 +1805,15 @@ export class DefinitionsPanel extends Plugin {
                             shouldPreserve = true;
                         }
                     }
-                    
+
                     // Check if this URL is still being used in the modal
-                    const stillUsedInModal = this.isSpriteUsedInModal(spriteUrl);
-                    
+                    const stillUsedInModal =
+                        this.isSpriteUsedInModal(spriteUrl);
+
                     if (stillUsedInModal || shouldPreserve) {
-                        this.log(`Preserving sprite URL ${stillUsedInModal ? '(used in modal)' : '(preserved NPC)'}: ${spriteUrl}`);
+                        this.log(
+                            `Preserving sprite URL ${stillUsedInModal ? '(used in modal)' : '(preserved NPC)'}: ${spriteUrl}`
+                        );
                         // Remove the context from our tracking but keep the reference count
                         const contexts = this.spriteContexts.get(spriteUrl);
                         if (contexts) {
@@ -1538,7 +1823,9 @@ export class DefinitionsPanel extends Plugin {
                             }
                         }
                         // Remove the context attribute
-                        (el as HTMLElement).removeAttribute('data-sprite-sidebar');
+                        (el as HTMLElement).removeAttribute(
+                            'data-sprite-sidebar'
+                        );
                     } else {
                         // Safe to remove the reference
                         this.removeSpriteReference(spriteUrl, 'sidebar');
@@ -1551,9 +1838,11 @@ export class DefinitionsPanel extends Plugin {
     private cleanupModalSprites(): void {
         // Find all sprites in modal and remove their references
         if (!this.modalOverlay) return;
-        
-        const spriteElements = this.modalOverlay.querySelectorAll('[data-sprite-modal]');
-        spriteElements.forEach(el => {
+
+        const spriteElements = this.modalOverlay.querySelectorAll(
+            '[data-sprite-modal]'
+        );
+        spriteElements.forEach((el) => {
             const style = (el as HTMLElement).style.backgroundImage;
             if (style && style.includes('blob:')) {
                 const urlMatch = style.match(/url\("?(blob:[^"]+)"?\)/);
@@ -1568,37 +1857,42 @@ export class DefinitionsPanel extends Plugin {
         // Clean up all sprite references
         for (const spriteUrl of this.activeSpriteUrls) {
             try {
-                const blobLoader = (document as any).highlite?.gameHooks?.BlobLoader?.Instance;
+                const blobLoader = (document as any).highlite?.gameHooks
+                    ?.BlobLoader?.Instance;
                 if (blobLoader && blobLoader.revokeObjectURL) {
                     this.log(`Revoking sprite URL: ${spriteUrl}`);
                     blobLoader.revokeObjectURL(spriteUrl);
                 }
-                
+
                 // Remove from SpriteSheetManager caches (force removal since we're cleaning up everything)
                 this.removeFromSpriteSheetManagerCache(spriteUrl, true);
             } catch (error) {
                 this.error(`Failed to revoke sprite URL: ${error}`);
             }
         }
-        
+
         this.spriteReferences.clear();
         this.spriteContexts.clear();
         this.activeSpriteUrls.clear();
     }
 
-    private trackSpriteUsage(element: HTMLElement, spriteUrl: string, context: 'sidebar' | 'modal'): void {
+    private trackSpriteUsage(
+        element: HTMLElement,
+        spriteUrl: string,
+        context: 'sidebar' | 'modal'
+    ): void {
         if (!spriteUrl) return;
-        
+
         // Add reference tracking
         this.addSpriteReference(spriteUrl, context);
-        
+
         // Mark element with context
         element.setAttribute(`data-sprite-${context}`, 'true');
     }
 
     private isSpriteUsedInModal(spriteUrl: string): boolean {
         if (!this.modalOverlay) return false;
-        
+
         // Check all elements in modal for this sprite URL (not just those with data-sprite-modal)
         const allModalElements = this.modalOverlay.querySelectorAll('*');
         for (const el of allModalElements) {
@@ -1607,7 +1901,7 @@ export class DefinitionsPanel extends Plugin {
                 return true;
             }
         }
-        
+
         return false;
     }
 
@@ -1623,16 +1917,22 @@ export class DefinitionsPanel extends Plugin {
         return false;
     }
 
-    private removeFromSpriteSheetManagerCache(spriteUrl: string, forceRemove: boolean = false): void {
+    private removeFromSpriteSheetManagerCache(
+        spriteUrl: string,
+        forceRemove: boolean = false
+    ): void {
         try {
-            const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
+            const spritesheetManager = (document as any).highlite?.gameHooks
+                ?.SpriteSheetManager?.Instance;
             if (!spritesheetManager) return;
 
             // Only remove cache entries if this URL is no longer referenced anywhere OR if forced
             if (!forceRemove) {
                 // Check if any other sprites are still using this URL
-                const stillInUse = this.activeSpriteUrls.has(spriteUrl) || this.spriteReferences.has(spriteUrl);
-                
+                const stillInUse =
+                    this.activeSpriteUrls.has(spriteUrl) ||
+                    this.spriteReferences.has(spriteUrl);
+
                 if (stillInUse) {
                     return;
                 }
@@ -1642,15 +1942,17 @@ export class DefinitionsPanel extends Plugin {
             if (spritesheetManager._humanNPCSpritesheetInfo) {
                 const humanCache = spritesheetManager._humanNPCSpritesheetInfo;
                 const keysToRemove: number[] = [];
-                
+
                 for (const [key, spriteInfo] of humanCache.entries()) {
                     if (spriteInfo && spriteInfo.SpritesheetURL === spriteUrl) {
                         keysToRemove.push(key);
                     }
                 }
-                
-                keysToRemove.forEach(key => {
-                    this.log(`Removing NPC ${key} from human sprite cache (URL being revoked)`);
+
+                keysToRemove.forEach((key) => {
+                    this.log(
+                        `Removing NPC ${key} from human sprite cache (URL being revoked)`
+                    );
                     humanCache.delete(key);
                 });
             }
@@ -1659,20 +1961,24 @@ export class DefinitionsPanel extends Plugin {
             if (spritesheetManager._playerSpritesheetInfo) {
                 const playerCache = spritesheetManager._playerSpritesheetInfo;
                 const keysToRemove: string[] = [];
-                
+
                 for (const [key, spriteInfo] of playerCache.entries()) {
                     if (spriteInfo && spriteInfo.SpritesheetURL === spriteUrl) {
                         keysToRemove.push(key);
                     }
                 }
-                
-                keysToRemove.forEach(key => {
-                    this.log(`Removing player ${key} from player sprite cache (URL being revoked)`);
+
+                keysToRemove.forEach((key) => {
+                    this.log(
+                        `Removing player ${key} from player sprite cache (URL being revoked)`
+                    );
                     playerCache.delete(key);
                 });
             }
         } catch (error) {
-            this.error(`Failed to remove sprite from SpriteSheetManager cache: ${error}`);
+            this.error(
+                `Failed to remove sprite from SpriteSheetManager cache: ${error}`
+            );
         }
     }
 
@@ -1688,20 +1994,25 @@ export class DefinitionsPanel extends Plugin {
     }
 
     private updatePagination(): void {
-        const paginationContainer = this.panelContent?.querySelector(".pagination-container");
+        const paginationContainer = this.panelContent?.querySelector(
+            '.pagination-container'
+        );
         if (!paginationContainer) return;
 
-        paginationContainer.innerHTML = "";
+        paginationContainer.innerHTML = '';
 
-        const currentList = this.currentView === 'items' ? this.filteredItems : this.filteredNpcs;
+        const currentList =
+            this.currentView === 'items'
+                ? this.filteredItems
+                : this.filteredNpcs;
         const totalPages = Math.ceil(currentList.length / this.itemsPerPage);
 
         if (totalPages <= 1) return;
 
         // Previous button
-        const prevButton = document.createElement("button");
-        prevButton.className = "pagination-button";
-        prevButton.textContent = "◀";
+        const prevButton = document.createElement('button');
+        prevButton.className = 'pagination-button';
+        prevButton.textContent = '◀';
         prevButton.disabled = this.currentPage === 0;
         prevButton.onclick = () => {
             if (this.currentPage > 0) {
@@ -1716,15 +2027,15 @@ export class DefinitionsPanel extends Plugin {
         paginationContainer.appendChild(prevButton);
 
         // Page info
-        const pageInfo = document.createElement("span");
-        pageInfo.className = "pagination-info";
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'pagination-info';
         pageInfo.textContent = `${this.currentPage + 1} / ${totalPages}`;
         paginationContainer.appendChild(pageInfo);
 
         // Next button
-        const nextButton = document.createElement("button");
-        nextButton.className = "pagination-button";
-        nextButton.textContent = "▶";
+        const nextButton = document.createElement('button');
+        nextButton.className = 'pagination-button';
+        nextButton.textContent = '▶';
         nextButton.disabled = this.currentPage >= totalPages - 1;
         nextButton.onclick = () => {
             if (this.currentPage < totalPages - 1) {
@@ -1777,8 +2088,12 @@ export class DefinitionsPanel extends Plugin {
         };
 
         // Add scroll prevention to overlay
-        this.modalOverlay.addEventListener('wheel', preventScroll, { passive: false });
-        this.modalOverlay.addEventListener('touchmove', preventScroll, { passive: false });
+        this.modalOverlay.addEventListener('wheel', preventScroll, {
+            passive: false,
+        });
+        this.modalOverlay.addEventListener('touchmove', preventScroll, {
+            passive: false,
+        });
 
         // Add close button
         const closeButton = document.createElement('button');
@@ -1799,44 +2114,61 @@ export class DefinitionsPanel extends Plugin {
         const modalContent = document.createElement('div');
         modalContent.className = 'item-modal-content';
 
-        modalContent.addEventListener('wheel', (e: WheelEvent) => {
-            e.stopPropagation();
-            const target = e.target as HTMLElement;
-            const scrollableContainer = target.closest('.npc-drops-container, .drops-section-container');
-            
-            if (scrollableContainer) {
-                const { scrollTop, scrollHeight, clientHeight } = scrollableContainer;
-                const delta = e.deltaY;
+        modalContent.addEventListener(
+            'wheel',
+            (e: WheelEvent) => {
+                e.stopPropagation();
+                const target = e.target as HTMLElement;
+                const scrollableContainer = target.closest(
+                    '.npc-drops-container, .drops-section-container'
+                );
 
+                if (scrollableContainer) {
+                    const { scrollTop, scrollHeight, clientHeight } =
+                        scrollableContainer;
+                    const delta = e.deltaY;
+
+                    if (delta < 0 && scrollTop === 0) {
+                        e.preventDefault();
+                    } else if (
+                        delta > 0 &&
+                        scrollTop + clientHeight >= scrollHeight - 1
+                    ) {
+                        e.preventDefault();
+                    }
+                    return;
+                }
+
+                const { scrollTop, scrollHeight, clientHeight } = modalContent;
+                const delta = e.deltaY;
                 if (delta < 0 && scrollTop === 0) {
                     e.preventDefault();
-                }
-                else if (delta > 0 && scrollTop + clientHeight >= scrollHeight - 1) {
+                } else if (
+                    delta > 0 &&
+                    scrollTop + clientHeight >= scrollHeight - 1
+                ) {
                     e.preventDefault();
                 }
-                return;
-            }
+            },
+            { passive: false }
+        );
 
-            const { scrollTop, scrollHeight, clientHeight } = modalContent;
-            const delta = e.deltaY;
-            if (delta < 0 && scrollTop === 0) {
-                e.preventDefault();
-            }
-            else if (delta > 0 && scrollTop + clientHeight >= scrollHeight - 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
-
-        modalContent.addEventListener('touchmove', (e: TouchEvent) => {
-            e.stopPropagation();
-        }, { passive: false });
+        modalContent.addEventListener(
+            'touchmove',
+            (e: TouchEvent) => {
+                e.stopPropagation();
+            },
+            { passive: false }
+        );
 
         this.loadItemDetailsIntoModal(modalContent, itemId);
 
         modalContainer.appendChild(modalContent);
         this.modalOverlay.appendChild(modalContainer);
 
-        const container = this.isLoggedIn ? document.getElementById('hs-screen-mask') : document.body;
+        const container = this.isLoggedIn
+            ? document.getElementById('hs-screen-mask')
+            : document.body;
         if (container) {
             container.appendChild(this.modalOverlay);
         } else {
@@ -1861,16 +2193,26 @@ export class DefinitionsPanel extends Plugin {
         }
     }
 
-    private loadItemDetailsIntoModal(container: HTMLElement, itemId: number): void {
+    private loadItemDetailsIntoModal(
+        container: HTMLElement,
+        itemId: number
+    ): void {
         try {
-            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemId);
+            const itemDef = (
+                document as any
+            ).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemId);
             if (!itemDef) {
-                container.innerHTML = "<p class='detail-error'>Item not found</p>";
+                container.innerHTML =
+                    "<p class='detail-error'>Item not found</p>";
                 return;
             }
 
-            let spritePosition = "";
-            const pos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemId);
+            let spritePosition = '';
+            const pos = (
+                document as any
+            ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                itemId
+            );
             if (pos) {
                 spritePosition = `style="background-position: ${pos};"`;
             }
@@ -1906,7 +2248,10 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Requirements
-            if (itemDef._equippableRequirements && itemDef._equippableRequirements.length > 0) {
+            if (
+                itemDef._equippableRequirements &&
+                itemDef._equippableRequirements.length > 0
+            ) {
                 html += `
                     <div class="detail-section">
                         <h3>Requirements</h3>
@@ -1922,7 +2267,10 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Equippable Effects
-            if (itemDef._equippableEffects && itemDef._equippableEffects.length > 0) {
+            if (
+                itemDef._equippableEffects &&
+                itemDef._equippableEffects.length > 0
+            ) {
                 html += `
                     <div class="detail-section">
                         <h3>Equipment Effects</h3>
@@ -1956,7 +2304,11 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Experience from obtaining
-            if (itemDef._expFromObtaining && itemDef._expFromObtaining._skill !== undefined && itemDef._expFromObtaining._amount > 0) {
+            if (
+                itemDef._expFromObtaining &&
+                itemDef._expFromObtaining._skill !== undefined &&
+                itemDef._expFromObtaining._amount > 0
+            ) {
                 html += `
                     <div class="detail-section">
                         <h3>Experience Gained</h3>
@@ -1968,7 +2320,11 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Recipe
-            if (itemDef._recipe && itemDef._recipe._ingredients && itemDef._recipe._ingredients.length > 0) {
+            if (
+                itemDef._recipe &&
+                itemDef._recipe._ingredients &&
+                itemDef._recipe._ingredients.length > 0
+            ) {
                 html += `
                     <div class="detail-section">
                         <h3>Recipe</h3>
@@ -1976,10 +2332,23 @@ export class DefinitionsPanel extends Plugin {
                 `;
                 itemDef._recipe._ingredients.forEach((ingredient: any) => {
                     try {
-                        const ingredientDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(ingredient._itemId);
-                        const ingredientName = ingredientDef?._nameCapitalized || ingredientDef?._name || `Item ${ingredient._itemId}`;
-                        const ingredientPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(ingredient._itemId);
-                        const spriteStyle = ingredientPos ? `style="background-position: ${ingredientPos};"` : '';
+                        const ingredientDef = (
+                            document as any
+                        ).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                            ingredient._itemId
+                        );
+                        const ingredientName =
+                            ingredientDef?._nameCapitalized ||
+                            ingredientDef?._name ||
+                            `Item ${ingredient._itemId}`;
+                        const ingredientPos = (
+                            document as any
+                        ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                            ingredient._itemId
+                        );
+                        const spriteStyle = ingredientPos
+                            ? `style="background-position: ${ingredientPos};"`
+                            : '';
 
                         html += `
                             <div class="recipe-item" data-item-id="${ingredient._itemId}">
@@ -2016,10 +2385,23 @@ export class DefinitionsPanel extends Plugin {
                         <div class="recipe-grid">
                 `;
                 try {
-                    const resultDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(itemDef._edibleResult._itemId);
-                    const resultName = resultDef?._nameCapitalized || resultDef?._name || `Item ${itemDef._edibleResult._itemId}`;
-                    const resultPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(itemDef._edibleResult._itemId);
-                    const spriteStyle = resultPos ? `style="background-position: ${resultPos};"` : '';
+                    const resultDef = (
+                        document as any
+                    ).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                        itemDef._edibleResult._itemId
+                    );
+                    const resultName =
+                        resultDef?._nameCapitalized ||
+                        resultDef?._name ||
+                        `Item ${itemDef._edibleResult._itemId}`;
+                    const resultPos = (
+                        document as any
+                    ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                        itemDef._edibleResult._itemId
+                    );
+                    const spriteStyle = resultPos
+                        ? `style="background-position: ${resultPos};"`
+                        : '';
 
                     html += `
                         <div class="recipe-item" data-item-id="${itemDef._edibleResult._itemId}">
@@ -2065,7 +2447,10 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Equipment Type
-            if (itemDef._equipmentType !== null && itemDef._equipmentType !== undefined) {
+            if (
+                itemDef._equipmentType !== null &&
+                itemDef._equipmentType !== undefined
+            ) {
                 html += `
                     <div class="property">
                         <span class="property-label">Type:</span>
@@ -2095,9 +2480,22 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Metal Type
-            if (itemDef._metalType !== null && itemDef._metalType !== undefined) {
-                const metalTypes = ['Bronze', 'Iron', 'Steel', 'Palladium', 'Gold', 'Coronium', 'Celadium'];
-                const metalName = metalTypes[itemDef._metalType] || `Metal ${itemDef._metalType}`;
+            if (
+                itemDef._metalType !== null &&
+                itemDef._metalType !== undefined
+            ) {
+                const metalTypes = [
+                    'Bronze',
+                    'Iron',
+                    'Steel',
+                    'Palladium',
+                    'Gold',
+                    'Coronium',
+                    'Celadium',
+                ];
+                const metalName =
+                    metalTypes[itemDef._metalType] ||
+                    `Metal ${itemDef._metalType}`;
                 html += `
                     <div class="property">
                         <span class="property-label">Metal Type:</span>
@@ -2113,13 +2511,29 @@ export class DefinitionsPanel extends Plugin {
 
             // Tags
             let tags: string[] = [];
-            if (itemDef._isMembers !== undefined && itemDef._isMembers) tags.push('<span class="detail-tag members">Members</span>');
-            if (itemDef._membersObjectBool !== undefined && itemDef._membersObjectBool) tags.push('<span class="detail-tag members">Members</span>');
-            if (itemDef._isStackable !== undefined && itemDef._isStackable) tags.push('<span class="detail-tag stackable">Stackable</span>');
-            if (itemDef._stackable !== undefined && itemDef._stackable) tags.push('<span class="detail-tag stackable">Stackable</span>');
-            if (itemDef._isTradeable !== undefined && itemDef._isTradeable) tags.push('<span class="detail-tag tradeable">Tradeable</span>');
-            if (itemDef._canBeNoted !== undefined && itemDef._canBeNoted) tags.push('<span class="detail-tag noteable">Noteable</span>');
-            if (itemDef._canIOU !== undefined && itemDef._canIOU) tags.push('<span class="detail-tag iou">IOU</span>');
+            if (itemDef._isMembers !== undefined && itemDef._isMembers)
+                tags.push('<span class="detail-tag members">Members</span>');
+            if (
+                itemDef._membersObjectBool !== undefined &&
+                itemDef._membersObjectBool
+            )
+                tags.push('<span class="detail-tag members">Members</span>');
+            if (itemDef._isStackable !== undefined && itemDef._isStackable)
+                tags.push(
+                    '<span class="detail-tag stackable">Stackable</span>'
+                );
+            if (itemDef._stackable !== undefined && itemDef._stackable)
+                tags.push(
+                    '<span class="detail-tag stackable">Stackable</span>'
+                );
+            if (itemDef._isTradeable !== undefined && itemDef._isTradeable)
+                tags.push(
+                    '<span class="detail-tag tradeable">Tradeable</span>'
+                );
+            if (itemDef._canBeNoted !== undefined && itemDef._canBeNoted)
+                tags.push('<span class="detail-tag noteable">Noteable</span>');
+            if (itemDef._canIOU !== undefined && itemDef._canIOU)
+                tags.push('<span class="detail-tag iou">IOU</span>');
 
             if (tags.length > 0) {
                 html += `
@@ -2153,12 +2567,15 @@ export class DefinitionsPanel extends Plugin {
             const npcDropItems = container.querySelectorAll('.npc-drop-item');
             const uiManager = (document as any).highlite?.managers?.UIManager;
 
-            recipeItems.forEach(item => {
+            recipeItems.forEach((item) => {
                 const itemId = item.getAttribute('data-item-id');
                 if (itemId && uiManager) {
-                    uiManager.bindOnClickBlockHsMask(item as HTMLElement, () => {
-                        this.showItemModal(parseInt(itemId));
-                    });
+                    uiManager.bindOnClickBlockHsMask(
+                        item as HTMLElement,
+                        () => {
+                            this.showItemModal(parseInt(itemId));
+                        }
+                    );
                 } else if (itemId) {
                     // Fallback
                     (item as HTMLElement).onclick = () => {
@@ -2167,12 +2584,15 @@ export class DefinitionsPanel extends Plugin {
                 }
             });
 
-            npcDropItems.forEach(npcItem => {
+            npcDropItems.forEach((npcItem) => {
                 const npcId = npcItem.getAttribute('data-npc-id');
                 if (npcId && uiManager) {
-                    uiManager.bindOnClickBlockHsMask(npcItem as HTMLElement, () => {
-                        this.showNpcModal(parseInt(npcId));
-                    });
+                    uiManager.bindOnClickBlockHsMask(
+                        npcItem as HTMLElement,
+                        () => {
+                            this.showNpcModal(parseInt(npcId));
+                        }
+                    );
                 } else if (npcId) {
                     (npcItem as HTMLElement).onclick = () => {
                         this.showNpcModal(parseInt(npcId));
@@ -2181,7 +2601,8 @@ export class DefinitionsPanel extends Plugin {
             });
         } catch (error) {
             this.error(`Failed to show item details: ${error}`);
-            container.innerHTML = "<p class='detail-error'>Error loading item details</p>";
+            container.innerHTML =
+                "<p class='detail-error'>Error loading item details</p>";
         }
     }
 
@@ -2223,8 +2644,12 @@ export class DefinitionsPanel extends Plugin {
         };
 
         // Add scroll prevention to overlay
-        this.modalOverlay.addEventListener('wheel', preventScroll, { passive: false });
-        this.modalOverlay.addEventListener('touchmove', preventScroll, { passive: false });
+        this.modalOverlay.addEventListener('wheel', preventScroll, {
+            passive: false,
+        });
+        this.modalOverlay.addEventListener('touchmove', preventScroll, {
+            passive: false,
+        });
 
         // Add close button
         const closeButton = document.createElement('button');
@@ -2246,16 +2671,39 @@ export class DefinitionsPanel extends Plugin {
         modalContent.className = 'item-modal-content';
 
         // Allow scrolling within modal content but prevent propagation
-        modalContent.addEventListener('wheel', (e: WheelEvent) => {
-            e.stopPropagation();
+        modalContent.addEventListener(
+            'wheel',
+            (e: WheelEvent) => {
+                e.stopPropagation();
 
-            // Check if we're scrolling within a specific scrollable container
-            const target = e.target as HTMLElement;
-            const scrollableContainer = target.closest('.npc-drops-container, .drops-section-container');
-            
-            if (scrollableContainer) {
-                // Allow scrolling within scrollable containers
-                const { scrollTop, scrollHeight, clientHeight } = scrollableContainer;
+                // Check if we're scrolling within a specific scrollable container
+                const target = e.target as HTMLElement;
+                const scrollableContainer = target.closest(
+                    '.npc-drops-container, .drops-section-container'
+                );
+
+                if (scrollableContainer) {
+                    // Allow scrolling within scrollable containers
+                    const { scrollTop, scrollHeight, clientHeight } =
+                        scrollableContainer;
+                    const delta = e.deltaY;
+
+                    // At top and scrolling up
+                    if (delta < 0 && scrollTop === 0) {
+                        e.preventDefault();
+                    }
+                    // At bottom and scrolling down
+                    else if (
+                        delta > 0 &&
+                        scrollTop + clientHeight >= scrollHeight - 1
+                    ) {
+                        e.preventDefault();
+                    }
+                    return;
+                }
+
+                // For main modal content, prevent scroll if at boundaries
+                const { scrollTop, scrollHeight, clientHeight } = modalContent;
                 const delta = e.deltaY;
 
                 // At top and scrolling up
@@ -2263,30 +2711,24 @@ export class DefinitionsPanel extends Plugin {
                     e.preventDefault();
                 }
                 // At bottom and scrolling down
-                else if (delta > 0 && scrollTop + clientHeight >= scrollHeight - 1) {
+                else if (
+                    delta > 0 &&
+                    scrollTop + clientHeight >= scrollHeight - 1
+                ) {
                     e.preventDefault();
                 }
-                return;
-            }
-
-            // For main modal content, prevent scroll if at boundaries
-            const { scrollTop, scrollHeight, clientHeight } = modalContent;
-            const delta = e.deltaY;
-
-            // At top and scrolling up
-            if (delta < 0 && scrollTop === 0) {
-                e.preventDefault();
-            }
-            // At bottom and scrolling down
-            else if (delta > 0 && scrollTop + clientHeight >= scrollHeight - 1) {
-                e.preventDefault();
-            }
-        }, { passive: false });
+            },
+            { passive: false }
+        );
 
         // Prevent touch scrolling from propagating
-        modalContent.addEventListener('touchmove', (e: TouchEvent) => {
-            e.stopPropagation();
-        }, { passive: false });
+        modalContent.addEventListener(
+            'touchmove',
+            (e: TouchEvent) => {
+                e.stopPropagation();
+            },
+            { passive: false }
+        );
 
         // Load NPC details into modal
         this.loadNpcDetailsIntoModal(modalContent, npcId);
@@ -2295,7 +2737,9 @@ export class DefinitionsPanel extends Plugin {
         this.modalOverlay.appendChild(modalContainer);
 
         // Append to hs-screen-mask if logged in, otherwise to body
-        const container = this.isLoggedIn ? document.getElementById('hs-screen-mask') : document.body;
+        const container = this.isLoggedIn
+            ? document.getElementById('hs-screen-mask')
+            : document.body;
         if (container) {
             container.appendChild(this.modalOverlay);
         } else {
@@ -2312,11 +2756,17 @@ export class DefinitionsPanel extends Plugin {
         document.addEventListener('keydown', escapeHandler);
     }
 
-    private loadNpcDetailsIntoModal(container: HTMLElement, npcId: number): void {
+    private loadNpcDetailsIntoModal(
+        container: HTMLElement,
+        npcId: number
+    ): void {
         try {
-            const npcDef = (document as any).highlite?.gameHooks?.NpcDefinitionManager?.getDefById(npcId);
+            const npcDef = (
+                document as any
+            ).highlite?.gameHooks?.NpcDefinitionManager?.getDefById(npcId);
             if (!npcDef) {
-                container.innerHTML = "<p class='detail-error'>NPC not found</p>";
+                container.innerHTML =
+                    "<p class='detail-error'>NPC not found</p>";
                 return;
             }
 
@@ -2324,47 +2774,90 @@ export class DefinitionsPanel extends Plugin {
             const typeInfo = this.getNpcTypeInfo(npcDef);
 
             let spriteHtml = '';
-            if (typeInfo.isCreature && typeInfo.creatureType !== undefined && typeInfo.creatureSpriteId !== undefined) {
+            if (
+                typeInfo.isCreature &&
+                typeInfo.creatureType !== undefined &&
+                typeInfo.creatureSpriteId !== undefined
+            ) {
                 const creatureType = typeInfo.creatureType;
                 const creatureSpriteId = typeInfo.creatureSpriteId;
                 const sizeClass = this.getCreatureSizeClass(creatureType);
 
                 // Get sprite info from SpritesheetManager
-                const spritesheetManager = (document as any).highlite?.gameHooks?.SpriteSheetManager?.Instance;
-                const creatureSpritesheetInfo = spritesheetManager?.CreatureSpritesheetInfo;
+                const spritesheetManager = (document as any).highlite?.gameHooks
+                    ?.SpriteSheetManager?.Instance;
+                const creatureSpritesheetInfo =
+                    spritesheetManager?.CreatureSpritesheetInfo;
 
-                if (creatureSpritesheetInfo && creatureSpritesheetInfo[creatureType]) {
+                if (
+                    creatureSpritesheetInfo &&
+                    creatureSpritesheetInfo[creatureType]
+                ) {
                     const sheetIndex = 0; // Use first sheet
-                    const spriteInfo = creatureSpritesheetInfo[creatureType][sheetIndex];
+                    const spriteInfo =
+                        creatureSpritesheetInfo[creatureType][sheetIndex];
 
                     if (spriteInfo) {
                         const spriteFrameIndex = 15 * creatureSpriteId;
-                        const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                        const spritePos = this.calculateSpritePositionFromId(
+                            spriteFrameIndex,
+                            creatureType
+                        );
                         spriteHtml = `<div class="npc-sprite-modal npc-sprite-${sizeClass}" data-creature-type="${creatureType}" style="background-image: url('${spriteInfo.SpritesheetURL}'); background-position: -${spritePos.x}px -${spritePos.y}px; width: ${spriteInfo.SpriteWidth}px; height: ${spriteInfo.SpriteHeight}px;" data-sprite-modal="true"></div>`;
                         // Track sprite usage after DOM insertion
-                        setTimeout(() => this.trackSpriteUsage(document.querySelector(`[data-creature-type="${creatureType}"]`) as HTMLElement, spriteInfo.SpritesheetURL, 'modal'), 0);
+                        setTimeout(
+                            () =>
+                                this.trackSpriteUsage(
+                                    document.querySelector(
+                                        `[data-creature-type="${creatureType}"]`
+                                    ) as HTMLElement,
+                                    spriteInfo.SpritesheetURL,
+                                    'modal'
+                                ),
+                            0
+                        );
                     } else {
                         // Fallback
                         const spriteFrameIndex = 15 * creatureSpriteId;
-                        const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                        const spritePos = this.calculateSpritePositionFromId(
+                            spriteFrameIndex,
+                            creatureType
+                        );
                         spriteHtml = `<div class="npc-sprite-modal npc-sprite-${sizeClass}" data-creature-type="${creatureType}" style="background-position: -${spritePos.x}px -${spritePos.y}px;"></div>`;
                     }
                 } else {
                     // Fallback
                     const spriteFrameIndex = 15 * creatureSpriteId;
-                    const spritePos = this.calculateSpritePositionFromId(spriteFrameIndex, creatureType);
+                    const spritePos = this.calculateSpritePositionFromId(
+                        spriteFrameIndex,
+                        creatureType
+                    );
                     spriteHtml = `<div class="npc-sprite-modal npc-sprite-${sizeClass}" data-creature-type="${creatureType}" style="background-position: -${spritePos.x}px -${spritePos.y}px;"></div>`;
                 }
             } else if (typeInfo.isHuman) {
                 // Try to get cached human sprite
-                const spritesheetManager = (document as any).highlite.gameHooks.SpriteSheetManager.Instance;
-                const humanSpriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npcDef._id);
+                const spritesheetManager = (document as any).highlite.gameHooks
+                    .SpriteSheetManager.Instance;
+                const humanSpriteInfo =
+                    spritesheetManager?.HumanNPCSpritesheetInfo?.get(
+                        npcDef._id
+                    );
 
                 if (humanSpriteInfo && humanSpriteInfo.SpritesheetURL) {
                     // Use existing sprite URL
                     spriteHtml = `<div class="npc-sprite-modal npc-sprite-human" style="background-image: url('${humanSpriteInfo.SpritesheetURL}'); background-position: -64px 0px; background-size: auto;" data-sprite-modal="true"></div>`;
                     // Track sprite usage after DOM insertion
-                    setTimeout(() => this.trackSpriteUsage(document.querySelector('.npc-sprite-modal.npc-sprite-human') as HTMLElement, humanSpriteInfo.SpritesheetURL, 'modal'), 0);
+                    setTimeout(
+                        () =>
+                            this.trackSpriteUsage(
+                                document.querySelector(
+                                    '.npc-sprite-modal.npc-sprite-human'
+                                ) as HTMLElement,
+                                humanSpriteInfo.SpritesheetURL,
+                                'modal'
+                            ),
+                        0
+                    );
                 } else {
                     // Show placeholder initially
                     spriteHtml = `<div class="npc-sprite-modal npc-sprite-human" data-npc-id="${npcDef._id}" style="background-color: #f0f0f0; display: flex; align-items: center; justify-content: center; font-size: 36px;">👤</div>`;
@@ -2374,19 +2867,33 @@ export class DefinitionsPanel extends Plugin {
 
                     // Poll for the sprite
                     const pollInterval = setInterval(() => {
-                        const spriteInfo = spritesheetManager?.HumanNPCSpritesheetInfo?.get(npcDef._id);
+                        const spriteInfo =
+                            spritesheetManager?.HumanNPCSpritesheetInfo?.get(
+                                npcDef._id
+                            );
                         if (spriteInfo && spriteInfo.SpritesheetURL) {
                             clearInterval(pollInterval);
-                            const spriteElement = document.querySelector(`.npc-sprite-modal[data-npc-id="${npcDef._id}"]`) as HTMLElement;
+                            const spriteElement = document.querySelector(
+                                `.npc-sprite-modal[data-npc-id="${npcDef._id}"]`
+                            ) as HTMLElement;
                             if (spriteElement) {
-                                spriteElement.innerHTML = "";
+                                spriteElement.innerHTML = '';
                                 spriteElement.style.backgroundImage = `url('${spriteInfo.SpritesheetURL}')`;
-                                spriteElement.style.backgroundPosition = "-64px 0px";
-                                spriteElement.style.backgroundSize = "auto";
-                                spriteElement.style.backgroundColor = "transparent";
-                                spriteElement.setAttribute('data-sprite-modal', 'true');
+                                spriteElement.style.backgroundPosition =
+                                    '-64px 0px';
+                                spriteElement.style.backgroundSize = 'auto';
+                                spriteElement.style.backgroundColor =
+                                    'transparent';
+                                spriteElement.setAttribute(
+                                    'data-sprite-modal',
+                                    'true'
+                                );
                                 // Track sprite usage
-                                this.trackSpriteUsage(spriteElement, spriteInfo.SpritesheetURL, 'modal');
+                                this.trackSpriteUsage(
+                                    spriteElement,
+                                    spriteInfo.SpritesheetURL,
+                                    'modal'
+                                );
                             }
                         }
                     }, 100); // Poll every 100ms
@@ -2395,7 +2902,8 @@ export class DefinitionsPanel extends Plugin {
                     setTimeout(() => clearInterval(pollInterval), 5000);
                 }
             } else {
-                spriteHtml = '<div class="npc-sprite-modal npc-sprite-unknown">?</div>';
+                spriteHtml =
+                    '<div class="npc-sprite-modal npc-sprite-unknown">?</div>';
             }
 
             let html = `
@@ -2404,9 +2912,13 @@ export class DefinitionsPanel extends Plugin {
                     <div class="detail-title">
                         <h2>${npcDef._nameCapitalized || npcDef._name || `NPC ${npcId}`}</h2>
                         <p class="detail-id">ID: ${npcId}</p>
-                        ${npcDef._combat && npcDef._combat._combat && npcDef._combat._combat._combatLevel ? 
-                            `<p class="detail-level">Level: ${npcDef._combat._combat._combatLevel}</p>` : 
-                            ''}
+                        ${
+                            npcDef._combat &&
+                            npcDef._combat._combat &&
+                            npcDef._combat._combat._combatLevel
+                                ? `<p class="detail-level">Level: ${npcDef._combat._combat._combatLevel}</p>`
+                                : ''
+                        }
                     </div>
                 </div>
             `;
@@ -2436,8 +2948,16 @@ export class DefinitionsPanel extends Plugin {
 
                 // Skills
                 if (combat._skills && combat._skills.length > 0) {
-                    const skillNames = ['Melee', 'Ranged', 'Defence', 'Magic', 'Prayer'];
-                    const skills = combat._skills.filter((s: any) => s && s._skill !== undefined);
+                    const skillNames = [
+                        'Melee',
+                        'Ranged',
+                        'Defence',
+                        'Magic',
+                        'Prayer',
+                    ];
+                    const skills = combat._skills.filter(
+                        (s: any) => s && s._skill !== undefined
+                    );
 
                     skills.forEach((skill: any) => {
                         if (skill._skill < skillNames.length) {
@@ -2456,8 +2976,6 @@ export class DefinitionsPanel extends Plugin {
                     </div>
                 `;
             }
-
-
 
             // Behavior
             html += `
@@ -2529,7 +3047,11 @@ export class DefinitionsPanel extends Plugin {
                 `;
             }
 
-            if (npcDef._combat && npcDef._combat._combat && npcDef._combat._combat._autoRetaliate !== undefined) {
+            if (
+                npcDef._combat &&
+                npcDef._combat._combat &&
+                npcDef._combat._combat._autoRetaliate !== undefined
+            ) {
                 html += `
                     <div class="property">
                         <span class="property-label">Auto Retaliate:</span>
@@ -2538,9 +3060,15 @@ export class DefinitionsPanel extends Plugin {
                 `;
             }
 
-            if (npcDef._combat && npcDef._combat._combat && npcDef._combat._combat._combatStyle !== undefined) {
+            if (
+                npcDef._combat &&
+                npcDef._combat._combat &&
+                npcDef._combat._combat._combatStyle !== undefined
+            ) {
                 const combatStyles = ['Melee', 'Ranged', 'Magic'];
-                const styleName = combatStyles[npcDef._combat._combat._combatStyle] || `Style ${npcDef._combat._combat._combatStyle}`;
+                const styleName =
+                    combatStyles[npcDef._combat._combat._combatStyle] ||
+                    `Style ${npcDef._combat._combat._combatStyle}`;
                 html += `
                     <div class="property">
                         <span class="property-label">Combat Style:</span>
@@ -2557,13 +3085,12 @@ export class DefinitionsPanel extends Plugin {
             // Equipment Bonuses
             if (npcDef._combat && npcDef._combat._combat) {
                 const combat = npcDef._combat._combat;
-                const hasEquipmentBonuses = (
+                const hasEquipmentBonuses =
                     combat._equipmentAccuracyBonus !== undefined ||
                     combat._equipmentStrengthBonus !== undefined ||
                     combat._equipmentDefenseBonus !== undefined ||
                     combat._equipmentMagicBonus !== undefined ||
-                    combat._equipmentRangeBonus !== undefined
-                );
+                    combat._equipmentRangeBonus !== undefined;
 
                 if (hasEquipmentBonuses) {
                     html += `
@@ -2625,7 +3152,11 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Spells
-            if (npcDef._combat && npcDef._combat._spellIds && npcDef._combat._spellIds.length > 0) {
+            if (
+                npcDef._combat &&
+                npcDef._combat._spellIds &&
+                npcDef._combat._spellIds.length > 0
+            ) {
                 html += `
                     <div class="detail-section">
                         <h3>Magic Abilities</h3>
@@ -2633,7 +3164,11 @@ export class DefinitionsPanel extends Plugin {
                 `;
                 npcDef._combat._spellIds.forEach((spellId: number) => {
                     try {
-                        const spellDef = (document as any).highlite?.gameHooks?.SpellDefinitionManager?.getDefById(spellId);
+                        const spellDef = (
+                            document as any
+                        ).highlite?.gameHooks?.SpellDefinitionManager?.getDefById(
+                            spellId
+                        );
                         const spellName = spellDef?.Name || `Unknown Spell`;
                         html += `<div class="detail-list-item">• ${spellName} (ID: ${spellId})</div>`;
                     } catch {
@@ -2662,7 +3197,10 @@ export class DefinitionsPanel extends Plugin {
                 `;
             }
 
-            if (npcDef._pickpocketId !== undefined && npcDef._pickpocketId !== -1) {
+            if (
+                npcDef._pickpocketId !== undefined &&
+                npcDef._pickpocketId !== -1
+            ) {
                 html += `
                     <div class="property">
                         <span class="property-label">Pickpocket ID:</span>
@@ -2675,11 +3213,14 @@ export class DefinitionsPanel extends Plugin {
                 const creatureTypeNames = {
                     '-1': 'Human',
                     '0': 'Small Creature',
-                    '1': 'Medium Creature', 
+                    '1': 'Medium Creature',
                     '2': 'Large Creature',
-                    '3': 'Largest Creature'
+                    '3': 'Largest Creature',
                 };
-                const typeName = creatureTypeNames[npcDef._creatureType as keyof typeof creatureTypeNames] || `Type ${npcDef._creatureType}`;
+                const typeName =
+                    creatureTypeNames[
+                        npcDef._creatureType as keyof typeof creatureTypeNames
+                    ] || `Type ${npcDef._creatureType}`;
                 html += `
                     <div class="property">
                         <span class="property-label">Entity Type:</span>
@@ -2693,11 +3234,11 @@ export class DefinitionsPanel extends Plugin {
                 </div>
             `;
 
-
-
             // Equipment (for humans)
             if (npcDef._appearance && npcDef._appearance._equippedItems) {
-                const equippedItems = npcDef._appearance._equippedItems.filter((item: any) => item && item._id);
+                const equippedItems = npcDef._appearance._equippedItems.filter(
+                    (item: any) => item && item._id
+                );
                 if (equippedItems.length > 0) {
                     html += `
                         <div class="detail-section">
@@ -2707,10 +3248,23 @@ export class DefinitionsPanel extends Plugin {
 
                     equippedItems.forEach((item: any) => {
                         try {
-                            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
-                            const itemName = itemDef?._nameCapitalized || itemDef?._name || `Item ${item._id}`;
-                            const itemPos = (document as any).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
-                            const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';
+                            const itemDef = (
+                                document as any
+                            ).highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                                item._id
+                            );
+                            const itemName =
+                                itemDef?._nameCapitalized ||
+                                itemDef?._name ||
+                                `Item ${item._id}`;
+                            const itemPos = (
+                                document as any
+                            ).highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
+                                item._id
+                            );
+                            const spriteStyle = itemPos
+                                ? `style="background-position: ${itemPos};"`
+                                : '';
 
                             html += `
                                 <div class="recipe-item" data-item-id="${item._id}">
@@ -2742,8 +3296,15 @@ export class DefinitionsPanel extends Plugin {
             }
 
             // Loot Table
-            if (npcDef._combat && npcDef._combat._lootTableId !== undefined && npcDef._combat._lootTableId !== -1) {
-                html += this.generateDropsSection(npcDef._combat._lootTableId, npcDef._name || `NPC ${npcId}`);
+            if (
+                npcDef._combat &&
+                npcDef._combat._lootTableId !== undefined &&
+                npcDef._combat._lootTableId !== -1
+            ) {
+                html += this.generateDropsSection(
+                    npcDef._combat._lootTableId,
+                    npcDef._name || `NPC ${npcId}`
+                );
             }
 
             // Creature Appearance (for creatures)
@@ -2884,15 +3445,34 @@ export class DefinitionsPanel extends Plugin {
 
             // Tags
             let tags: string[] = [];
-            if (npcDef._canShop) tags.push('<span class="detail-tag shopkeeper">Shop</span>');
-            if (npcDef._pickpocketId !== -1) tags.push('<span class="detail-tag pickpocket">Pickpocket</span>');
-            if (npcDef._isAlwaysAggro) tags.push('<span class="detail-tag aggressive">Always Aggressive</span>');
-            if (npcDef._isAggressive) tags.push('<span class="detail-tag aggressive">Aggressive</span>');
-            if (npcDef._combat && npcDef._combat._spellIds && npcDef._combat._spellIds.length > 0) tags.push('<span class="detail-tag magic">Magic User</span>');
-            if (npcDef._creatureAppearance) tags.push('<span class="detail-tag creature">Creature</span>');
-            if (npcDef._appearance) tags.push('<span class="detail-tag human">Human</span>');
-            if (npcDef._combat && npcDef._combat._combat) tags.push('<span class="detail-tag combat">Combat</span>');
-            if (!npcDef._combat) tags.push('<span class="detail-tag peaceful">Peaceful</span>');
+            if (npcDef._canShop)
+                tags.push('<span class="detail-tag shopkeeper">Shop</span>');
+            if (npcDef._pickpocketId !== -1)
+                tags.push(
+                    '<span class="detail-tag pickpocket">Pickpocket</span>'
+                );
+            if (npcDef._isAlwaysAggro)
+                tags.push(
+                    '<span class="detail-tag aggressive">Always Aggressive</span>'
+                );
+            if (npcDef._isAggressive)
+                tags.push(
+                    '<span class="detail-tag aggressive">Aggressive</span>'
+                );
+            if (
+                npcDef._combat &&
+                npcDef._combat._spellIds &&
+                npcDef._combat._spellIds.length > 0
+            )
+                tags.push('<span class="detail-tag magic">Magic User</span>');
+            if (npcDef._creatureAppearance)
+                tags.push('<span class="detail-tag creature">Creature</span>');
+            if (npcDef._appearance)
+                tags.push('<span class="detail-tag human">Human</span>');
+            if (npcDef._combat && npcDef._combat._combat)
+                tags.push('<span class="detail-tag combat">Combat</span>');
+            if (!npcDef._combat)
+                tags.push('<span class="detail-tag peaceful">Peaceful</span>');
 
             if (tags.length > 0) {
                 html += `
@@ -2915,15 +3495,20 @@ export class DefinitionsPanel extends Plugin {
             container.innerHTML = html;
 
             // Bind click events to equipped items and loot items
-            const itemElements = container.querySelectorAll('.recipe-item, .loot-item');
+            const itemElements = container.querySelectorAll(
+                '.recipe-item, .loot-item'
+            );
             const uiManager = (document as any).highlite?.managers?.UIManager;
 
-            itemElements.forEach(item => {
+            itemElements.forEach((item) => {
                 const itemId = item.getAttribute('data-item-id');
                 if (itemId && uiManager) {
-                    uiManager.bindOnClickBlockHsMask(item as HTMLElement, () => {
-                        this.showItemModal(parseInt(itemId));
-                    });
+                    uiManager.bindOnClickBlockHsMask(
+                        item as HTMLElement,
+                        () => {
+                            this.showItemModal(parseInt(itemId));
+                        }
+                    );
                 } else if (itemId) {
                     // Fallback
                     (item as HTMLElement).onclick = () => {
@@ -2933,7 +3518,8 @@ export class DefinitionsPanel extends Plugin {
             });
         } catch (error) {
             this.error(`Failed to show NPC details: ${error}`);
-            container.innerHTML = "<p class='detail-error'>Error loading NPC details</p>";
+            container.innerHTML =
+                "<p class='detail-error'>Error loading NPC details</p>";
         }
     }
 
@@ -2954,8 +3540,8 @@ export class DefinitionsPanel extends Plugin {
     }
 
     private addStyles(): void {
-        const style = document.createElement("style");
-        style.setAttribute("data-item-panel", "true");
+        const style = document.createElement('style');
+        style.setAttribute('data-item-panel', 'true');
         style.textContent = `
             /* Panel Container */
             .item-definition-panel {
@@ -4238,7 +4824,7 @@ export class DefinitionsPanel extends Plugin {
     }
 
     stop(): void {
-        this.log("Definitions Panel stopped");
+        this.log('Definitions Panel stopped');
 
         // Close any open modal
         this.closeModal();
@@ -4247,10 +4833,10 @@ export class DefinitionsPanel extends Plugin {
         this.cleanupAllSprites();
 
         // Remove menu item
-        this.panelManager.removeMenuItem("📦");
+        this.panelManager.removeMenuItem('📦');
 
         // Remove styles
-        const style = document.querySelector("style[data-item-panel]");
+        const style = document.querySelector('style[data-item-panel]');
         if (style) {
             style.remove();
         }
@@ -4288,4 +4874,4 @@ export class DefinitionsPanel extends Plugin {
         this.spriteContexts.clear();
         this.activeSpriteUrls.clear();
     }
-} 
+}

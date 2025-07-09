@@ -1,19 +1,19 @@
 declare global {
     interface Window {
-        [key: string]: any,
+        [key: string]: any;
     }
 
     interface Document {
         highlite: {
-            [key: string]: any,
-        },
+            [key: string]: any;
+        };
 
         client: {
-            [key: string]: any,
-        },
+            [key: string]: any;
+        };
 
         game: {
-            [key: string]: any,
-        }
+            [key: string]: any;
+        };
     }
 }

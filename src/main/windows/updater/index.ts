@@ -1,7 +1,7 @@
-import { ipcMain, BrowserWindow, app, shell } from "electron";
-import { autoUpdater } from "electron-updater";
+import { ipcMain, BrowserWindow, app, shell } from 'electron';
+import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import path from "path";
+import path from 'path';
 
 autoUpdater.autoDownload = false; // Disable auto download to control it manually
 
@@ -21,19 +21,21 @@ export async function createUpdateWindow() {
     });
 
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
-        updateWindow.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/update.html`)
+        updateWindow.loadURL(
+            `${process.env['ELECTRON_RENDERER_URL']}/update.html`
+        );
     } else {
-        updateWindow.loadFile(path.join(__dirname, '../renderer/update.html'))
+        updateWindow.loadFile(path.join(__dirname, '../renderer/update.html'));
     }
 
     updateWindow.on('ready-to-show', async () => {
         if (!app.isPackaged) {
-           ipcMain.emit('delay-update');
+            ipcMain.emit('delay-update');
         } else {
-           autoUpdater.checkForUpdates();
+            autoUpdater.checkForUpdates();
         }
     });
-    
+
     autoUpdater.on('download-progress', (progressObj) => {
         log.info('Download progress:', progressObj.percent);
         updateWindow.webContents.send('download-progress', progressObj.percent);

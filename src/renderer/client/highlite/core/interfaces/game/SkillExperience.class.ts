@@ -1,7 +1,7 @@
 export interface SkillExperience {
-  _amount: number;
-  _skill: number;
+    _amount: number;
+    _skill: number;
 
-  get Amount(): number;
-  get Skill(): number;
+    get Amount(): number;
+    get Skill(): number;
 }

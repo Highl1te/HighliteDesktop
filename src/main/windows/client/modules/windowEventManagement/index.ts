@@ -1,9 +1,9 @@
-import { ipcMain, BrowserWindow } from 'electron';  
+import { ipcMain, BrowserWindow } from 'electron';
 
 // Window Controls Handling
 ipcMain.on('minimize-window', (event) => {
     // Get the BrowserWindow instance from the event
-    const window = BrowserWindow.fromWebContents(event.sender)
+    const window = BrowserWindow.fromWebContents(event.sender);
     if (window && window.isMinimizable()) {
         window.minimize();
     }

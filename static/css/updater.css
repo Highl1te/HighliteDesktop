@@ -1,8 +1,8 @@
 body {
     margin: 0;
     overflow-x: hidden;
-    background:#1a1a1a;
-    color:white;
+    background: #1a1a1a;
+    color: white;
     font-family: 'Inter', sans-serif;
 }
 
@@ -67,38 +67,37 @@ body {
     visibility: visible;
 }
 .loader {
-  width: 48px;
-  height: 48px;
-  position: relative;
+    width: 48px;
+    height: 48px;
+    position: relative;
 }
 .loader::after,
 .loader::before {
-  content: '';  
-  box-sizing: border-box;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #FFF;
-  position: absolute;
-  left: 0;
-  top: 0;
-  animation: animloader 2s linear infinite;
+    content: '';
+    box-sizing: border-box;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #fff;
+    position: absolute;
+    left: 0;
+    top: 0;
+    animation: animloader 2s linear infinite;
 }
 .loader::after {
-  animation-delay: 1s;
+    animation-delay: 1s;
 }
 
 @keyframes animloader {
-  0% {
-    transform: scale(0);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0;
-  }
+    0% {
+        transform: scale(0);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 0;
+    }
 }
-    
 
 /*
 Button CSS

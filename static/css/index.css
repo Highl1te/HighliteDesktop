@@ -3,30 +3,30 @@
     --theme-background-soft: #222222;
     --theme-background-mute: #2a2a2a;
     --theme-background-light: #333333;
-    --theme-accent: #F9F449;
+    --theme-accent: #f9f449;
     --theme-accent-dark: #e6e03a;
     --theme-accent-light: #fbf65c;
-    --theme-accent-muted: rgba(249, 244, 73, .8);
-    --theme-accent-transparent-10: rgba(249, 244, 73, .1);
-    --theme-accent-transparent-20: rgba(249, 244, 73, .2);
-    --theme-accent-transparent-30: rgba(249, 244, 73, .3);
-    --theme-accent-transparent-40: rgba(249, 244, 73, .4);
-    --theme-accent-transparent-60: rgba(249, 244, 73, .6);
+    --theme-accent-muted: rgba(249, 244, 73, 0.8);
+    --theme-accent-transparent-10: rgba(249, 244, 73, 0.1);
+    --theme-accent-transparent-20: rgba(249, 244, 73, 0.2);
+    --theme-accent-transparent-30: rgba(249, 244, 73, 0.3);
+    --theme-accent-transparent-40: rgba(249, 244, 73, 0.4);
+    --theme-accent-transparent-60: rgba(249, 244, 73, 0.6);
     --theme-text-primary: #ffffff;
-    --theme-text-secondary: rgba(255, 255, 255, .8);
-    --theme-text-muted: rgba(255, 255, 255, .6);
+    --theme-text-secondary: rgba(255, 255, 255, 0.8);
+    --theme-text-muted: rgba(255, 255, 255, 0.6);
     --theme-text-dark: #1a1a1a;
-    --theme-border: rgba(255, 255, 255, .1);
-    --theme-border-light: rgba(255, 255, 255, .05);
-    --theme-divider: rgba(255, 255, 255, .15);
+    --theme-border: rgba(255, 255, 255, 0.1);
+    --theme-border-light: rgba(255, 255, 255, 0.05);
+    --theme-divider: rgba(255, 255, 255, 0.15);
     --theme-success: #10b981;
     --theme-success-dark: #059669;
     --theme-success-light: #34d399;
-    --theme-success-transparent-30: rgba(16, 185, 129, .3);
+    --theme-success-transparent-30: rgba(16, 185, 129, 0.3);
     --theme-danger: #ef4444;
     --theme-danger-dark: #dc2626;
     --theme-danger-light: #f87171;
-    --theme-danger-transparent-30: rgba(239, 68, 68, .3);
+    --theme-danger-transparent-30: rgba(239, 68, 68, 0.3);
     --vt-c-white: #ffffff;
     --vt-c-white-soft: #f8f8f8;
     --vt-c-white-mute: #f2f2f2;
@@ -42,7 +42,7 @@
     --vt-c-text-light-2: var(--theme-text-secondary);
     --vt-c-text-dark-1: var(--theme-text-primary);
     --vt-c-text-dark-2: var(--theme-text-secondary);
-    --titlebar-height: 28px
+    --titlebar-height: 28px;
 }
 
 :root {
@@ -53,7 +53,7 @@
     --color-border-hover: var(--theme-divider);
     --color-heading: var(--theme-text-primary);
     --color-text: var(--theme-text-primary);
-    --section-gap: 160px
+    --section-gap: 160px;
 }
 
 body {
@@ -134,7 +134,7 @@ body {
 }
 
 .highlite_bar .highlite_bar_item {
-    margin-top:5px;
+    margin-top: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
