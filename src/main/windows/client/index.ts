@@ -27,14 +27,14 @@ export async function createClientWindow() {
     mainWindow.setMenu(null);
 
     if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
-        const devUrl = `${process.env['ELECTRON_RENDERER_URL']}/client.html`;
+        const devUrl = `${process.env['ELECTRON_RENDERER_URL']}/world-select.html`;
         console.log('Loading dev URL:', devUrl);
         mainWindow.loadURL(devUrl);
     } else {
         const fileUrl = format({
             protocol: 'file',
             slashes: true,
-            pathname: path.join(__dirname, '../renderer/client.html'),
+            pathname: path.join(__dirname, '../renderer/world-select.html'),
             query: { windowId: mainWindow.id }
         });
 
@@ -54,7 +54,7 @@ export async function createClientWindow() {
             mainWindow.webContents.toggleDevTools();
         }
     });
-  
+
     // Enable Zooming Page In and Out
     mainWindow.webContents.on('zoom-changed', (event, zoomDirection) => {
         if (zoomDirection === 'in') {
@@ -66,12 +66,12 @@ export async function createClientWindow() {
             mainWindow.webContents.setZoomLevel(mainWindow.webContents.getZoomLevel() - 0.1);
         }
     });
- 
+
     // In development, modify requests to High Spell servers
     if (!app.isPackaged) {
         // Set user agent and origin for High Spell compatibility
         mainWindow.webContents.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-    
+
         mainWindow.webContents.session.webRequest.onBeforeSendHeaders((details, callback) => {
             if (details.url.includes('highspell.com')) {
                 details.requestHeaders['Origin'] = 'https://highspell.com';
@@ -85,7 +85,7 @@ export async function createClientWindow() {
         // Always start with zoom reset to 0.0
         mainWindow.webContents.setZoomLevel(0);
     });
-  
+
     mainWindow.webContents.send('is-darwin', process.platform === 'darwin');
 
     return mainWindow;
