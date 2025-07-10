@@ -20,7 +20,7 @@ import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
-import { CurrentStatus} from "./highlite/plugins/CurrentStatus";
+import { CurrentStatus } from "./highlite/plugins/CurrentStatus";
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 
 import "@static/css/index.css"
