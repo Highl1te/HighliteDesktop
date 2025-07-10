@@ -20,6 +20,7 @@ import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
+import { CurrentStatus} from "./highlite/plugins/CurrentStatus";
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 
 import "@static/css/index.css"
@@ -50,7 +51,8 @@ const PLUGIN_REGISTRY = [
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'}
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
+    { class: CurrentStatus, path: './highlite/plugins/CurrentStatus' }
 ];
 
 async function obtainGameClient() {
