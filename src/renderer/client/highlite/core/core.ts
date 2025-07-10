@@ -67,6 +67,7 @@ export class Highlite {
         this.hookManager.registerClass('IV', 'SpellDefinitionManager');
         this.hookManager.registerClass('tk', 'AppearanceUtils');
         this.hookManager.registerClass('SR', 'BlobLoader');
+        this.hookManager.registerClass('oq', 'HTMLUIManager'); // Tip to find: contains getGameContainer() 
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook(

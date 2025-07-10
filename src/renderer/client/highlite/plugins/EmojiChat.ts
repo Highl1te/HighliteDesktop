@@ -1,5 +1,4 @@
 import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
-import { HookManager } from "../core/managers/highlite/hookManager";
 import { PanelManager } from "../core/managers/highlite/panelManager";
 import * as unicodeEmoji from "unicode-emoji";
 import emojiUnicode from "emoji-unicode";
@@ -28,9 +27,6 @@ export class EmojiChat extends Plugin {
     if (!this.settings.enable.value) {
       return;
     }
-    const hookManager = new HookManager();
-    // This may need to be moved to core
-    hookManager.registerClass("oq", "UIManager");
     this.log(`Started`);
     if (this.attachToChatInput()) {
       this.createPanel();
@@ -95,7 +91,7 @@ export class EmojiChat extends Plugin {
   }
 
   private attachToChatInput(): boolean {
-    this.chatInputManager = this.gameHooks.UIManager.Instance.getScreenMask()
+    this.chatInputManager = this.gameHooks.HTMLUIManager.Instance.getScreenMask()
       .getChatMenuQuadrant()
       .getChatMenu()
       .getChatInputMenu()
