@@ -61,6 +61,9 @@ export class EmojiChat extends Plugin {
       if (emojiButtons.hasOwnProperty(group)) {
         groupDivs[group] = document.createElement("div");
         groupDivs[group].style.display = "none";
+        if (group === "smileys-emotion") {
+          groupDivs[group].style.display = "flex"; // Default to showing smileys-emotion group
+        }
         groupDivs[group].style.flexDirection = "row";
         groupDivs[group].style.margin = "5px 0";
         groupDivs[group].style.flexWrap = "wrap";
@@ -91,7 +94,17 @@ export class EmojiChat extends Plugin {
   }
 
   private attachToChatInput(): boolean {
-    this.chatInputManager = this.gameHooks.HTMLUIManager.Instance.getScreenMask()
+    const HTMLUIManager = this.gameHooks.HTMLUIManager;
+    if (!HTMLUIManager) {
+      this.log(`HTMLUIManager is not available.`);
+      return false;
+    }
+    const screenMask = HTMLUIManager.Instance.getScreenMask();
+    if (!screenMask) {
+      this.log(`ScreenMask is not available.`);
+      return false;
+    }
+    this.chatInputManager = screenMask
       .getChatMenuQuadrant()
       .getChatMenu()
       .getChatInputMenu()
@@ -163,7 +176,11 @@ export class EmojiChat extends Plugin {
   }
 
   private destroyPanel(): void {
-    this.panelManager.removeMenuItem("🙂");
+    try {
+      this.panelManager.removeMenuItem("🙂");
+    } catch (e) {
+      this.log('Could not destroy panel (it probably does not exist)');
+    }
   }
 
   stop(): void {
