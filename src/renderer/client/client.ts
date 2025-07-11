@@ -30,7 +30,6 @@ import "@static/css/item-tooltip.css"
 import "./helpers/titlebarHelpers.js";
 import "@iconify/iconify";
 
-
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
     { class: HPAlert, path: './highlite/plugins/HPAlert' },
