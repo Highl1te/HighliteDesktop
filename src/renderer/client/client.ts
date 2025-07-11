@@ -21,7 +21,6 @@ import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
-import { TestingPlugin } from "./highlite/plugins/TestingPlugin";
 import { EntityHighlight } from "./highlite/plugins/EntityHighlight";
 
 import "@static/css/index.css"
@@ -53,7 +52,6 @@ const PLUGIN_REGISTRY = [
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
-    { class: TestingPlugin, path: './highlite/plugins/TestingPlugin' },
     { class: EntityHighlight, path: './highlite/plugins/EntityHighlight' }
 ];
 

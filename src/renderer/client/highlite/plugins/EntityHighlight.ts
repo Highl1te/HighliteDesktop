@@ -15,15 +15,16 @@ export class EntityHighlight extends Plugin {
 
         this.uiManager = new UIManager();
 
-        this.settings.bankHighlight = { text: "Bank Highlight", type: SettingsTypes.checkbox, value: true, callback: () => {} };
-        this.settings.bankDebug = { text: "Bank Debug", type: SettingsTypes.checkbox, value: true, callback: () => this.findAllBanks() };
+        this.settings.entityPriorities = { text: "Entities to highlight (Tree,Bank Chest,Water Obelisk)", type: SettingsTypes.text, value: "", callback: () => this.updateEntityPriorities() };
     };
 
-    BankEntityDOMElements: {
-        [key: string]: { element: HTMLDivElement, position: Vector3 }
+    EntityDOMElements: {
+        [key: string]: { element: HTMLDivElement, position: Vector3, name: string }
     } = {}
 
+
     private positionTracker: Map<string, number> = new Map();
+    private entitiesToHighlight: string[] = [];
 
     init(): void {
         this.log("Initializing");
@@ -31,17 +32,20 @@ export class EntityHighlight extends Plugin {
 
     start(): void {
         this.log("Started EntityHighlight Plugin");
+        this.setupAllElements();
+
     }
 
     stop(): void {
         this.log("Stopped EntityHighlight Plugin");
+        this.cleanupAllElements();
     }
 
     SocketManager_loggedIn(): void {
         if (this.settings.enable.value) {
+            this.updateEntityPriorities();
             this.setupAllElements();
         }
-        this.log(this.BankEntityDOMElements);
     }
 
     SocketManager_handleLoggedOut(): void {
@@ -53,7 +57,29 @@ export class EntityHighlight extends Plugin {
 
         this.resetPositionTracker();
 
+        this.cleanStaleWorldEntities(WorldEntities);
         this.processWorldEntities(WorldEntities);
+    }
+
+    private cleanStaleWorldEntities(WorldEntities: any): void {
+        for (const key in this.EntityDOMElements) {
+            if (!WorldEntities.has(parseInt(key))) {
+                this.disposeElementFromCollection(this.EntityDOMElements, key);
+            }
+        }
+    }
+
+    private updateEntityPriorities(): void {
+        const prioritiesStr = this.settings.entityPriorities!.value as string;
+        this.entitiesToHighlight = prioritiesStr.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
+        this.setupAllElements();
+    }
+
+    private disposeElementFromCollection(collection: any, key: string | number): void {
+        if (collection[key]?.element) {
+            collection[key].element.remove();
+            delete collection[key];
+        }
     }
 
     private resetPositionTracker(): void {
@@ -62,19 +88,20 @@ export class EntityHighlight extends Plugin {
 
     private processWorldEntities(WorldEntities: any[]): void {
         for(const entity of WorldEntities) {
-            if(entity[1]._name === "Bank Chest") {
-                if (!this.BankEntityDOMElements[entity[1]._entityTypeId]) {
+            if(this.entitiesToHighlight.includes(entity[1]._name)) {
+                if (!this.EntityDOMElements[entity[1]._entityTypeId]) {
                     this.createEntityElement(entity[1]._entityTypeId, entity[1]);
                 }
-                const bankID = entity[1]._entityTypeId;
-                const element = this.BankEntityDOMElements[bankID].element;
+                const entityTypeId = entity[1]._entityTypeId;
+                const element = this.EntityDOMElements[entityTypeId].element;
                 element.style.color = "white";
+
 
                 this.applyEntityColors(element);
 
                 const worldPos = this.getEntityWorldPosition(entity[1]);
                 if(worldPos) {
-                    this.BankEntityDOMElements[entity[1]._entityTypeId].position = worldPos;
+                    this.EntityDOMElements[entity[1]._entityTypeId].position = worldPos;
 
                     const positionKey = this.getPositionKey(worldPos);
                     const currentCount = this.positionTracker.get(positionKey) || 0;
@@ -83,7 +110,7 @@ export class EntityHighlight extends Plugin {
 
                 const entityMesh = entity[1]._appearance._bjsMeshes[0];
                 try {
-                    this.updateElementPosition(entityMesh, this.BankEntityDOMElements[entity[1]._entityTypeId]);
+                    this.updateElementPosition(entityMesh, this.EntityDOMElements[entity[1]._entityTypeId]);
                 } catch (e) {
                     this.log("Error updating entity element position: ", e);
                 }
@@ -163,31 +190,13 @@ export class EntityHighlight extends Plugin {
         element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
         element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
 
-        this.BankEntityDOMElements[entityId] = {
+        this.EntityDOMElements[entityId] = {
             element: element,
-            position: Vector3.ZeroReadOnly
+            position: Vector3.ZeroReadOnly,
+            name: entity._name,
         };
 
         document.getElementById('entity-highlight-entity')?.appendChild(element);
-    }
-
-
-    private findAllBanks(): void {
-        const entities = this.gameHooks.WorldEntityManager.Instance.WorldEntities;
-        for (const entity of entities) {
-            if(entity[1]._name == "Bank Chest") {
-                this.log(entity[1]);
-            }
-        }
-    }
-
-    private cleanupElementCollection(collection: any): void {
-        for (const key in collection) {
-            if (collection[key]) {
-                collection[key].element.remove();
-                delete collection[key];
-            }
-        }
     }
 
     private injectCSSVariables(): void {
@@ -195,7 +204,6 @@ export class EntityHighlight extends Plugin {
 
         try {
             const screenMask = document.getElementById('hs-screen-mask');
-            this.log(screenMask);
             if (!screenMask) return;
 
             const computedStyle = getComputedStyle(screenMask);
@@ -239,11 +247,20 @@ export class EntityHighlight extends Plugin {
         }
     }
 
+    private cleanupElementCollection(collection: any): void {
+        for (const key in collection) {
+            if (collection[key]) {
+                collection[key].element.remove();
+                delete collection[key];
+            }
+        }
+    }
+
     private cleanupAllElements(): void {
         this.log("EntityHightlight - Cleaning all elements");
-        this.cleanupElementCollection(this.BankEntityDOMElements);
+        this.cleanupElementCollection(this.EntityDOMElements);
 
-        this.BankEntityDOMElements = {};
+        this.EntityDOMElements = {};
 
         if (this.DOMElement) {
             this.DOMElement.remove();
