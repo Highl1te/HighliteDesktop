@@ -1,26 +1,27 @@
-import { IndexDBWrapper } from './helpers/IndexDBWrapper';
-import { Highlite } from './highlite/core/core';
-import { HPAlert } from './highlite/plugins/HPAlert';
-import { IdleAlert } from './highlite/plugins/IdleAlert/IdleAlert';
-import { Lookup } from './highlite/plugins/Lookup';
-import { Nameplates } from './highlite/plugins/Nameplates';
-import { EnhancedHPBars } from './highlite/plugins/EnhancedHPBars';
-import { EnhancedLoginScreen } from './highlite/plugins/EnhancedLoginScreen';
-import { ContextMenuOptions } from './highlite/plugins/ContextMenuOptions';
-import { TradeAlerts } from './highlite/plugins/TradeAlerts';
-import { PMAlerts } from './highlite/plugins/PMAlerts';
-import { CoinCounter } from './highlite/plugins/CoinCounter';
-import { ExperienceTracker } from './highlite/plugins/ExperienceTracker';
-import { WorldMap } from './highlite/plugins/Map';
-import { MinimapMarker } from './highlite/plugins/MinimapMarker';
-import { DropLog } from './highlite/plugins/DropLog';
-import { ChatItemTooltip } from './highlite/plugins/ChatItemTooltip';
-import { XPOrb } from './highlite/plugins/XPOrb';
-import { TreasureMapHelper } from './highlite/plugins/TreasureMapHelper';
-import { FPSLimiter } from './highlite/plugins/FPSLimiter';
-import { DefinitionsPanel } from './highlite/plugins/DefinitionsPanel';
-import { MinimapIcons } from './highlite/plugins/MinimapIcons';
-import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
+import { IndexDBWrapper } from "./helpers/IndexDBWrapper";
+import { Highlite } from "./highlite/core/core";
+import { HPAlert } from "./highlite/plugins/HPAlert";
+import { IdleAlert } from "./highlite/plugins/IdleAlert/IdleAlert";
+import { Lookup } from "./highlite/plugins/Lookup";
+import { Nameplates } from "./highlite/plugins/Nameplates";
+import { EnhancedHPBars } from "./highlite/plugins/EnhancedHPBars";
+import { EnhancedLoginScreen } from "./highlite/plugins/EnhancedLoginScreen";
+import { ContextMenuOptions } from "./highlite/plugins/ContextMenuOptions";
+import { TradeAlerts } from "./highlite/plugins/TradeAlerts";
+import { PMAlerts } from "./highlite/plugins/PMAlerts";
+import { CoinCounter } from "./highlite/plugins/CoinCounter";
+import { ExperienceTracker } from "./highlite/plugins/ExperienceTracker";
+import { WorldMap } from "./highlite/plugins/Map";
+import { MinimapMarker } from "./highlite/plugins/MinimapMarker";
+import { DropLog } from "./highlite/plugins/DropLog";
+import { ChatItemTooltip } from "./highlite/plugins/ChatItemTooltip";
+import { XPOrb } from "./highlite/plugins/XPOrb";
+import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
+import { BankSearch } from "./highlite/plugins/BankHelper";
+import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
+import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
+import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
+import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 
 import '@static/css/index.css';
 import '@static/css/overrides.css';
@@ -55,8 +56,9 @@ const PLUGIN_REGISTRY = [
     { class: XPOrb, path: './highlite/plugins/XPOrb' },
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
-    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
+    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
+    { class: BankSearch, path: './highlite/plugins/BankHelper'}
 ];
 
 async function obtainGameClient() {
