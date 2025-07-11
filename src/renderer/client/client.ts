@@ -21,13 +21,14 @@ import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
-
+import { InventoryTooltips } from "./highlite/plugins/InventoryTooltips";
 import "@static/css/index.css"
 import "@static/css/overrides.css"
 import "@static/css/item-tooltip.css"
 
 import "./helpers/titlebarHelpers.js";
 import "@iconify/iconify";
+
 
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
@@ -50,7 +51,8 @@ const PLUGIN_REGISTRY = [
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'}
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
+    { class: InventoryTooltips, path: './highlite/plugins/EquipmentBonusTooltip' }
 ];
 
 async function obtainGameClient() {
