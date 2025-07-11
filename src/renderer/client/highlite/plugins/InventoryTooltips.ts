@@ -44,7 +44,6 @@ export class InventoryTooltips extends Plugin {
    * Starts the plugin, adds styles and event listeners.
    */
   start() {
-    this.log("we starting");
     this.addPluginStyle();
     this.bonusArray = (document as any).client.get("bA");
     document.addEventListener("mouseenter", this.onMouseOver, true);
@@ -55,7 +54,6 @@ export class InventoryTooltips extends Plugin {
    * Stops the plugin, removes event listeners and tooltip.
    */
   stop() {
-    this.log("we stopping");
     document.removeEventListener("mouseenter", this.onMouseOver, true);
     document.removeEventListener("mouseout", this.onMouseOut, true);
     this.removeTooltip();
@@ -79,9 +77,6 @@ export class InventoryTooltips extends Plugin {
       .Instance.MainPlayer.Inventory.Items;
     const item = inventoryItems[slotId];
     if (!item) return;
-    this.log(
-      (document as any).highlite.gameHooks.EntityManager.Instance.MainPlayer
-    );
     this.showTooltip(event, item._def);
   };
 
@@ -108,7 +103,6 @@ export class InventoryTooltips extends Plugin {
     // Get currently equipped item for this equipment type
     const equippedItem = mainPlayerEquip[itemDef._equipmentType];
     const equippedEffects = equippedItem?._def._equippableEffects || [];
-    this.log("equippedEffects", equippedItem);
 
     // Track which skills are present in hovered item
     const hoveredSkills = new Set<number>(bonuses.map((b: any) => b._skill));
