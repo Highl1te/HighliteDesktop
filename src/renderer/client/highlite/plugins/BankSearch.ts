@@ -8,6 +8,7 @@ export class BankSearch extends Plugin {
   private searchBox: HTMLElement | null = null;
   private observer: MutationObserver | null = null;
   private resizeListener: (() => void) | null = null;
+  private lastQuery: string = "";
 
 
   start(): void {
@@ -15,6 +16,9 @@ export class BankSearch extends Plugin {
         return;
     }
     this.setupBankObserver();
+  }
+
+  init(): void {
   }
 
   stop(): void {
@@ -137,6 +141,7 @@ export class BankSearch extends Plugin {
     input.classList.add('bank-helper-search-input');
     input.style.width = '180px';
     input.style.outline = 'none';
+    input.value = this.lastQuery; // Set input value to last query
 
     // Prevent game from processing keystrokes while typing
     input.addEventListener('keydown', (e) => e.stopPropagation());
@@ -225,8 +230,13 @@ export class BankSearch extends Plugin {
     // Input event
     input.addEventListener('input', (e) => {
       const query = input.value.trim().toLowerCase();
+      this.lastQuery = query; // Store the last query
       this.highlightBankQuery(query);
     });
+    // If there is a last query, immediately highlight
+    if (this.lastQuery) {
+      this.highlightBankQuery(this.lastQuery);
+    }
   }
 
   positionSearchBox(searchContainer: HTMLElement, bankMenu: HTMLElement) {
