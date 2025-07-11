@@ -22,6 +22,7 @@ import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 import { InventoryTooltips } from "./highlite/plugins/InventoryTooltips";
+
 import "@static/css/index.css"
 import "@static/css/overrides.css"
 import "@static/css/item-tooltip.css"
