@@ -679,6 +679,57 @@ export class SettingsManager {
                     contentRow.appendChild(textContainer);
 
                     break;
+
+                case SettingsTypes.button:
+                    const buttonContainer = document.createElement("div");
+                    buttonContainer.style.display = 'flex';
+                    buttonContainer.style.flexDirection = 'column';
+                    buttonContainer.style.gap = '8px';
+
+                    const buttonInput = document.createElement("button");
+                    buttonInput.style.width = '100%';
+                    buttonInput.style.minHeight = '36px';
+                    buttonInput.style.display = 'flex';
+                    buttonInput.style.alignItems = 'center';
+                    buttonInput.style.justifyContent = 'center';
+                    buttonInput.style.cursor = 'pointer';
+                    buttonInput.style.background = 'var(--theme-accent)';
+                    buttonInput.style.borderRadius = '6px';
+                    buttonInput.style.border = '1px solid var(--theme-accent-dark)';
+                    buttonInput.style.color = 'var(--theme-text-dark)';
+                    buttonInput.style.fontSize = '14px';
+                    buttonInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    buttonInput.style.fontWeight = '500';
+                    buttonInput.style.textAlign = 'center';
+                    buttonInput.style.transition = 'all 0.2s ease';
+                    buttonInput.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+                    buttonInput.style.letterSpacing = '0.025em';
+                    buttonInput.innerText = finalizedSettingName;
+
+                    buttonInput.addEventListener("click", async () => {
+                        setting.callback.call(plugin);
+
+                        // Reset styling to normal
+                        buttonInput.style.border = '1px solid var(--theme-border)';
+                        buttonInput.style.boxShadow = 'none';
+                        console.log(setting);
+                    });
+
+                    buttonInput.addEventListener('mouseenter', () => {
+                        buttonInput.style.background = 'var(--theme-accent-light)';
+                        buttonInput.style.boxShadow = '0 4px 8px var(--theme-accent-transparent-40)';
+                        buttonInput.style.transform = 'translateY(-1px)';
+                    });
+
+                    buttonInput.addEventListener('mouseleave', () => {
+                        buttonInput.style.background = 'var(--theme-accent)';
+                        buttonInput.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+                        buttonInput.style.transform = 'translateY(0)';
+                    });
+
+                    buttonContainer.appendChild(buttonInput);
+                    contentRow.appendChild(buttonContainer);
+                break;
                 default:
                     console.log(`Unsupported setting type for ${settingKey}: ${typeof plugin.settings[settingKey]}`);
             }
