@@ -81,8 +81,10 @@
     "@iconify/iconify": "^3.1.1",
     "electron-log": "^5.4.0",
     "electron-updater": "^6.3.9",
+    "emoji-unicode": "^2.0.2",
     "idb": "^8.0.3",
-    "interactjs": "^1.10.27"
+    "interactjs": "^1.10.27",
+    "unicode-emoji": "^2.6.0"
   },
   "devDependencies": {
     "@electron-toolkit/tsconfig": "^1.0.1",
