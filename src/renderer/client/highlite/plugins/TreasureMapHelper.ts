@@ -42,7 +42,7 @@ export class TreasureMapHelper extends Plugin {
         const offsetX = x + 512;
         const offsetY = y + 512;
 
-        const link = `https://highlite.fanet.dev/map?hide_decor=true&highliteMapPlugin=true&pos_x=${offsetX}&pos_y=${offsetY}&lvl=${mapLevel}`;
+        const link = `https://highlite.dev/map?hide_decor=true&highliteMapPlugin=true&pos_x=${offsetX}&pos_y=${offsetY}&lvl=${mapLevel}`;
 
         const targetElement =
             '.hs-treasure-map-menu__treasure-map-images-container';
