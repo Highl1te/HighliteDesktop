@@ -67,7 +67,8 @@ export class Highlite {
         this.hookManager.registerClass('IV', 'SpellDefinitionManager');
         this.hookManager.registerClass('tk', 'AppearanceUtils');
         this.hookManager.registerClass('SR', 'BlobLoader');
-        this.hookManager.registerClass('oq', 'HTMLUIManager'); // Tip to find: contains getGameContainer() 
+        this.hookManager.registerClass('oq', 'HTMLUIManager'); // Tip to find: contains getGameContainer()
+        this.hookManager.registerClass('KH', 'ScreenMask');
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook(
@@ -100,6 +101,10 @@ export class Highlite {
             'SocketManager',
             '_handleInvokedInventoryItemActionPacket'
         );
+        this.hookManager.registerClassHook(
+            'ScreenMask',
+            'initializeControls'
+        ); // When this fires, game UI is ready
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(

@@ -189,16 +189,13 @@ export class EmojiChat extends Plugin {
 
   init(): void {}
 
-  SocketManager_loggedIn(): void {
+  ScreenMask_initializeControls(): void {
     if (!this.settings.enable.value) {
       return;
     }
-    this.log("Player logged in, attaching to chat input");
-    setTimeout(() => {
-      if (this.attachToChatInput()) {
-        this.createPanel();
-      }
-    }, 1000);
+    this.log("UI Ready, attaching to chat input");
+    this.attachToChatInput();
+    this.createPanel();
   }
 
   SocketManager_handleLoggedOut(): void {

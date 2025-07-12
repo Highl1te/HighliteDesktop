@@ -365,11 +365,9 @@ export class MinimapIcons extends Plugin {
         this.removeCSSStyles();
     }
 
-    SocketManager_loggedIn(): void {
-        this.log('Player logged in, setting up minimap icons');
-        setTimeout(() => {
-            this.setMinimapContainer();
-        }, 1000);
+    ScreenMask_initializeControls(): void {
+        this.log('UI ready, setting up minimap icons');
+        this.setMinimapContainer();
     }
 
     SocketManager_handleLoggedOut(): void {
@@ -849,5 +847,4 @@ export class MinimapIcons extends Plugin {
         if (style) {
             style.remove();
         }
-    }
 }
