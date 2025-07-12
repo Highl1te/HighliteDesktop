@@ -28,6 +28,7 @@ import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
 import '@iconify/iconify';
+import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
 
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
@@ -57,6 +58,7 @@ const PLUGIN_REGISTRY = [
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
+    { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
 ];
 
 async function obtainGameClient() {
