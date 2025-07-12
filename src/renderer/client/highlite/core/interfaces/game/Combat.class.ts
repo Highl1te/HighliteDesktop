@@ -1,2 +1,1 @@
-export interface Combat {
-}
+export interface Combat {}

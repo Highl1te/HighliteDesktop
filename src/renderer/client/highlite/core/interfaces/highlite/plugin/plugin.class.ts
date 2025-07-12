@@ -1,11 +1,11 @@
-import { SettingsTypes, type PluginSettings } from "./pluginSettings.interface";
+import { SettingsTypes, type PluginSettings } from './pluginSettings.interface';
 
 export abstract class Plugin {
     /** Used for plugin[fnName] access */
     [key: string]: any;
 
-    abstract pluginName : string;
-    abstract author : string;
+    abstract pluginName: string;
+    abstract author: string;
 
     abstract init(): void;
     abstract start(): void;
@@ -15,11 +15,11 @@ export abstract class Plugin {
         [key: string]: PluginSettings;
     } = {
         enable: {
-            text: "Enable",
+            text: 'Enable',
             type: SettingsTypes.checkbox,
             value: true,
-            callback: this.onSettingsChanged_enabled
-        }
+            callback: this.onSettingsChanged_enabled,
+        },
     };
 
     onSettingsChanged_enabled() {
@@ -29,35 +29,37 @@ export abstract class Plugin {
             this.stop();
         }
     }
-    
+
     postInit?(): void;
 
     get gameHooks() {
-        return (document as any).highlite?.gameHooks;
+        return document.highlite?.gameHooks;
     }
-    
+
     get gameLookups() {
-        return (document as any).highlite?.gameLookups;
+        return document.highlite?.gameLookups;
     }
-    
+
     get registerPlugin() {
-        return (document as any).highlite?.managers?.PluginManager?.registerPlugin?.bind((document as any).highlite.managers.PluginManager);
+        return document.highlite?.managers?.PluginManager?.registerPlugin?.bind(
+            document.highlite.managers.PluginManager
+        );
     }
 
     // Log seems to be broken from loading HighSpell Client
-    log(...args: any[]) : void {
+    log(...args: any[]): void {
         console.info(`[Highlite][${this.pluginName} Plugin]`, ...args);
     }
 
-    info(...args: any[]) : void {
+    info(...args: any[]): void {
         console.info(`[Highlite][${this.pluginName} Plugin]`, ...args);
     }
 
-    warn(...args: any[]) : void {
+    warn(...args: any[]): void {
         console.warn(`[Highlite][${this.pluginName} Plugin]`, ...args);
     }
 
-    error(...args: any[]) : void {
+    error(...args: any[]): void {
         console.error(`[Highlite][${this.pluginName} Plugin]`, ...args);
     }
 }

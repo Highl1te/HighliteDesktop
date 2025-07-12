@@ -1,15 +1,15 @@
-import { ipcMain, BrowserWindow } from 'electron';  
+import { ipcMain, BrowserWindow } from 'electron';
 
 // Window Controls Handling
-ipcMain.on('minimize-window', (event) => {
+ipcMain.on('minimize-window', event => {
     // Get the BrowserWindow instance from the event
-    const window = BrowserWindow.fromWebContents(event.sender)
+    const window = BrowserWindow.fromWebContents(event.sender);
     if (window && window.isMinimizable()) {
         window.minimize();
     }
 });
 
-ipcMain.on('toggle-maximize-window', (event) => {
+ipcMain.on('toggle-maximize-window', event => {
     // Get the BrowserWindow instance from the event
     const window = BrowserWindow.fromWebContents(event.sender);
     if (window) {
@@ -21,7 +21,7 @@ ipcMain.on('toggle-maximize-window', (event) => {
     }
 });
 
-ipcMain.on('close-window', (event) => {
+ipcMain.on('close-window', event => {
     // Get the BrowserWindow instance from the event
     const window = BrowserWindow.fromWebContents(event.sender);
     if (window && !window.isDestroyed()) {
@@ -30,13 +30,13 @@ ipcMain.on('close-window', (event) => {
 });
 
 // UI Ready Handling
-ipcMain.on('ui-ready', (event) => {
+ipcMain.on('ui-ready', event => {
     const window = BrowserWindow.fromWebContents(event.sender);
     window.show();
 });
 
 // Dev Tools Handling
-ipcMain.on('show-dev-tools', (event) => {
+ipcMain.on('show-dev-tools', event => {
     // Get the BrowserWindow instance from the event
     const window = BrowserWindow.fromWebContents(event.sender);
     if (window) {
