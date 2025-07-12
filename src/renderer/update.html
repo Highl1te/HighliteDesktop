@@ -1,19 +1,31 @@
-<!DOCTYPE html>
+<!doctype html>
 <!-- Update Page shows percentage downloaded with a spinner -->
 
 <html lang="en">
     <head>
-        <link rel="stylesheet" href="/css/updater.css">
+        <link rel="stylesheet" href="/css/updater.css" />
     </head>
     <body>
         <div class="highlite_titlebar">
-            <div style="display: flex; margin-left: 5px; align-items: center;">
-                <img id="logoImg" src="/icons/icon.png" alt="HighLite Logo"/>
+            <div style="display: flex; margin-left: 5px; align-items: center">
+                <img id="logoImg" src="/icons/icon.png" alt="HighLite Logo" />
                 <span id="logoText">HighLite</span>
             </div>
 
-            <div style="display: flex;left: calc(env(titlebar-area-width, 100%) - 40px);position: absolute;margin-top: 5px;">
-                <a style="display: flex;" href="https://discord.gg/highspell" target="_blank" rel="noopener noreferrer">
+            <div
+                style="
+                    display: flex;
+                    left: calc(env(titlebar-area-width, 100%) - 40px);
+                    position: absolute;
+                    margin-top: 5px;
+                "
+            >
+                <a
+                    style="display: flex"
+                    href="https://discord.gg/highspell"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
                     <i class="iconify" data-icon="simple-icons:discord"></i>
                 </a>
             </div>
@@ -21,11 +33,19 @@
 
         <div id="update-container">
             <p id="update-status">Checking for updates..</p>
-            <div style="display: flex; flex-direction: column; align-items: center;">
+            <div
+                style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                "
+            >
                 <span id="progressLoader" class="loader"></span>
                 <p id="progressText"></p>
             </div>
-              <div id="update-change" style="
+            <div
+                id="update-change"
+                style="
                     display: none;
                     flex-direction: column;
                     align-items: center;
@@ -33,15 +53,22 @@
                     border-radius: 10px;
                     padding: 10px;
                     margin-top: -48px;
-                ">
-                    <h2 id="releaseName">Release Notes</h2>
-                    <div id="releaseNotes"></div>
+                "
+            >
+                <h2 id="releaseName">Release Notes</h2>
+                <div id="releaseNotes"></div>
             </div>
-            <div style="display: flex;" id="update-buttons">
-                <button id="updateNow" style="display: none;">Update Now</button>
-                <button id="updateLater" style="display: none;">Update Later</button>
-                <button id="restartNow" style="display: none;">Restart Now</button>
-                <button id="restartLater" style="display: none;">Restart Later</button>
+            <div style="display: flex" id="update-buttons">
+                <button id="updateNow" style="display: none">Update Now</button>
+                <button id="updateLater" style="display: none">
+                    Update Later
+                </button>
+                <button id="restartNow" style="display: none">
+                    Restart Now
+                </button>
+                <button id="restartLater" style="display: none">
+                    Restart Later
+                </button>
             </div>
         </div>
     </body>

@@ -13,7 +13,7 @@ export class SoundManager {
         document.highlite.managers.SoundManager = this;
     }
 
-    playSound(resource : string, volume: number = 1) {
+    playSound(resource: string, volume: number = 1) {
         if (!this.currentlyPlaying[resource]) {
             const audio = this.createAudioElement(resource, volume);
             audio.play();
@@ -27,7 +27,7 @@ export class SoundManager {
         audio.onended = () => {
             this.currentlyPlaying[resource]?.remove();
             delete this.currentlyPlaying[resource];
-        }
+        };
         this.currentlyPlaying[resource] = audio;
         return audio;
     }

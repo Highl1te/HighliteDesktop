@@ -1,75 +1,116 @@
-<!DOCTYPE html><html lang="en">
+<!doctype html>
+<html lang="en">
     <head>
-        <meta charset="UTF-8">
+        <meta charset="UTF-8" />
         <!-- Local Iconify script -->
+        <style>
+            #iconbar .iconify {
+                margin: 0 5px;
+                font-size: 16px;
+                color: var(--theme-text-primary, #ffffff);
+                transition: color 0.2s ease;
+            }
+
+            #iconbar a:hover .iconify {
+                color: var(--theme-accent, #f9f449);
+            }
+
+            /* Warning indicator specific styles */
+            #warningIndicator .warning-icon {
+                color: var(--theme-text-primary, #ffffff);
+            }
+
+            #warningIndicator .warning-icon.warning {
+                color: var(--theme-accent, #f9f449) !important;
+            }
+
+            #warningIndicator .warning-icon.error {
+                color: var(--theme-danger, #ef4444) !important;
+            }
+
+            #warningIndicator:hover .warning-icon {
+                transform: scale(1.1);
+                transition: transform 0.2s ease;
+            }
+
+            #iconbar #window-controls {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-left: 20px;
+                width: 65px;
+                margin-right: 0px;
+            }
+
+            #window-controls .window-control .iconify {
+                font-size: 14px;
+            }
+        </style>
     </head>
     <body>
         <div to="#body-container" before="main" class="highlite_titlebar">
-            <div style="display: flex; margin-left: 5px; align-items: center;">
-                <img id="logoImg" src="/icons/icon.png" alt="HighLite Logo"/>
+            <div style="display: flex; margin-left: 5px; align-items: center">
+                <img id="logoImg" src="/icons/icon.png" alt="HighLite Logo" />
                 <span id="logoText">HighLite</span>
             </div>
 
-            <div id="iconbar" style="display: flex;left: calc(env(titlebar-area-width, 100%));position: absolute;height: -webkit-fill-available;align-items: anchor-center;">
-                <a href="https://discord.gg/highspell" target="_blank" rel="noopener noreferrer">
+            <div
+                id="iconbar"
+                style="
+                    display: flex;
+                    left: calc(env(titlebar-area-width, 100%));
+                    position: absolute;
+                    height: -webkit-fill-available;
+                    align-items: anchor-center;
+                "
+            >
+                <a
+                    href="https://discord.gg/highspell"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                >
                     <i class="iconify" data-icon="simple-icons:discord"></i>
                 </a>
-                <a style="display: none" id="warningIndicator" href="#"><i class="iconify warning-icon" data-icon="material-symbols:warning-outline"></i></a>
+                <a style="display: none" id="warningIndicator" href="#"
+                    ><i
+                        class="iconify warning-icon"
+                        data-icon="material-symbols:warning-outline"
+                    ></i
+                ></a>
 
                 <!-- Add Traditional Window Controls-->
                 <div id="window-controls">
-                    <a id="minimizeBtn" class="window-control" title="Minimize"><i class="iconify" data-icon="material-symbols:minimize"></i></a>
-                    <a id="maximizeBtn" class="window-control" title="Maximize"><i class="iconify" data-icon="material-symbols:crop-square-outline"></i></a>
-                    <a id="closeBtn" class="window-control" title="Close"><i class="iconify" data-icon="material-symbols:close"></i></a>
+                    <a id="minimizeBtn" class="window-control" title="Minimize"
+                        ><i
+                            class="iconify"
+                            data-icon="material-symbols:minimize"
+                        ></i
+                    ></a>
+                    <a id="maximizeBtn" class="window-control" title="Maximize"
+                        ><i
+                            class="iconify"
+                            data-icon="material-symbols:crop-square-outline"
+                        ></i
+                    ></a>
+                    <a id="closeBtn" class="window-control" title="Close"
+                        ><i
+                            class="iconify"
+                            data-icon="material-symbols:close"
+                        ></i
+                    ></a>
                 </div>
+            </div>
         </div>
-        <video width="100%" height="100%" autoplay muted loop class="video-background">
-            <source src="/media/login_screen.mp4" type="video/mp4">
+        <video
+            width="100%"
+            height="100%"
+            autoplay
+            muted
+            loop
+            class="video-background"
+        >
+            <source src="/media/login_screen.mp4" type="video/mp4" />
         </video>
         <script type="module" src="client/client.ts"></script>
     </body>
-
-    <style>
-        #iconbar .iconify {
-            margin: 0 5px;
-            font-size: 16px;
-            color: var(--theme-text-primary, #ffffff);
-            transition: color 0.2s ease;
-        }
-
-        #iconbar a:hover .iconify {
-            color: var(--theme-accent, #F9F449);
-        }
-
-        /* Warning indicator specific styles */
-        #warningIndicator .warning-icon {
-            color: var(--theme-text-primary, #ffffff);
-        }
-
-        #warningIndicator .warning-icon.warning {
-            color: var(--theme-accent, #F9F449) !important;
-        }
-
-        #warningIndicator .warning-icon.error {
-            color: var(--theme-danger, #ef4444) !important;
-        }
-
-        #warningIndicator:hover .warning-icon {
-            transform: scale(1.1);
-            transition: transform 0.2s ease;
-        }
-
-        #iconbar #window-controls {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-left: 20px;
-            width: 65px;
-            margin-right: 0px;
-        }
-
-        #window-controls .window-control .iconify {
-            font-size: 14px;
-        }
-    </style>
 </html>

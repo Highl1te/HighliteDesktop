@@ -15,3 +15,4 @@ export interface PluginSettings {
     min?: number;
     max?: number;
 }
+

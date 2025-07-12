@@ -1,12 +1,12 @@
 # Editor Configs
 .idea
 .vscode
-
+.yarn
 # We use Yarn at production, so we don't want to keep package-lock.json from developers
 .package-lock.json
 
 # Logs
-logs
+logs 
 *.log
 npm-debug.log*
 yarn-debug.log*
