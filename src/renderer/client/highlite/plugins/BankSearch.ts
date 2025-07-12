@@ -235,7 +235,7 @@ export class BankSearch extends Plugin {
     highlightBankQuery(query) {
         // Get bank items from the game data
         const bankItems =
-            (document as any).highlite?.gameHooks?.EntityManager?.Instance
+            document.highlite?.gameHooks?.EntityManager?.Instance
                 ?.MainPlayer?._bankItems?.Items || [];
 
         // Find all bank item elements by data-slot attribute
@@ -261,11 +261,9 @@ export class BankSearch extends Plugin {
             if (!bankItem) continue; // Skip null/empty slots
 
             // Get item definition
-            const itemDef = (document as any).highlite?.gameHooks?.ItemDefMap
+            const itemDef = document.highlite?.gameHooks?.ItemDefMap
                 ?.ItemDefMap?.get
-                ? (
-                      document as any
-                  ).highlite.gameHooks.ItemDefMap.ItemDefMap.get(bankItem._id)
+                ? document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(bankItem._id)
                 : null;
 
             const itemName = itemDef
