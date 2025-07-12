@@ -16,6 +16,9 @@ export class EntityHighlight extends Plugin {
         this.uiManager = new UIManager();
 
         this.settings.entityPriorities = { text: "Entities to highlight (Tree,Bank Chest,Water Obelisk)", type: SettingsTypes.text, value: "", callback: () => this.updateEntityPriorities() };
+        this.settings.highlightOffset = { text: "Highlight Offset", type: SettingsTypes.range, value: -30, callback: () => {} };
+        this.settings.highlightBackground = { text: "Highlight Background", type: SettingsTypes.color, value: "#ff0000", callback: () => this.updateEntityThemes() };
+        this.settings.highlightBackgroundAlpha = { text: "Highlight Alpha", type: SettingsTypes.range, value: 1, min: 1, max: 10, callback: () => {} };
     };
 
     EntityDOMElements: {
@@ -140,8 +143,8 @@ export class EntityHighlight extends Plugin {
             // Handle visibility based on stack limits (only if in frustum)
             domElement.element.style.visibility = "visible";
         }
-
-        domElement.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - 0)}rem - 50%), 0px)`;
+        const offset: number = (this.settings.highlightOffset?.value) as number;
+        domElement.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - offset)}rem - 50%), 0px)`;
     }
 
     private pxToRem(px: number): number {
@@ -164,8 +167,37 @@ export class EntityHighlight extends Plugin {
         return entity._appearance._bjsMeshes[0].absolutePosition
     }
 
+    private hexToRGB(hex, alpha) {
+        var r = parseInt(hex.slice(1, 3), 16),
+            g = parseInt(hex.slice(3, 5), 16),
+            b = parseInt(hex.slice(5, 7), 16);
+
+        if (alpha) {
+            return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+        } else {
+            return "rgb(" + r + ", " + g + ", " + b + ")";
+        }
+    }
+
+    private getHighlightBackground(): string {
+        const alpha = (this.settings.highlightBackgroundAlpha.value) as number * 0.1;
+        return this.hexToRGB(this.settings.highlightBackground.value, alpha);
+    }
+
+    private updateEntityThemes(): void {
+        for(const key in this.EntityDOMElements) {
+            let element = this.EntityDOMElements[key].element;
+            element.style.background = this.getHighlightBackground();
+            element.style.borderRadius = "4px";
+            element.style.padding = "2px 6px";
+            element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
+            element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
+            element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        }
+    }
+
     private applyEntityColors(element: HTMLDivElement): void {
-        element.style.background = "rgba(255, 255, 255, 0.1)";
+        element.style.background = this.getHighlightBackground();
         element.style.borderRadius = "4px";
         element.style.padding = "2px 6px";
         element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
@@ -183,7 +215,7 @@ export class EntityHighlight extends Plugin {
         element.style.color = "white";
         element.style.fontSize = "12px";
         element.innerHTML = entity._name;
-        element.style.background = "rgba(255, 255, 255, 0.1)";
+        element.style.background = (this.settings.highlightBackground.value) as string;
         element.style.borderRadius = "4px";
         element.style.padding = "2px 6px";
         element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
