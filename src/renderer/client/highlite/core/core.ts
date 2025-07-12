@@ -70,18 +70,41 @@ export class Highlite {
         this.hookManager.registerClass('SR', 'BlobLoader');
 
         // Function Hook-ins
-        this.hookManager.registerClassOverrideHook("LoginScreen", "_handleRegisterButtonClicked", this.loginHooks);
-        this.hookManager.registerClassOverrideHook("LoginScreen", "_handleHomeButtonClicked", this.loginHooks);
-        this.hookManager.registerClassHook("GameLoop", "_update");
-        this.hookManager.registerClassHook("GameLoop", "_draw");
-        this.hookManager.registerClassHook("PrivateChatMessageList", "addChatMessage");
-        this.hookManager.registerClassHook("SocketManager", "_loggedIn");
-        this.hookManager.registerClassHook("SocketManager", "_handleLoggedOut");
-        this.hookManager.registerClassHook("SocketManager", "_handleEnteredIdleStateAction");
-        this.hookManager.registerClassHook("SocketManager", "_handleTradeRequestedPacket");
-        this.hookManager.registerClassHook("SocketManager", "_handleInvokedInventoryItemActionPacket");
-        this.hookManager.registerClassHook("BankUIManager", "showBankMenu")
-        this.hookManager.registerClassHook("BankUIManager", "_handleCenterMenuWillBeRemoved")
+        this.hookManager.registerClassOverrideHook(
+            'LoginScreen',
+            '_handleRegisterButtonClicked',
+            this.loginHooks
+        );
+        this.hookManager.registerClassOverrideHook(
+            'LoginScreen',
+            '_handleHomeButtonClicked',
+            this.loginHooks
+        );
+        this.hookManager.registerClassHook('GameLoop', '_update');
+        this.hookManager.registerClassHook('GameLoop', '_draw');
+        this.hookManager.registerClassHook(
+            'PrivateChatMessageList',
+            'addChatMessage'
+        );
+        this.hookManager.registerClassHook('SocketManager', '_loggedIn');
+        this.hookManager.registerClassHook('SocketManager', '_handleLoggedOut');
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleEnteredIdleStateAction'
+        );
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleTradeRequestedPacket'
+        );
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleInvokedInventoryItemActionPacket'
+        );
+        this.hookManager.registerClassHook('BankUIManager', 'showBankMenu');
+        this.hookManager.registerClassHook(
+            'BankUIManager',
+            '_handleCenterMenuWillBeRemoved'
+        );
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(
