@@ -473,6 +473,14 @@ export class SettingsManager {
                     numberInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
                     numberInput.style.outline = 'none';
                     numberInput.style.transition = 'all 0.2s ease';
+
+                    if(setting.min !== undefined) {
+                        numberInput.min = setting.min.toString();
+                    }
+
+                    if(setting.max !== undefined) {
+                        numberInput.max = setting.max.toString();
+                    }
                     
                     // Add focus styling
                     numberInput.addEventListener('focus', (e) => {
