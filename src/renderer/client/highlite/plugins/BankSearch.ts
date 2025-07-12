@@ -301,7 +301,6 @@ export class BankSearch extends Plugin {
             bankMenu.querySelectorAll('[data-slot]')
         );
 
-        // If query is empty, remove all grey-out effects
         itemElements.forEach(el => {
             el.classList.remove('bank-helper-greyed-out');
         });
