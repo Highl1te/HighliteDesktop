@@ -21,6 +21,7 @@ import { TreasureMapHelper } from "./highlite/plugins/TreasureMapHelper";
 import { FPSLimiter } from "./highlite/plugins/FPSLimiter";
 import { DefinitionsPanel } from "./highlite/plugins/DefinitionsPanel";
 import { MinimapIcons } from "./highlite/plugins/MinimapIcons";
+import { EmojiChat } from './highlite/plugins/EmojiChat';
 import { setupWorldSelectorObserver } from "./helpers/worldSelectHelper";
 import { EntityHighlight } from "./highlite/plugins/EntityHighlight";
 import { BankSearch } from './highlite/plugins/BankSearch';
@@ -60,7 +61,8 @@ const PLUGIN_REGISTRY = [
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
-    { class: EntityHighlight, path: './highlite/plugins/EntityHighlight' }
+    { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
+    { class: EntityHighlight, path: './highlite/plugins/EntityHighlight' },
     { class: BankSearch, path: './highlite/plugins/BankSearch' },
 
 ];
