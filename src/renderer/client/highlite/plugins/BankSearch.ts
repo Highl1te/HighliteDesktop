@@ -6,16 +6,19 @@ export class BankSearch extends Plugin {
   author = "Oatelaus";
 
   private searchBox: HTMLElement | null = null;
-  private observer: MutationObserver | null = null;
   private resizeListener: (() => void) | null = null;
   private lastQuery: string = "";
 
+  constructor() {
+    super();
+  }
 
   start(): void {
     if (!this.settings.enable.value) {
-        return;
+      return;
     }
-    this.setupBankObserver();
+    this.injectSearchBox();
+    this.updateSearchBoxVisibility();
   }
 
   init(): void {
@@ -24,53 +27,18 @@ export class BankSearch extends Plugin {
   stop(): void {
     this.destroy()
   }
-  constructor() {
-      super();
-  }
 
-  setupBankObserver() {
-    // Find the bank menu
-    const bankMenu = document.getElementById('hs-bank-menu');
-    if (!bankMenu) {
-      // Try again later if not found
-      setTimeout(() => this.setupBankObserver(), 1000);
+
+  BankUIManager_showBankMenu() {
+    if (!this.settings.enable.value) {
       return;
     }
-
-    // Create mutation observer to watch for bank visibility changes
-    this.observer = new MutationObserver((mutations) => {
-      // Check if bank menu was removed
-      const bankMenuStillExists = document.getElementById('hs-bank-menu');
-      if (!bankMenuStillExists) {
-        this.removeSearchBox();
-        return;
-      }
-      
-      this.updateSearchBoxVisibility();
-    });
-
-    // Observe changes to the bank menu's style and class attributes
-    this.observer.observe(bankMenu, {
-      attributes: true,
-      attributeFilter: ['style', 'class'],
-      subtree: false
-    });
-
-    // Also watch for changes to the bank menu's display property
-    this.observer.observe(bankMenu.parentElement || bankMenu, {
-      attributes: true,
-      attributeFilter: ['style', 'class'],
-      subtree: true
-    });
-
-    // Watch for when the bank menu is removed from DOM
-    this.observer.observe(document.body, {
-      childList: true,
-      subtree: true
-    });
-
-    // Initial check
+    this.injectSearchBox();
     this.updateSearchBoxVisibility();
+  }
+
+  BankUIManager_handleCenterMenuWillBeRemoved() {
+    this.destroy();
   }
 
   updateSearchBoxVisibility() {
@@ -308,10 +276,18 @@ export class BankSearch extends Plugin {
 
   // Cleanup method
   destroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-      this.observer = null;
-    }
+    // Find all bank item elements by data-slot attribute
+    const bankMenu = document.getElementById('hs-bank-menu');
+    if (!bankMenu) return;
+
+    // Query all elements with data-slot attribute
+    const itemElements = Array.from(bankMenu.querySelectorAll('[data-slot]'));
+
+    // If query is empty, remove all grey-out effects
+    itemElements.forEach(el => {
+      el.classList.remove('bank-helper-greyed-out');
+    });
+
     this.removeSearchBox();
     
     // Ensure resize listener is removed
