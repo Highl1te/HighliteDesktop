@@ -1,6 +1,6 @@
-import { Plugin } from "../core/interfaces/highlite/plugin/plugin.class";
-import { abbreviateValue } from "../core/utilities/abbreviateValue";
-import { PanelManager } from "../core/managers/highlite/panelManager";
+import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { abbreviateValue } from '../core/utilities/abbreviateValue';
+import { PanelManager } from '../core/managers/highlite/panelManager';
 
 interface XPWindow {
     xpGained: number;
@@ -35,10 +35,10 @@ interface Skill {
 }
 
 export class ExperienceTracker extends Plugin {
-    pluginName = "Experience Tracker";
-    author = "Highlite";
-    panelManager : PanelManager = new PanelManager();
-    panelContent : HTMLElement | undefined = undefined;
+    pluginName = 'Experience Tracker';
+    author = 'Highlite';
+    panelManager: PanelManager = new PanelManager();
+    panelContent: HTMLElement | undefined = undefined;
 
     levelToXP = {
         1: 0,
@@ -140,27 +140,27 @@ export class ExperienceTracker extends Plugin {
         97: 14791491,
         98: 16360855,
         99: 18096750,
-        100: 20016848
+        100: 20016848,
     };
 
     skillToIcon = {
-        "hitpoints": "💖",
-        "accuracy": "🎯",
-        "strength": "💪",
-        "defense": "🛡️",
-        "magic": "🔮",
-        "range": "🏹",
-        "fishing": "🎣",
-        "mining": "⛏️",
-        "smithing": "🔨",
-        "cooking": "🍳",
-        "forestry": "🌳",
-        "crafting": "🧵",
-        "harvesting": "🌾",
-        "crime": "🥷",
-        "enchanting": "✨",
-        "potionmaking": "🧪",
-    }
+        hitpoints: '💖',
+        accuracy: '🎯',
+        strength: '💪',
+        defense: '🛡️',
+        magic: '🔮',
+        range: '🏹',
+        fishing: '🎣',
+        mining: '⛏️',
+        smithing: '🔨',
+        cooking: '🍳',
+        forestry: '🌳',
+        crafting: '🧵',
+        harvesting: '🌾',
+        crime: '🥷',
+        enchanting: '✨',
+        potionmaking: '🧪',
+    };
 
     skillTrackers: {
         [skillName: string]: SkillTracker;
@@ -175,103 +175,103 @@ export class ExperienceTracker extends Plugin {
         if (!this.settings.enable.value) {
             return;
         }
-        this.panelContent = this.panelManager.requestMenuItem('📊', "Experience Tracker")[1];
+        this.panelContent = this.panelManager.requestMenuItem(
+            '📊',
+            'Experience Tracker'
+        )[1];
         if (!this.panelContent) {
             this.log(`Failed to create Experience Tracker panel`);
             return;
         }
-        this.panelContent.style.display = "block";
-        this.panelContent.style.flexDirection = "column";
-        this.panelContent.style.width = "100%";
-        this.panelContent.style.height = "-webkit-fill-available";
-        
+        this.panelContent.style.display = 'block';
+        this.panelContent.style.flexDirection = 'column';
+        this.panelContent.style.width = '100%';
+        this.panelContent.style.height = '-webkit-fill-available';
+
         this.log(`Started`);
     }
 
     SocketManager_loggedIn() {
-        const resourceSkills = this.gameHooks.EntityManager.Instance.MainPlayer.Skills._skills;
+        const resourceSkills =
+            this.gameHooks.EntityManager.Instance.MainPlayer.Skills._skills;
         resourceSkills.forEach(skill => {
             this.createSkillListing(skill);
-        })
+        });
 
-        const combatSkills = this.gameHooks.EntityManager.Instance.MainPlayer.Combat._skills;
+        const combatSkills =
+            this.gameHooks.EntityManager.Instance.MainPlayer.Combat._skills;
         combatSkills.forEach(skill => {
             this.createSkillListing(skill);
-        })
+        });
     }
 
     createSkillListing(skill: Skill): void {
-
-        const skillName : string = this.gameLookups["Skills"][skill._skill];
+        const skillName: string = this.gameLookups['Skills'][skill._skill];
         if (this.skillTrackers[skillName]) {
             return; // Skill tracker already exists
         }
         const skillIcon = this.skillToIcon[skillName];
 
-
         const skillTracker = document.createElement('div');
-        skillTracker.style.display = "flex";
-        skillTracker.style.flexDirection = "column";
-        skillTracker.style.margin = "5px";
-        skillTracker.style.backgroundColor = "rgba(0, 0, 0, 0.25)";
-        skillTracker.style.padding = "5px";
-        skillTracker.style.borderRadius = "10px";
+        skillTracker.style.display = 'flex';
+        skillTracker.style.flexDirection = 'column';
+        skillTracker.style.margin = '5px';
+        skillTracker.style.backgroundColor = 'rgba(0, 0, 0, 0.25)';
+        skillTracker.style.padding = '5px';
+        skillTracker.style.borderRadius = '10px';
 
         const skillHeader = document.createElement('div');
-        skillHeader.style.display = "flex";
-        skillHeader.style.flexDirection = "row";
-        skillHeader.style.padding = "5px 0px";
-        skillHeader.style.alignItems = "center";
+        skillHeader.style.display = 'flex';
+        skillHeader.style.flexDirection = 'row';
+        skillHeader.style.padding = '5px 0px';
+        skillHeader.style.alignItems = 'center';
         skillTracker.appendChild(skillHeader);
 
         const skillIconElement = document.createElement('div');
         skillIconElement.textContent = skillIcon;
 
-        skillIconElement.style.fontSize = "30px";
-        skillIconElement.style.backgroundColor = "#80808069";
-        skillIconElement.style.borderRadius = "360px";
-        skillIconElement.style.padding = "5px";
-        skillIconElement.style.textShadow = "0.0625rem 0.0625rem 0 black";
-        skillIconElement.style.marginRight = "5px";
-        skillIconElement.style.textWrapMode = "nowrap";
+        skillIconElement.style.fontSize = '30px';
+        skillIconElement.style.backgroundColor = '#80808069';
+        skillIconElement.style.borderRadius = '360px';
+        skillIconElement.style.padding = '5px';
+        skillIconElement.style.textShadow = '0.0625rem 0.0625rem 0 black';
+        skillIconElement.style.marginRight = '5px';
+        skillIconElement.style.textWrapMode = 'nowrap';
         skillHeader.appendChild(skillIconElement);
-        
+
         const xpDetails = document.createElement('div');
-        xpDetails.style.display = "flex";
-        xpDetails.style.flexDirection = "row";
-        xpDetails.style.width = "100%";
-        xpDetails.style.textWrapMode = "nowrap";
-        xpDetails.style.justifyContent = "space-around";
+        xpDetails.style.display = 'flex';
+        xpDetails.style.flexDirection = 'row';
+        xpDetails.style.width = '100%';
+        xpDetails.style.textWrapMode = 'nowrap';
+        xpDetails.style.justifyContent = 'space-around';
         skillHeader.appendChild(xpDetails);
 
-
         const xpDetailsLeft = document.createElement('div');
-        xpDetailsLeft.style.display = "flex";
-        xpDetailsLeft.style.flexDirection = "column";
-
+        xpDetailsLeft.style.display = 'flex';
+        xpDetailsLeft.style.flexDirection = 'column';
 
         const skillXPGained = document.createElement('div');
         skillXPGained.id = `skillXPGained`;
-        skillXPGained.style.fontSize = "12px";
+        skillXPGained.style.fontSize = '12px';
 
         const skillXPGainedLabel = document.createElement('div');
         const skillXPGainedValue = document.createElement('div');
         skillXPGainedValue.id = `skillXPGainedValue`;
         skillXPGainedLabel.textContent = `XP Gained:`;
-        skillXPGainedLabel.style.color = "#ccc";
+        skillXPGainedLabel.style.color = '#ccc';
         skillXPGained.appendChild(skillXPGainedLabel);
         skillXPGained.appendChild(skillXPGainedValue);
-        
-        
+
         const skillXPLeft = document.createElement('div');
         skillXPLeft.id = `skillXPLeft`;
-        skillXPLeft.style.fontSize = "12px";
+        skillXPLeft.style.fontSize = '12px';
 
         const skillXPLeftLabel = document.createElement('div');
         const skillXPLeftValue = document.createElement('div');
         skillXPLeftValue.id = `skillXPLeftValue`;
         skillXPLeftLabel.textContent = `XP Left:`;
-        skillXPLeftLabel.style.color = "#ccc";
+        skillXPLeftLabel.style.color = '#ccc';
         skillXPLeft.appendChild(skillXPLeftLabel);
         skillXPLeft.appendChild(skillXPLeftValue);
 
@@ -279,33 +279,31 @@ export class ExperienceTracker extends Plugin {
         xpDetailsLeft.appendChild(skillXPGained);
         xpDetailsLeft.appendChild(skillXPLeft);
 
-
-
         // Right Side of XP Details
         const xpDetailsRight = document.createElement('div');
-        xpDetailsRight.style.display = "flex";
-        xpDetailsRight.style.flexDirection = "column";
+        xpDetailsRight.style.display = 'flex';
+        xpDetailsRight.style.flexDirection = 'column';
 
         const skillXPPerHour = document.createElement('div');
         skillXPPerHour.id = `skillXPPerHour`;
-        skillXPPerHour.style.fontSize = "12px";
+        skillXPPerHour.style.fontSize = '12px';
         const skillXPPerHourLabel = document.createElement('div');
         const skillXPPerHourValue = document.createElement('div');
         skillXPPerHourValue.id = `skillXPPerHourValue`;
         skillXPPerHourLabel.textContent = `XP/Action:`;
-        skillXPPerHourLabel.style.color = "#ccc";
+        skillXPPerHourLabel.style.color = '#ccc';
         skillXPPerHour.appendChild(skillXPPerHourLabel);
         skillXPPerHour.appendChild(skillXPPerHourValue);
 
         const skillActionsLeft = document.createElement('div');
         skillActionsLeft.id = `skillActionsLeft`;
-        skillActionsLeft.style.fontSize = "12px";
+        skillActionsLeft.style.fontSize = '12px';
         const skillActionsLeftLabel = document.createElement('div');
         const skillActionsLeftValue = document.createElement('div');
         skillActionsLeftLabel.id = `skillActionsLeftLabel`;
         skillActionsLeftValue.id = `skillActionsLeftValue`;
         skillActionsLeftLabel.textContent = `Actions Left:`;
-        skillActionsLeftLabel.style.color = "#ccc";
+        skillActionsLeftLabel.style.color = '#ccc';
         skillActionsLeft.appendChild(skillActionsLeftLabel);
         skillActionsLeft.appendChild(skillActionsLeftValue);
 
@@ -313,38 +311,38 @@ export class ExperienceTracker extends Plugin {
         xpDetailsRight.appendChild(skillXPPerHour);
         xpDetailsRight.appendChild(skillActionsLeft);
 
-
         // Append to XP Details Container
         xpDetails.appendChild(xpDetailsLeft);
         xpDetails.appendChild(xpDetailsRight);
 
         // XP Bar
         const xpProgressBar = document.createElement('div');
-        xpProgressBar.style.width = "100%";
-        xpProgressBar.style.height = "15px";
-        xpProgressBar.style.backgroundColor = "#80808069";
-        xpProgressBar.style.borderRadius = "5px";
-        xpProgressBar.style.marginTop = "5px";
-        xpProgressBar.style.overflow = "hidden";
-        xpProgressBar.style.position = "relative";
+        xpProgressBar.style.width = '100%';
+        xpProgressBar.style.height = '15px';
+        xpProgressBar.style.backgroundColor = '#80808069';
+        xpProgressBar.style.borderRadius = '5px';
+        xpProgressBar.style.marginTop = '5px';
+        xpProgressBar.style.overflow = 'hidden';
+        xpProgressBar.style.position = 'relative';
         const xpProgress = document.createElement('div');
         const currentLevelXP = this.levelToXP[skill._level];
         const nextLevelXP = this.levelToXP[skill._level + 1];
-        const xpPercentage = (skill._xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
+        const xpPercentage =
+            (skill._xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
         xpProgress.style.width = `${xpPercentage * 100}%`;
         xpProgress.id = `xpProgress`;
-        xpProgress.style.height = "100%";
-        xpProgress.style.backgroundColor = "rgb(82 209 82)";
-        xpProgress.style.transition = "width 0.5s ease-in-out";
-        xpProgress.style.position = "absolute";
+        xpProgress.style.height = '100%';
+        xpProgress.style.backgroundColor = 'rgb(82 209 82)';
+        xpProgress.style.transition = 'width 0.5s ease-in-out';
+        xpProgress.style.position = 'absolute';
         xpProgressBar.appendChild(xpProgress);
 
         const xpProgressDetails = document.createElement('div');
-        xpProgressDetails.style.margin = "0 5px";
-        xpProgressDetails.style.fontSize = "12px";
-        xpProgressDetails.style.position = "absolute";
-        xpProgressDetails.style.width = "-webkit-fill-available";
-        xpProgressDetails.style.color = "black";
+        xpProgressDetails.style.margin = '0 5px';
+        xpProgressDetails.style.fontSize = '12px';
+        xpProgressDetails.style.position = 'absolute';
+        xpProgressDetails.style.width = '-webkit-fill-available';
+        xpProgressDetails.style.color = 'black';
 
         // Current Level Span
         const currentLevelSpan = document.createElement('span');
@@ -355,16 +353,16 @@ export class ExperienceTracker extends Plugin {
         const nextLevelSpan = document.createElement('span');
         nextLevelSpan.id = `nextLevelSpan`;
         nextLevelSpan.textContent = `Lvl. ${skill._level + 1}`;
-        nextLevelSpan.style.position = "absolute";
-        nextLevelSpan.style.right = "0";
+        nextLevelSpan.style.position = 'absolute';
+        nextLevelSpan.style.right = '0';
 
         // XP Progress Span
         const xpProgressSpan = document.createElement('span');
         xpProgressSpan.id = `xpProgressSpan`;
         xpProgressSpan.textContent = `${(xpPercentage * 100).toFixed(1)}%`;
-        xpProgressSpan.style.position = "absolute";
-        xpProgressSpan.style.left = "50%";
-        xpProgressSpan.style.transform = "translateX(-50%)";
+        xpProgressSpan.style.position = 'absolute';
+        xpProgressSpan.style.left = '50%';
+        xpProgressSpan.style.transform = 'translateX(-50%)';
 
         xpProgressDetails.appendChild(currentLevelSpan);
         xpProgressDetails.appendChild(xpProgressSpan);
@@ -389,14 +387,14 @@ export class ExperienceTracker extends Plugin {
                 currentLevelSpan: currentLevelSpan,
                 nextLevelSpan: nextLevelSpan,
                 xpProgressSpan: xpProgressSpan,
-            }
+            },
         };
 
         // When the user hovers over the skill tracker, show a button in the middle of the tracker to hide it
         skillTracker.addEventListener('mouseenter', () => {
             // Actions Div
             const actionsDiv = document.createElement('div');
-            actionsDiv.id = "skillTrackerActions";
+            actionsDiv.id = 'skillTrackerActions';
             actionsDiv.style.position = 'absolute';
             actionsDiv.style.left = '50%';
             actionsDiv.style.transform = 'translate(-25%, 10%)';
@@ -404,28 +402,27 @@ export class ExperienceTracker extends Plugin {
             actionsDiv.style.flexDirection = 'column';
             skillTracker.appendChild(actionsDiv);
 
-
             // Hide Button
             const hideButton = document.createElement('div');
-            hideButton.textContent = "Hide";
-            hideButton.id = "hideSkillTrackerButton";
+            hideButton.textContent = 'Hide';
+            hideButton.id = 'hideSkillTrackerButton';
             hideButton.style.backgroundColor = 'rgb(65 65 65)';
             hideButton.style.padding = '5px 10px';
             hideButton.style.borderRadius = '5px';
             hideButton.style.cursor = 'pointer';
             hideButton.addEventListener('click', () => {
-                skillTracker.style.display = "none"; // Hide the tracker
+                skillTracker.style.display = 'none'; // Hide the tracker
             });
             actionsDiv.appendChild(hideButton);
 
             // Switch to XP per Hour Button
             const xpPerHourButton = document.createElement('div');
             // Set text content based on the current mode
-            xpPerHourButton.textContent = "XP/Hour"; // Default text
+            xpPerHourButton.textContent = 'XP/Hour'; // Default text
             if (this.skillTrackers[skillName].inXPPerHourMode) {
-                xpPerHourButton.textContent = "Actions Left"; // If already in XP per hour mode, show Actions Left
+                xpPerHourButton.textContent = 'Actions Left'; // If already in XP per hour mode, show Actions Left
             }
-            xpPerHourButton.id = "xpPerHourButton";
+            xpPerHourButton.id = 'xpPerHourButton';
             xpPerHourButton.style.backgroundColor = 'rgb(65 65 65)';
             xpPerHourButton.style.padding = '5px 10px';
             xpPerHourButton.style.borderRadius = '5px';
@@ -435,28 +432,36 @@ export class ExperienceTracker extends Plugin {
                 const skillTracker = this.skillTrackers[skillName];
                 if (skillTracker && !skillTracker.inXPPerHourMode) {
                     skillTracker.inXPPerHourMode = true;
-                    xpPerHourButton.textContent = "Actions Left"; // Change button text to Actions Left
+                    xpPerHourButton.textContent = 'Actions Left'; // Change button text to Actions Left
                     // Update skillActionsLeftLabel to say "XP/Hour"
                     if (skillTracker.domElements) {
-                        skillTracker.domElements.skillActionsLeftLabel.textContent = "XP/Hour:";
+                        skillTracker.domElements.skillActionsLeftLabel.textContent =
+                            'XP/Hour:';
                         const XPPerHour = this.calculateXPPerHour(skillTracker);
                         skillTracker.domElements.skillActionsLeftValue.textContent = `${abbreviateValue(XPPerHour)}`;
                     }
                 } else if (skillTracker && skillTracker.inXPPerHourMode) {
                     skillTracker.inXPPerHourMode = false;
-                    xpPerHourButton.textContent = "XP/Hour"; // Change button text back to XP/Hour
+                    xpPerHourButton.textContent = 'XP/Hour'; // Change button text back to XP/Hour
                     // Update skillActionsLeftLabel to say "Actions Left"
                     if (skillTracker.domElements) {
-                        skillTracker.domElements.skillActionsLeftLabel.textContent = "Actions Left:";
-                        const avgXPPerAction = skillTracker.trackedActions > 0 
-                            ? skillTracker.trackedXPGained / skillTracker.trackedActions
-                            : 0;
-                        const actionsLeft = avgXPPerAction > 0 
-                            ? Math.ceil((this.levelToXP[skill._level + 1] - skill._xp) / avgXPPerAction)
-                            : 0;
+                        skillTracker.domElements.skillActionsLeftLabel.textContent =
+                            'Actions Left:';
+                        const avgXPPerAction =
+                            skillTracker.trackedActions > 0
+                                ? skillTracker.trackedXPGained /
+                                  skillTracker.trackedActions
+                                : 0;
+                        const actionsLeft =
+                            avgXPPerAction > 0
+                                ? Math.ceil(
+                                      (this.levelToXP[skill._level + 1] -
+                                          skill._xp) /
+                                          avgXPPerAction
+                                  )
+                                : 0;
                         skillTracker.domElements.skillActionsLeftValue.textContent = `${abbreviateValue(actionsLeft)}`;
                     }
-
                 }
             });
 
@@ -464,30 +469,34 @@ export class ExperienceTracker extends Plugin {
         });
 
         skillTracker.addEventListener('mouseleave', () => {
-            const actionsDiv = skillTracker.querySelector('#skillTrackerActions');
+            const actionsDiv = skillTracker.querySelector(
+                '#skillTrackerActions'
+            );
             if (!actionsDiv) {
                 return; // No actions div to remove
             }
-            const hideButton = skillTracker.querySelector('#hideSkillTrackerButton');
+            const hideButton = skillTracker.querySelector(
+                '#hideSkillTrackerButton'
+            );
             if (hideButton) {
                 actionsDiv.removeChild(hideButton);
             }
 
-            const xpPerHourButton = skillTracker.querySelector('#xpPerHourButton');
+            const xpPerHourButton =
+                skillTracker.querySelector('#xpPerHourButton');
             if (xpPerHourButton) {
                 actionsDiv.removeChild(xpPerHourButton);
             }
-            
+
             skillTracker.removeChild(actionsDiv);
         });
 
-
-        skillTracker.style.display = "none";
+        skillTracker.style.display = 'none';
         this.panelContent?.appendChild(skillTracker);
     }
 
     updateSkillListing(skill: Skill): void {
-        const skillName: string = this.gameLookups["Skills"][skill._skill];
+        const skillName: string = this.gameLookups['Skills'][skill._skill];
         let skillTracker = this.skillTrackers[skillName];
 
         if (!skillTracker) {
@@ -499,7 +508,7 @@ export class ExperienceTracker extends Plugin {
             return; // No change in XP or tracker not available
         }
 
-        skillTracker.trackerElement.style.display = "flex"; // Show the tracker if it was hidden
+        skillTracker.trackerElement.style.display = 'flex'; // Show the tracker if it was hidden
 
         const xpGained = skill._xp - skillTracker.previousXP; // Also XP per Action
 
@@ -519,17 +528,24 @@ export class ExperienceTracker extends Plugin {
 
         domElements.skillXPGainedValue.textContent = `${abbreviateValue(skillTracker.trackedXPGained)}`;
         domElements.skillXPLeftValue.textContent = `${abbreviateValue(this.levelToXP[skill._level + 1] - skill._xp)}`;
-        
+
         // Protect against division by zero
-        const avgXPPerAction = skillTracker.trackedActions > 0 
-            ? Math.floor(skillTracker.trackedXPGained / skillTracker.trackedActions)
-            : 0;
+        const avgXPPerAction =
+            skillTracker.trackedActions > 0
+                ? Math.floor(
+                      skillTracker.trackedXPGained / skillTracker.trackedActions
+                  )
+                : 0;
         domElements.skillXPPerHourValue.textContent = `${abbreviateValue(avgXPPerAction)}`;
 
         if (!skillTracker.inXPPerHourMode) {
-            const actionsLeft = avgXPPerAction > 0 
-                ? Math.ceil((this.levelToXP[skill._level + 1] - skill._xp) / avgXPPerAction)
-                : 0;
+            const actionsLeft =
+                avgXPPerAction > 0
+                    ? Math.ceil(
+                          (this.levelToXP[skill._level + 1] - skill._xp) /
+                              avgXPPerAction
+                      )
+                    : 0;
             domElements.skillActionsLeftValue.textContent = `${abbreviateValue(actionsLeft)}`;
         } else {
             const XPPerHour = this.calculateXPPerHour(skillTracker);
@@ -539,7 +555,8 @@ export class ExperienceTracker extends Plugin {
         // Update XP progress bar and level information
         const currentLevelXP = this.levelToXP[skill._level];
         const nextLevelXP = this.levelToXP[skill._level + 1];
-        const xpPercentage = (skill._xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
+        const xpPercentage =
+            (skill._xp - currentLevelXP) / (nextLevelXP - currentLevelXP);
 
         domElements.xpProgress.style.width = `${xpPercentage * 100}%`;
         domElements.currentLevelSpan.textContent = `Lvl. ${skill._level}`;
@@ -548,21 +565,22 @@ export class ExperienceTracker extends Plugin {
     }
 
     GameLoop_update() {
-      if (!this.settings.enable.value) {
-          return;
-      }
+        if (!this.settings.enable.value) {
+            return;
+        }
 
-      const resourceSkills = this.gameHooks.EntityManager.Instance.MainPlayer.Skills._skills;
-      resourceSkills.forEach(skill => {
-          this.updateSkillListing(skill);
-      })
+        const resourceSkills =
+            this.gameHooks.EntityManager.Instance.MainPlayer.Skills._skills;
+        resourceSkills.forEach(skill => {
+            this.updateSkillListing(skill);
+        });
 
-      const combatSkills = this.gameHooks.EntityManager.Instance.MainPlayer.Combat._skills;
-      combatSkills.forEach(skill => {
-          this.updateSkillListing(skill);
-      })
+        const combatSkills =
+            this.gameHooks.EntityManager.Instance.MainPlayer.Combat._skills;
+        combatSkills.forEach(skill => {
+            this.updateSkillListing(skill);
+        });
     }
-
 
     stop(): void {
         this.panelManager.removeMenuItem('📊');
@@ -576,17 +594,22 @@ export class ExperienceTracker extends Plugin {
 
     private getCurrentWindowStart(): number {
         const now = Date.now();
-        return Math.floor(now / this.WINDOW_DURATION_MS) * this.WINDOW_DURATION_MS;
+        return (
+            Math.floor(now / this.WINDOW_DURATION_MS) * this.WINDOW_DURATION_MS
+        );
     }
 
-    private updateXPWindows(skillTracker: SkillTracker, xpGained: number): void {
+    private updateXPWindows(
+        skillTracker: SkillTracker,
+        xpGained: number
+    ): void {
         const currentWindowStart = this.getCurrentWindowStart();
-        
+
         // Find or create current window
         let currentWindow = skillTracker.trackerXPGainedWindows.find(
             window => window.windowStart === currentWindowStart
         );
-        
+
         if (currentWindow) {
             currentWindow.xpGained += xpGained;
             currentWindow.actions += 1;
@@ -595,15 +618,20 @@ export class ExperienceTracker extends Plugin {
             skillTracker.trackerXPGainedWindows.push({
                 xpGained: xpGained,
                 actions: 1,
-                windowStart: currentWindowStart
+                windowStart: currentWindowStart,
             });
         }
-        
+
         // Remove old windows (keep only the last MAX_WINDOWS)
-        skillTracker.trackerXPGainedWindows = skillTracker.trackerXPGainedWindows
-            .filter(window => currentWindowStart - window.windowStart < (this.MAX_WINDOWS * this.WINDOW_DURATION_MS))
-            .sort((a, b) => b.windowStart - a.windowStart)
-            .slice(0, this.MAX_WINDOWS);
+        skillTracker.trackerXPGainedWindows =
+            skillTracker.trackerXPGainedWindows
+                .filter(
+                    window =>
+                        currentWindowStart - window.windowStart <
+                        this.MAX_WINDOWS * this.WINDOW_DURATION_MS
+                )
+                .sort((a, b) => b.windowStart - a.windowStart)
+                .slice(0, this.MAX_WINDOWS);
     }
 
     private calculateXPPerHour(skillTracker: SkillTracker): number {
@@ -611,15 +639,19 @@ export class ExperienceTracker extends Plugin {
             return 0;
         }
 
-        const totalXPGained = skillTracker.trackerXPGainedWindows.reduce((total, window) => {
-            return total + window.xpGained;
-        }, 0);
+        const totalXPGained = skillTracker.trackerXPGainedWindows.reduce(
+            (total, window) => {
+                return total + window.xpGained;
+            },
+            0
+        );
 
         const totalWindowsUsed = skillTracker.trackerXPGainedWindows.length;
         const totalTimeMinutes = totalWindowsUsed * this.MINUTES_PER_WINDOW;
-        
-        // Calculate XP per hour: (total XP / total minutes) * 60
-        return totalTimeMinutes > 0 ? (totalXPGained / totalTimeMinutes) * this.MINUTES_PER_HOUR : 0;
-    }
 
+        // Calculate XP per hour: (total XP / total minutes) * 60
+        return totalTimeMinutes > 0
+            ? (totalXPGained / totalTimeMinutes) * this.MINUTES_PER_HOUR
+            : 0;
+    }
 }

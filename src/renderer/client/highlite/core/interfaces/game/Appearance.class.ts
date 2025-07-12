@@ -1,2 +1,1 @@
-export interface Appearance {
-}
+export interface Appearance {}

@@ -1,4 +1,4 @@
-import type { DBSchema } from "idb";
+import type { DBSchema } from 'idb';
 
 export interface HighliteSchema extends DBSchema {
     resources: {
@@ -7,7 +7,7 @@ export interface HighliteSchema extends DBSchema {
             updatedAt: number; //timestamp of last update
             data: string; //base64 encoded data
         };
-    }
+    };
     settings: {
         key: string; //plugin name
         value: Record<string, boolean | number | string>;
@@ -18,7 +18,13 @@ export interface HighliteSchema extends DBSchema {
             defId: number;
             name: string;
             killCount: number;
-            drops: { [itemId: number]: { name: string, quantity: number, totalDropped: number } };
+            drops: {
+                [itemId: number]: {
+                    name: string;
+                    quantity: number;
+                    totalDropped: number;
+                };
+            };
             lastUpdated: number;
         };
     };
