@@ -1,8 +1,10 @@
 let ogError = console.error;
-console.error = function(...args) {
+console.error = function (...args) {
     ogError(...args);
     const warningIndicator = document.querySelector('#warningIndicator');
-    const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+    const warningIcon = document.querySelector(
+        '#warningIndicator .warning-icon'
+    );
     if (warningIndicator && warningIcon) {
         // Remove any existing warning classes and add error class
         warningIcon.classList.remove('warning');
@@ -14,7 +16,9 @@ console.error = function(...args) {
         warningIndicator.onclick = () => {
             window.electron.ipcRenderer.send('show-dev-tools');
             // Clear the warning classes and hide the indicator
-            const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+            const warningIcon = document.querySelector(
+                '#warningIndicator .warning-icon'
+            );
             if (warningIcon) {
                 warningIcon.classList.remove('warning', 'error');
             }
@@ -24,10 +28,12 @@ console.error = function(...args) {
 };
 
 let ogWarn = console.warn;
-console.warn = function(...args) {
+console.warn = function (...args) {
     ogWarn(...args);
     const warningIndicator = document.querySelector('#warningIndicator');
-    const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+    const warningIcon = document.querySelector(
+        '#warningIndicator .warning-icon'
+    );
     if (warningIndicator && warningIcon) {
         // Only set warning class if there's no error class (errors take precedence)
         if (!warningIcon.classList.contains('error')) {
@@ -40,7 +46,9 @@ console.warn = function(...args) {
         warningIndicator.onclick = () => {
             window.electron.ipcRenderer.send('show-dev-tools');
             // Clear the warning classes and hide the indicator
-            const warningIcon = document.querySelector('#warningIndicator .warning-icon');
+            const warningIcon = document.querySelector(
+                '#warningIndicator .warning-icon'
+            );
             if (warningIcon) {
                 warningIcon.classList.remove('warning', 'error');
             }
@@ -54,8 +62,6 @@ setInterval(() => {
         titlebar.style.left = `calc(env(titlebar-area-width, 100%) - ${titlebar.offsetWidth}px - 10px)`;
     }
 }, 100);
-
-
 
 // Obtain references to the minimize, maximize, and close buttons
 const minimizeButton = document.querySelector('#minimizeBtn');
@@ -86,4 +92,4 @@ export function setTitle(title) {
     if (logoText) {
         logoText.textContent = title;
     }
-};
+}

@@ -1,4 +1,4 @@
-import { UIManager, UIManagerScope} from "./uiManager";
+import { UIManager, UIManagerScope } from './uiManager';
 
 export class PanelManager {
     private static instance: PanelManager;
@@ -8,11 +8,11 @@ export class PanelManager {
 
     private currentMenuItem: string | null = null;
 
-    private barIcons : {
+    private barIcons: {
         [key: string]: HTMLElement;
     } = {};
 
-    private barContentPages : {
+    private barContentPages: {
         [key: string]: HTMLElement;
     } = {};
 
@@ -25,25 +25,31 @@ export class PanelManager {
         document.highlite.managers.PanelManager = this;
         this.setup();
     }
-    
+
     setup() {
-        this.highliteBarSelectedContent = this.uiManager.createElement(UIManagerScope.ClientRelative)
-        this.highliteBar = this.uiManager.createElement(UIManagerScope.ClientRelative)
+        this.highliteBarSelectedContent = this.uiManager.createElement(
+            UIManagerScope.ClientRelative
+        );
+        this.highliteBar = this.uiManager.createElement(
+            UIManagerScope.ClientRelative
+        );
 
-        this.highliteBar.classList.add("highlite_bar");
-        this.highliteBarSelectedContent.classList.add("highlite_bar_selected_content");
+        this.highliteBar.classList.add('highlite_bar');
+        this.highliteBarSelectedContent.classList.add(
+            'highlite_bar_selected_content'
+        );
 
-        const title = document.createElement("div");
-        title.classList.add("content_title");
-        const titleText = document.createElement("span");
-        titleText.id = "selectedContentTitle";
+        const title = document.createElement('div');
+        title.classList.add('content_title');
+        const titleText = document.createElement('span');
+        titleText.id = 'selectedContentTitle';
         title.appendChild(titleText);
 
         this.highliteBarSelectedContent.appendChild(title);
 
-        const contentDiv = document.createElement("div");
-        contentDiv.id = "selectedContentDiv";
-        contentDiv.classList.add("content");
+        const contentDiv = document.createElement('div');
+        contentDiv.id = 'selectedContentDiv';
+        contentDiv.classList.add('content');
         this.highliteBarSelectedContent.appendChild(contentDiv);
     }
 
@@ -53,29 +59,34 @@ export class PanelManager {
             throw new Error(`[Highlite] Bar Icon ${icon} already exists`);
         }
 
-        const iconElement = document.createElement("div");
-        iconElement.classList.add("highlite_bar_item");
+        const iconElement = document.createElement('div');
+        iconElement.classList.add('highlite_bar_item');
         iconElement.innerHTML = icon;
         iconElement.onclick = () => {
             if (this.currentMenuItem === icon) {
-                this.highliteBarSelectedContent?.classList.remove("activated")
+                this.highliteBarSelectedContent?.classList.remove('activated');
                 this.currentMenuItem = null;
-                window.dispatchEvent(new Event("resize"));
+                window.dispatchEvent(new Event('resize'));
                 return;
             }
             this.currentMenuItem = icon;
-            this.highliteBarSelectedContent?.classList.add("activated");
-            window.dispatchEvent(new Event("resize"));
+            this.highliteBarSelectedContent?.classList.add('activated');
+            window.dispatchEvent(new Event('resize'));
             // Set the title
-            const titleElement = this.highliteBarSelectedContent?.querySelector("#selectedContentTitle")
+            const titleElement = this.highliteBarSelectedContent?.querySelector(
+                '#selectedContentTitle'
+            );
             if (titleElement) {
                 titleElement.innerHTML = title;
             }
 
             // Set the content
-            const contentElement = this.highliteBarSelectedContent?.querySelector("#selectedContentDiv")
+            const contentElement =
+                this.highliteBarSelectedContent?.querySelector(
+                    '#selectedContentDiv'
+                );
             if (contentElement) {
-                contentElement.innerHTML = "";
+                contentElement.innerHTML = '';
                 const pageContent = this.barContentPages[icon];
                 if (pageContent) {
                     contentElement.appendChild(pageContent);
@@ -83,14 +94,14 @@ export class PanelManager {
             }
         };
         this.highliteBar?.appendChild(iconElement);
-        
-        const contentElement = document.createElement("div");
-        contentElement.style.position = "absolute";
-        contentElement.style.top = "0";
-        contentElement.style.left = "0";
-        contentElement.style.overflowX = "hidden";
-        contentElement.style.overflowY = "scroll";
-        contentElement.style.height = "100%";
+
+        const contentElement = document.createElement('div');
+        contentElement.style.position = 'absolute';
+        contentElement.style.top = '0';
+        contentElement.style.left = '0';
+        contentElement.style.overflowX = 'hidden';
+        contentElement.style.overflowY = 'scroll';
+        contentElement.style.height = '100%';
         this.barContentPages[icon] = contentElement;
         this.barIcons[icon] = iconElement;
         return [this.barIcons[icon], this.barContentPages[icon]];
@@ -110,5 +121,5 @@ export class PanelManager {
             contentElement.parentNode.removeChild(contentElement);
         }
         delete this.barContentPages[icon];
-    };
+    }
 }
