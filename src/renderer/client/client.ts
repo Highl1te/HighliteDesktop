@@ -17,6 +17,7 @@ import { DropLog } from './highlite/plugins/DropLog';
 import { ChatItemTooltip } from './highlite/plugins/ChatItemTooltip';
 import { XPOrb } from './highlite/plugins/XPOrb';
 import { TreasureMapHelper } from './highlite/plugins/TreasureMapHelper';
+import { BankSearch } from './highlite/plugins/BankSearch';
 import { FPSLimiter } from './highlite/plugins/FPSLimiter';
 import { DefinitionsPanel } from './highlite/plugins/DefinitionsPanel';
 import { MinimapIcons } from './highlite/plugins/MinimapIcons';
@@ -59,6 +60,7 @@ const PLUGIN_REGISTRY = [
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
     { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
+    { class: BankSearch, path: './highlite/plugins/BankSearch' },
 ];
 
 async function obtainGameClient() {

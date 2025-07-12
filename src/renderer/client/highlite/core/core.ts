@@ -60,6 +60,7 @@ export class Highlite {
         this.hookManager.registerClass('HR', 'HR'); // Potential name: UIManager?
         this.hookManager.registerClass('dH', 'InventoryItemSpriteManager');
         this.hookManager.registerClass('DP', 'ItemDefMap');
+        this.hookManager.registerClass('bz', 'BankUIManager');
         // this.hookManager.registerClass("LF", "MainPlayer");
         this.hookManager.registerClass('eR', 'GameCameraManager'); // Tip to find: contains call initializeCamera(e ,t)
         this.hookManager.registerClass('Ck', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
@@ -105,6 +106,11 @@ export class Highlite {
             'ScreenMask',
             'initializeControls'
         ); // When this fires, game UI is ready
+        this.hookManager.registerClassHook('BankUIManager', 'showBankMenu');
+        this.hookManager.registerClassHook(
+            'BankUIManager',
+            '_handleCenterMenuWillBeRemoved'
+        );
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(
