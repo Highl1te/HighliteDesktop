@@ -56,9 +56,9 @@ const PLUGIN_REGISTRY = [
     { class: XPOrb, path: './highlite/plugins/XPOrb' },
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
-    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
-    { class: EmojiChat, path: './highlite/plugins/EmojiChat'}
+    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
+    { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
 ];
 
 async function obtainGameClient() {

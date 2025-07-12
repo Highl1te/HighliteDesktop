@@ -847,4 +847,5 @@ export class MinimapIcons extends Plugin {
         if (style) {
             style.remove();
         }
+    }
 }
