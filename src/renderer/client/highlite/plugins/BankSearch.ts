@@ -1,4 +1,5 @@
 import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
 
 export class BankSearch extends Plugin {
     pluginName = 'Bank Search';
@@ -10,6 +11,13 @@ export class BankSearch extends Plugin {
 
     constructor() {
         super();
+
+        this.settings.memory = {
+            text: 'Remember search between banking session',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {},
+        }
     }
 
     start(): void {
@@ -123,7 +131,7 @@ export class BankSearch extends Plugin {
         input.classList.add('bank-helper-search-input');
         input.style.width = '180px';
         input.style.outline = 'none';
-        input.value = ''; // Set input value to last query
+        input.value = this.settings.memory.value ? this.lastQuery : ''; // Set input value to last query
 
         // Prevent game from processing keystrokes while typing
         input.addEventListener('keydown', e => e.stopPropagation());
@@ -313,7 +321,9 @@ export class BankSearch extends Plugin {
             bankStorage.OnReorganizedItemsListener.remove(this.updateSearch);
         }
 
-        this.lastQuery = '';
+        if (!this.settings.memory.value) {
+            this.lastQuery = '';
+        }
 
         // Find all bank item elements by data-slot attribute
         const bankMenu = document.getElementById('hs-bank-menu');
