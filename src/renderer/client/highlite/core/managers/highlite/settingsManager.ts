@@ -508,7 +508,6 @@ export class SettingsManager {
                         'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
                     numberInput.style.outline = 'none';
                     numberInput.style.transition = 'all 0.2s ease';
-                    
 
                     // Add focus styling
                     numberInput.addEventListener('focus', e => {
@@ -746,12 +745,12 @@ export class SettingsManager {
                     break;
 
                 case SettingsTypes.button:
-                    const buttonContainer = document.createElement("div");
+                    const buttonContainer = document.createElement('div');
                     buttonContainer.style.display = 'flex';
                     buttonContainer.style.flexDirection = 'column';
                     buttonContainer.style.gap = '8px';
 
-                    const buttonInput = document.createElement("button");
+                    const buttonInput = document.createElement('button');
                     buttonInput.style.width = '100%';
                     buttonInput.style.minHeight = '36px';
                     buttonInput.style.display = 'flex';
@@ -760,41 +759,48 @@ export class SettingsManager {
                     buttonInput.style.cursor = 'pointer';
                     buttonInput.style.background = 'var(--theme-accent)';
                     buttonInput.style.borderRadius = '6px';
-                    buttonInput.style.border = '1px solid var(--theme-accent-dark)';
+                    buttonInput.style.border =
+                        '1px solid var(--theme-accent-dark)';
                     buttonInput.style.color = 'var(--theme-text-dark)';
                     buttonInput.style.fontSize = '14px';
-                    buttonInput.style.fontFamily = 'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
+                    buttonInput.style.fontFamily =
+                        'Inter, -apple-system, BlinkMacSystemFont, sans-serif';
                     buttonInput.style.fontWeight = '500';
                     buttonInput.style.textAlign = 'center';
                     buttonInput.style.transition = 'all 0.2s ease';
-                    buttonInput.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+                    buttonInput.style.boxShadow =
+                        '0 2px 4px var(--theme-accent-transparent-30)';
                     buttonInput.style.letterSpacing = '0.025em';
                     buttonInput.innerText = finalizedSettingName;
 
-                    buttonInput.addEventListener("click", async () => {
+                    buttonInput.addEventListener('click', async () => {
                         setting.callback.call(plugin);
 
                         // Reset styling to normal
-                        buttonInput.style.border = '1px solid var(--theme-border)';
+                        buttonInput.style.border =
+                            '1px solid var(--theme-border)';
                         buttonInput.style.boxShadow = 'none';
                         console.log(setting);
                     });
 
                     buttonInput.addEventListener('mouseenter', () => {
-                        buttonInput.style.background = 'var(--theme-accent-light)';
-                        buttonInput.style.boxShadow = '0 4px 8px var(--theme-accent-transparent-40)';
+                        buttonInput.style.background =
+                            'var(--theme-accent-light)';
+                        buttonInput.style.boxShadow =
+                            '0 4px 8px var(--theme-accent-transparent-40)';
                         buttonInput.style.transform = 'translateY(-1px)';
                     });
 
                     buttonInput.addEventListener('mouseleave', () => {
                         buttonInput.style.background = 'var(--theme-accent)';
-                        buttonInput.style.boxShadow = '0 2px 4px var(--theme-accent-transparent-30)';
+                        buttonInput.style.boxShadow =
+                            '0 2px 4px var(--theme-accent-transparent-30)';
                         buttonInput.style.transform = 'translateY(0)';
                     });
 
                     buttonContainer.appendChild(buttonInput);
                     contentRow.appendChild(buttonContainer);
-                break;
+                    break;
                 default:
                     console.log(
                         `Unsupported setting type for ${settingKey}: ${typeof plugin.settings[settingKey]}`
@@ -855,13 +861,19 @@ export class SettingsManager {
     // Method to update the settings panel UI when values change programmatically
     updatePluginSettingsUI(plugin: Plugin) {
         // Only update if we're currently viewing this plugin's settings
-        if (!this.pluginSettingsView || this.currentView !== this.pluginSettingsView) {
+        if (
+            !this.pluginSettingsView ||
+            this.currentView !== this.pluginSettingsView
+        ) {
             return;
         }
 
         // Check if this is the right plugin by looking at the title
         const titleElement = this.pluginSettingsView.querySelector('h1');
-        if (!titleElement || !titleElement.innerText.includes(plugin.pluginName)) {
+        if (
+            !titleElement ||
+            !titleElement.innerText.includes(plugin.pluginName)
+        ) {
             return;
         }
 
@@ -880,28 +892,36 @@ export class SettingsManager {
 
             switch (setting.type) {
                 case SettingsTypes.checkbox:
-                    const checkbox = contentRow.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                    const checkbox = contentRow.querySelector(
+                        'input[type="checkbox"]'
+                    ) as HTMLInputElement;
                     if (checkbox) {
                         checkbox.checked = setting.value as boolean;
                     }
                     break;
 
                 case SettingsTypes.range:
-                    const numberInput = contentRow.querySelector('input[type="number"]') as HTMLInputElement;
+                    const numberInput = contentRow.querySelector(
+                        'input[type="number"]'
+                    ) as HTMLInputElement;
                     if (numberInput) {
                         numberInput.value = setting.value.toString();
                     }
                     break;
 
                 case SettingsTypes.color:
-                    const colorInput = contentRow.querySelector('input[type="color"]') as HTMLInputElement;
+                    const colorInput = contentRow.querySelector(
+                        'input[type="color"]'
+                    ) as HTMLInputElement;
                     if (colorInput) {
                         colorInput.value = setting.value as string;
                     }
                     break;
 
                 case SettingsTypes.text:
-                    const textInput = contentRow.querySelector('input[type="text"]') as HTMLInputElement;
+                    const textInput = contentRow.querySelector(
+                        'input[type="text"]'
+                    ) as HTMLInputElement;
                     if (textInput) {
                         textInput.value = setting.value as string;
                     }

@@ -1,11 +1,11 @@
-import { Vector3 } from "@babylonjs/core/Maths/math";
-import {Plugin} from "../core/interfaces/highlite/plugin/plugin.class";
-import {SettingsTypes} from "../core/interfaces/highlite/plugin/pluginSettings.interface";
-import {UIManager, UIManagerScope} from "../core/managers/highlite/uiManager";
+import { Vector3 } from '@babylonjs/core/Maths/math';
+import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
+import { UIManager, UIManagerScope } from '../core/managers/highlite/uiManager';
 
 export class EntityHighlight extends Plugin {
-    pluginName = "EntityHighlight Plugin";
-    author = "Tomb";
+    pluginName = 'EntityHighlight Plugin';
+    author = 'Tomb';
     DOMElement: HTMLDivElement | null = null;
 
     private uiManager: UIManager;
@@ -15,41 +15,58 @@ export class EntityHighlight extends Plugin {
 
         this.uiManager = new UIManager();
 
-        this.settings.entityPriorities = { text: "Entities to highlight (Tree,Bank Chest,Water Obelisk)", type: SettingsTypes.text, value: "", callback: () => this.updateEntityPriorities() };
-        this.settings.highlightOffset = { text: "Highlight Offset", type: SettingsTypes.range, value: -30, callback: () => {} };
-        this.settings.highlightBackground = { text: "Highlight Background", type: SettingsTypes.color, value: "#ff0000", callback: () => this.updateEntityThemes() };
+        this.settings.entityPriorities = {
+            text: 'Entities to highlight (Tree,Bank Chest,Water Obelisk)',
+            type: SettingsTypes.text,
+            value: '',
+            callback: () => this.updateEntityPriorities(),
+        };
+        this.settings.highlightOffset = {
+            text: 'Highlight Offset',
+            type: SettingsTypes.range,
+            value: -30,
+            callback: () => {},
+        };
+        this.settings.highlightBackground = {
+            text: 'Highlight Background',
+            type: SettingsTypes.color,
+            value: '#ff0000',
+            callback: () => this.updateEntityThemes(),
+        };
         this.settings.highlightBackgroundAlpha = {
-            text: "Highlight Alpha",
+            text: 'Highlight Alpha',
             type: SettingsTypes.range,
             value: 1,
             callback: () => {},
             validation: (value: string | number | boolean) => {
                 const numValue = value as number;
                 return numValue >= 0 && numValue <= 10;
-            }
+            },
         };
-    };
+    }
 
     EntityDOMElements: {
-        [key: string]: { element: HTMLDivElement, position: Vector3, name: string }
-    } = {}
-
+        [key: string]: {
+            element: HTMLDivElement;
+            position: Vector3;
+            name: string;
+        };
+    } = {};
 
     private positionTracker: Map<string, number> = new Map();
     private entitiesToHighlight: string[] = [];
 
     init(): void {
-        this.log("Initializing");
+        this.log('Initializing');
     }
 
     start(): void {
-        this.log("Started EntityHighlight Plugin");
+        this.log('Started EntityHighlight Plugin');
         this.setupAllElements();
-
     }
 
     stop(): void {
-        this.log("Stopped EntityHighlight Plugin");
+        this.log('Stopped EntityHighlight Plugin');
         this.cleanupAllElements();
     }
 
@@ -65,7 +82,8 @@ export class EntityHighlight extends Plugin {
     }
 
     GameLoop_draw(): void {
-        const WorldEntities = this.gameHooks.WorldEntityManager.Instance.WorldEntities;
+        const WorldEntities =
+            this.gameHooks.WorldEntityManager.Instance.WorldEntities;
 
         this.resetPositionTracker();
 
@@ -83,11 +101,17 @@ export class EntityHighlight extends Plugin {
 
     private updateEntityPriorities(): void {
         const prioritiesStr = this.settings.entityPriorities!.value as string;
-        this.entitiesToHighlight = prioritiesStr.split(',').map(entry => entry.trim()).filter(entry => entry.length > 0);
+        this.entitiesToHighlight = prioritiesStr
+            .split(',')
+            .map(entry => entry.trim())
+            .filter(entry => entry.length > 0);
         this.setupAllElements();
     }
 
-    private disposeElementFromCollection(collection: any, key: string | number): void {
+    private disposeElementFromCollection(
+        collection: any,
+        key: string | number
+    ): void {
         if (collection[key]?.element) {
             collection[key].element.remove();
             delete collection[key];
@@ -99,32 +123,39 @@ export class EntityHighlight extends Plugin {
     }
 
     private processWorldEntities(WorldEntities: any[]): void {
-        for(const entity of WorldEntities) {
-            if(this.entitiesToHighlight.includes(entity[1]._name)) {
+        for (const entity of WorldEntities) {
+            if (this.entitiesToHighlight.includes(entity[1]._name)) {
                 if (!this.EntityDOMElements[entity[1]._entityTypeId]) {
-                    this.createEntityElement(entity[1]._entityTypeId, entity[1]);
+                    this.createEntityElement(
+                        entity[1]._entityTypeId,
+                        entity[1]
+                    );
                 }
                 const entityTypeId = entity[1]._entityTypeId;
                 const element = this.EntityDOMElements[entityTypeId].element;
-                element.style.color = "white";
-
+                element.style.color = 'white';
 
                 this.applyEntityColors(element);
 
                 const worldPos = this.getEntityWorldPosition(entity[1]);
-                if(worldPos) {
-                    this.EntityDOMElements[entity[1]._entityTypeId].position = worldPos;
+                if (worldPos) {
+                    this.EntityDOMElements[entity[1]._entityTypeId].position =
+                        worldPos;
 
                     const positionKey = this.getPositionKey(worldPos);
-                    const currentCount = this.positionTracker.get(positionKey) || 0;
+                    const currentCount =
+                        this.positionTracker.get(positionKey) || 0;
                     this.positionTracker.set(positionKey, currentCount + 1);
                 }
 
                 const entityMesh = entity[1]._appearance._bjsMeshes[0];
                 try {
-                    this.updateElementPosition(entityMesh, this.EntityDOMElements[entity[1]._entityTypeId]);
+                    this.updateElementPosition(
+                        entityMesh,
+                        this.EntityDOMElements[entity[1]._entityTypeId]
+                    );
                 } catch (e) {
-                    this.log("Error updating entity element position: ", e);
+                    this.log('Error updating entity element position: ', e);
                 }
             }
         }
@@ -146,13 +177,13 @@ export class EntityHighlight extends Plugin {
 
         //Apply frustum culling first - if not in frustum, hide regardless of stack limits
         if (!isInFrustrum) {
-            domElement.element.style.visibility = "hidden";
+            domElement.element.style.visibility = 'hidden';
             return;
         } else {
             // Handle visibility based on stack limits (only if in frustum)
-            domElement.element.style.visibility = "visible";
+            domElement.element.style.visibility = 'visible';
         }
-        const offset: number = (this.settings.highlightOffset?.value) as number;
+        const offset: number = this.settings.highlightOffset?.value as number;
         domElement.element.style.transform = `translate3d(calc(${this.pxToRem(translationCoordinates.x)}rem - 50%), calc(${this.pxToRem(translationCoordinates.y - 30 - offset)}rem - 50%), 0px)`;
     }
 
@@ -173,7 +204,7 @@ export class EntityHighlight extends Plugin {
             return null;
         }
 
-        return entity._appearance._bjsMeshes[0].absolutePosition
+        return entity._appearance._bjsMeshes[0].absolutePosition;
     }
 
     private hexToRGB(hex, alpha) {
@@ -182,54 +213,56 @@ export class EntityHighlight extends Plugin {
             b = parseInt(hex.slice(5, 7), 16);
 
         if (alpha) {
-            return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+            return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
         } else {
-            return "rgb(" + r + ", " + g + ", " + b + ")";
+            return 'rgb(' + r + ', ' + g + ', ' + b + ')';
         }
     }
 
     private getHighlightBackground(): string {
-        const alpha = (this.settings.highlightBackgroundAlpha.value) as number * 0.1;
+        const alpha =
+            (this.settings.highlightBackgroundAlpha.value as number) * 0.1;
         return this.hexToRGB(this.settings.highlightBackground.value, alpha);
     }
 
     private updateEntityThemes(): void {
-        for(const key in this.EntityDOMElements) {
+        for (const key in this.EntityDOMElements) {
             let element = this.EntityDOMElements[key].element;
             element.style.background = this.getHighlightBackground();
-            element.style.borderRadius = "4px";
-            element.style.padding = "2px 6px";
-            element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
-            element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
-            element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+            element.style.borderRadius = '4px';
+            element.style.padding = '2px 6px';
+            element.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+            element.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8)';
+            element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
         }
     }
 
     private applyEntityColors(element: HTMLDivElement): void {
         element.style.background = this.getHighlightBackground();
-        element.style.borderRadius = "4px";
-        element.style.padding = "2px 6px";
-        element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
-        element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
-        element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        element.style.borderRadius = '4px';
+        element.style.padding = '2px 6px';
+        element.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        element.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8)';
+        element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
         return;
     }
 
     private createEntityElement(entityId: number, entity: any): void {
         const element = document.createElement('div');
         element.id = `entity-highlight-${entityId}`;
-        element.style.position = "absolute";
-        element.style.pointerEvents = "none";
-        element.style.zIndex = "1000";
-        element.style.color = "white";
-        element.style.fontSize = "12px";
+        element.style.position = 'absolute';
+        element.style.pointerEvents = 'none';
+        element.style.zIndex = '1000';
+        element.style.color = 'white';
+        element.style.fontSize = '12px';
         element.innerHTML = entity._name;
-        element.style.background = (this.settings.highlightBackground.value) as string;
-        element.style.borderRadius = "4px";
-        element.style.padding = "2px 6px";
-        element.style.border = "1px solid rgba(255, 255, 255, 0.3)";
-        element.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.8)";
-        element.style.boxShadow = "0 2px 4px rgba(0, 0, 0, 0.3)";
+        element.style.background = this.settings.highlightBackground
+            .value as string;
+        element.style.borderRadius = '4px';
+        element.style.padding = '2px 6px';
+        element.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        element.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8)';
+        element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
 
         this.EntityDOMElements[entityId] = {
             element: element,
@@ -237,7 +270,9 @@ export class EntityHighlight extends Plugin {
             name: entity._name,
         };
 
-        document.getElementById('entity-highlight-entity')?.appendChild(element);
+        document
+            .getElementById('entity-highlight-entity')
+            ?.appendChild(element);
     }
 
     private injectCSSVariables(): void {
@@ -269,7 +304,7 @@ export class EntityHighlight extends Plugin {
                 '--hs-color-cmbt-lvl-diff-neg-7',
                 '--hs-color-cmbt-lvl-diff-neg-8',
                 '--hs-color-cmbt-lvl-diff-neg-9',
-                '--hs-color-cmbt-lvl-diff-neg-10'
+                '--hs-color-cmbt-lvl-diff-neg-10',
             ];
 
             let styleString = '';
@@ -284,7 +319,7 @@ export class EntityHighlight extends Plugin {
                 this.DOMElement.style.cssText += styleString;
             }
         } catch (error) {
-            this.error("Error injecting CSS variables:", error);
+            this.error('Error injecting CSS variables:', error);
         }
     }
 
@@ -298,7 +333,7 @@ export class EntityHighlight extends Plugin {
     }
 
     private cleanupAllElements(): void {
-        this.log("EntityHightlight - Cleaning all elements");
+        this.log('EntityHightlight - Cleaning all elements');
         this.cleanupElementCollection(this.EntityDOMElements);
 
         this.EntityDOMElements = {};
@@ -310,23 +345,26 @@ export class EntityHighlight extends Plugin {
     }
 
     private setupAllElements(): void {
-        this.log("EntityHightlight - Starting setup");
+        this.log('EntityHightlight - Starting setup');
         this.cleanupAllElements();
 
         // Use UIManager to create the container with ClientRelative scope
-        this.DOMElement = this.uiManager.createElement(UIManagerScope.ClientRelative) as HTMLDivElement;
+        this.DOMElement = this.uiManager.createElement(
+            UIManagerScope.ClientRelative
+        ) as HTMLDivElement;
         if (this.DOMElement) {
-            this.DOMElement.id = "entity-highlight-entity";
-            this.DOMElement.style.position = "absolute";
-            this.DOMElement.style.pointerEvents = "none";
-            this.DOMElement.style.zIndex = "1";
-            this.DOMElement.style.overflow = "hidden";
-            this.DOMElement.style.width = "100%";
-            this.DOMElement.style.height = "calc(100% - var(--titlebar-height))"; // Account for titlebar height
-            this.DOMElement.style.top = "var(--titlebar-height)"; // Position below titlebar
-            this.DOMElement.style.fontFamily = "Inter";
-            this.DOMElement.style.fontSize = "12px";
-            this.DOMElement.style.fontWeight = "bold";
+            this.DOMElement.id = 'entity-highlight-entity';
+            this.DOMElement.style.position = 'absolute';
+            this.DOMElement.style.pointerEvents = 'none';
+            this.DOMElement.style.zIndex = '1';
+            this.DOMElement.style.overflow = 'hidden';
+            this.DOMElement.style.width = '100%';
+            this.DOMElement.style.height =
+                'calc(100% - var(--titlebar-height))'; // Account for titlebar height
+            this.DOMElement.style.top = 'var(--titlebar-height)'; // Position below titlebar
+            this.DOMElement.style.fontFamily = 'Inter';
+            this.DOMElement.style.fontSize = '12px';
+            this.DOMElement.style.fontWeight = 'bold';
 
             // Inject CSS variables from screen mask to ensure proper styling
             this.injectCSSVariables();
