@@ -320,7 +320,7 @@ export class BankSearch extends Plugin {
             bankStorage.OnInventoryChangeListener.remove(this.updateSearch);
             bankStorage.OnReorganizedItemsListener.remove(this.updateSearch);
         }
-
+      
         if (!this.settings.memory.value) {
             this.lastQuery = '';
         }
