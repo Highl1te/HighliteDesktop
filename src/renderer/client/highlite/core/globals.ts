@@ -1,4 +1,5 @@
-import { Plugin } from './interfaces/highlite/plugin/plugin.class';
+import type { Highlite } from './core';
+import type { Plugin } from './interfaces/highlite/plugin/plugin.class';
 
 declare global {
     interface Window {
@@ -17,6 +18,7 @@ declare global {
                 [key: string]: any;
             };
             plugins: Array<Plugin>;
+            core: Highlite;
         };
 
         client: {
