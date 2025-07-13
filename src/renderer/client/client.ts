@@ -23,14 +23,16 @@ import { DefinitionsPanel } from './highlite/plugins/DefinitionsPanel';
 import { CurrentStatus } from "./highlite/plugins/CurrentStatus";
 import { MinimapIcons } from './highlite/plugins/MinimapIcons';
 import { EmojiChat } from './highlite/plugins/EmojiChat';
-import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
 import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
+import { PacketQueue } from "./highlite/plugins/PacketQueue";
+import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
 
 import '@static/css/index.css';
 import '@static/css/overrides.css';
 import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
+import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
 import '@iconify/iconify';
 
 // Plugin registry - single source of truth for all plugins
@@ -61,10 +63,12 @@ const PLUGIN_REGISTRY = [
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
     { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
     { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
+    { class: PacketQueue, path: './highlite/plugins/PacketQueue'},
     { class: CurrentStatus, path: './highlite/plugins/CurrentStatus' },
     { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
     { class: BankSearch, path: './highlite/plugins/BankSearch' },
-    { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' }
+    { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
+    { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
 ];
 
 async function obtainGameClient() {
