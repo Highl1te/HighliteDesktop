@@ -63,7 +63,7 @@ export class ChatEnhancer extends Plugin {
         this.settings.enable = {
             text: 'Enable Chat Enhancer',
             type: SettingsTypes.checkbox,
-            value: true,
+            value: false, // Default to false
             callback: () => {
                 if (this.settings.enable.value) {
                     this.initializePlugin();

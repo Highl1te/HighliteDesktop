@@ -6,6 +6,11 @@ export class EnhancedLoginScreen extends Plugin {
 
     videoElement: HTMLVideoElement | null = null;
 
+    constructor() {
+        super();
+        this.settings.enable.value = true; // Default to false
+    }
+    
     init(): void {
         this.log('Initializing');
         this.videoElement = document.getElementsByClassName(
