@@ -17,9 +17,12 @@ import { DropLog } from './highlite/plugins/DropLog';
 import { ChatItemTooltip } from './highlite/plugins/ChatItemTooltip';
 import { XPOrb } from './highlite/plugins/XPOrb';
 import { TreasureMapHelper } from './highlite/plugins/TreasureMapHelper';
+import { BankSearch } from './highlite/plugins/BankSearch';
 import { FPSLimiter } from './highlite/plugins/FPSLimiter';
 import { DefinitionsPanel } from './highlite/plugins/DefinitionsPanel';
+import { CurrentStatus } from "./highlite/plugins/CurrentStatus";
 import { MinimapIcons } from './highlite/plugins/MinimapIcons';
+import { EmojiChat } from './highlite/plugins/EmojiChat';
 import { AutoSprint } from './highlite/plugins/AutoSprint';
 import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
 
@@ -56,9 +59,12 @@ const PLUGIN_REGISTRY = [
     { class: XPOrb, path: './highlite/plugins/XPOrb' },
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
-    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
-    { class: AutoSprint, path: './highlite/plugins/AutoSprint.ts' }
+    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
+    { class: CurrentStatus, path: './highlite/plugins/CurrentStatus' },
+    { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
+    { class: BankSearch, path: './highlite/plugins/BankSearch' },
+    { class: AutoSprint, path: './highlite/plugins/AutoSprint' }
 ];
 
 async function obtainGameClient() {
