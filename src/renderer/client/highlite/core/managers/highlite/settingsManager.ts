@@ -851,4 +851,62 @@ export class SettingsManager {
             }
         });
     }
+
+    // Method to update the settings panel UI when values change programmatically
+    updatePluginSettingsUI(plugin: Plugin) {
+        // Only update if we're currently viewing this plugin's settings
+        if (!this.pluginSettingsView || this.currentView !== this.pluginSettingsView) {
+            return;
+        }
+
+        // Check if this is the right plugin by looking at the title
+        const titleElement = this.pluginSettingsView.querySelector('h1');
+        if (!titleElement || !titleElement.innerText.includes(plugin.pluginName)) {
+            return;
+        }
+
+        // Update each setting input element
+        for (const settingKey in plugin.settings) {
+            if (settingKey === 'enable') {
+                continue; // Skip the enable setting
+            }
+
+            const setting = plugin.settings[settingKey];
+            const contentRow = this.pluginSettingsView.querySelector(
+                `#highlite-settings-content-row-${settingKey}`
+            );
+
+            if (!contentRow || !setting) continue;
+
+            switch (setting.type) {
+                case SettingsTypes.checkbox:
+                    const checkbox = contentRow.querySelector('input[type="checkbox"]') as HTMLInputElement;
+                    if (checkbox) {
+                        checkbox.checked = setting.value as boolean;
+                    }
+                    break;
+
+                case SettingsTypes.range:
+                    const numberInput = contentRow.querySelector('input[type="number"]') as HTMLInputElement;
+                    if (numberInput) {
+                        numberInput.value = setting.value.toString();
+                    }
+                    break;
+
+                case SettingsTypes.color:
+                    const colorInput = contentRow.querySelector('input[type="color"]') as HTMLInputElement;
+                    if (colorInput) {
+                        colorInput.value = setting.value as string;
+                    }
+                    break;
+
+                case SettingsTypes.text:
+                    const textInput = contentRow.querySelector('input[type="text"]') as HTMLInputElement;
+                    if (textInput) {
+                        textInput.value = setting.value as string;
+                    }
+                    break;
+            }
+        }
+    }
 }
