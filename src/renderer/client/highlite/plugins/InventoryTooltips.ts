@@ -23,7 +23,7 @@ export class InventoryTooltips extends Plugin {
         super();
 
         this.settings.enabled = {
-            text: 'Enable Chat Item Tooltips',
+            text: 'Enable Inventory Tooltips',
             type: SettingsTypes.checkbox,
             value: true,
             callback: () => {
@@ -33,6 +33,66 @@ export class InventoryTooltips extends Plugin {
                     this.stop();
                 }
             },
+        } as any;
+
+        this.settings.bankTooltips = {
+            text: 'Enable Bank Tooltips',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {
+                if (this.settings.enabled.value) {
+                    this.start();
+                }
+            },
+        } as any;
+
+        this.settings.shopTooltips = {
+            text: 'Enable Shop Tooltips',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {
+                if (this.settings.enabled.value) {
+                    this.start();
+                }
+            },
+        } as any;
+
+        // Color settings for accessibility
+        this.settings.colorPositive = {
+            text: 'Positive Bonus Color',
+            type: SettingsTypes.color,
+            value: '#7fff7f',
+            callback: () => {
+                this.start();
+            },
+        } as any;
+        this.settings.colorNegative = {
+            text: 'Negative Bonus Color',
+            type: SettingsTypes.color,
+            value: '#ff7f7f',
+            callback: () => {
+                this.start();
+            },
+        } as any;
+        this.settings.colorOverheal = {
+            text: 'Overheal Color',
+            type: SettingsTypes.color,
+            value: '#ffe97f',
+            callback: () => {
+                this.start();
+            },
+        } as any;
+        // Opacity setting for tooltip background
+        this.settings.tooltipBgOpacity = {
+            text: 'Tooltip Background Opacity',
+            type: SettingsTypes.range,
+            value: 98,
+            callback: () => {
+                this.addPluginStyle();
+            },
+            validation: (value: number) => {
+                return value >= 0 && value <= 100;
+            }
         } as any;
     }
 
@@ -70,17 +130,41 @@ export class InventoryTooltips extends Plugin {
         const target = event.target as HTMLElement;
         if (!target || typeof target.closest !== 'function') return;
 
-        const itemEl = target.closest(
-            '.hs-item-table--inventory .hs-item-table__cell'
-        );
+        // Build selectors based on settings
+        const selectors: string[] = [];
+        if (this.settings.enabled.value)
+            selectors.push('.hs-item-table--inventory .hs-item-table__cell');
+        if (this.settings.bankTooltips.value)
+            selectors.push('.hs-item-table--bank .hs-item-table__cell');
+        if (this.settings.shopTooltips.value)
+            selectors.push('.hs-item-table--shop .hs-item-table__cell');
+        const selector = selectors.join(', ');
+
+        const itemEl = target.closest(selector);
         if (!itemEl) return;
         // Get the slot ID from the element
         const slotIdStr = itemEl.getAttribute('data-slot');
         if (!slotIdStr) return;
         const slotId = parseInt(slotIdStr, 10);
-        const inventoryItems =
-            this.gameHooks.EntityManager.Instance.MainPlayer.Inventory.Items;
-        const item = inventoryItems[slotId];
+
+        // Determine source of items based on table type
+        let item;
+        if (itemEl.closest('.hs-item-table--inventory')) {
+            const inventoryItems =
+                this.gameHooks.EntityManager.Instance.MainPlayer.Inventory
+                    .Items;
+            item = inventoryItems[slotId];
+        } else if (itemEl.closest('.hs-item-table--bank')) {
+            const bankItems =
+                this.gameHooks.EntityManager.Instance.MainPlayer._bankItems
+                    ._items;
+            item = bankItems[slotId];
+        } else if (itemEl.closest('.hs-item-table--shop')) {
+            const shopItems =
+                this.gameHooks.EntityManager.Instance.MainPlayer._currentState
+                    ._shopItems._items;
+            item = shopItems[slotId];
+        }
         if (!item) return;
         this.showTooltip(event, item._def);
     };
@@ -211,12 +295,21 @@ export class InventoryTooltips extends Plugin {
      * Injects the plugin's tooltip CSS styles into the document head.
      */
     private addPluginStyle(): void {
+        if(this.tooltipStyle)   {
+            this.tooltipStyle.remove();
+            this.tooltipStyle = null;
+        }
         this.tooltipStyle = document.createElement('style');
         this.tooltipStyle.setAttribute('data-item-panel', 'true');
+        // Use settings for colors and opacity
+        const colorPositive = this.settings.colorPositive?.value || '#7fff7f';
+        const colorNegative = this.settings.colorNegative?.value || '#ff7f7f';
+        const colorOverheal = this.settings.colorOverheal?.value || '#ffe97f';
+        const bgOpacity = (Number(this.settings.tooltipBgOpacity?.value) ?? 97) / 100;
         this.tooltipStyle.textContent = `
           .hlt-tooltip {
             position: fixed;
-            background: rgba(30, 30, 40, 0.97);
+            background: rgba(30, 30, 40, ${bgOpacity});
             color: #fff;
             padding: 8px 12px;
             border-radius: 8px;
@@ -236,13 +329,13 @@ export class InventoryTooltips extends Plugin {
             font-weight: bold;
           }
           .hlt-tooltip-positive {
-            color: #7fff7f;
+            color: ${colorPositive};
           }
           .hlt-tooltip-negative {
-            color: #ff7f7f;
+            color: ${colorNegative};
           }
           .hlt-tooltip-edible {
-            color: #ffe97f;
+            color: ${colorOverheal};
             font-size: 13px;
             font-style: italic;
           }
@@ -251,10 +344,10 @@ export class InventoryTooltips extends Plugin {
             margin-left: 6px;
           }
           .hlt-tooltip-edible-heal-normal {
-            color: #7fff7f;
+            color: ${colorPositive};
           }
           .hlt-tooltip-edible-heal-over {
-            color: #ffe97f;
+            color: ${colorOverheal};
           }
         `;
         this.tooltipUI?.appendChild(this.tooltipStyle);
@@ -265,7 +358,6 @@ export class InventoryTooltips extends Plugin {
      * @param event MouseEvent
      */
     private updateTooltipPosition(event: MouseEvent) {
-        this.log(this.tooltip);
         if (this.tooltip) {
             console.log('Updating tooltip position');
             const tooltipRect = this.tooltip.getBoundingClientRect();
