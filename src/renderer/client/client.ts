@@ -20,20 +20,22 @@ import { TreasureMapHelper } from './highlite/plugins/TreasureMapHelper';
 import { BankSearch } from './highlite/plugins/BankSearch';
 import { FPSLimiter } from './highlite/plugins/FPSLimiter';
 import { DefinitionsPanel } from './highlite/plugins/DefinitionsPanel';
-import { CurrentStatus } from "./highlite/plugins/CurrentStatus";
+import { CurrentStatus } from './highlite/plugins/CurrentStatus';
 import { MinimapIcons } from './highlite/plugins/MinimapIcons';
 import { EmojiChat } from './highlite/plugins/EmojiChat';
+import { AutoSprint } from './highlite/plugins/AutoSprint';
+import { EntityHighlight } from './highlite/plugins/EntityHighlight';
 import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
-import { PacketQueue } from "./highlite/plugins/PacketQueue";
+import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
 
+import '@iconify/iconify';
 import '@static/css/index.css';
 import '@static/css/overrides.css';
 import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
 import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
-import '@iconify/iconify';
 
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
@@ -42,14 +44,8 @@ const PLUGIN_REGISTRY = [
     { class: Lookup, path: './highlite/plugins/Lookup' },
     { class: Nameplates, path: './highlite/plugins/Nameplates' },
     { class: EnhancedHPBars, path: './highlite/plugins/EnhancedHPBars' },
-    {
-        class: EnhancedLoginScreen,
-        path: './highlite/plugins/EnhancedLoginScreen',
-    },
-    {
-        class: ContextMenuOptions,
-        path: './highlite/plugins/ContextMenuOptions',
-    },
+    { class: EnhancedLoginScreen, path: './highlite/plugins/EnhancedLoginScreen' },
+    { class: ContextMenuOptions, path: './highlite/plugins/ContextMenuOptions' },
     { class: TradeAlerts, path: './highlite/plugins/TradeAlerts' },
     { class: PMAlerts, path: './highlite/plugins/PMAlerts' },
     { class: CoinCounter, path: './highlite/plugins/CoinCounter' },
@@ -61,12 +57,14 @@ const PLUGIN_REGISTRY = [
     { class: XPOrb, path: './highlite/plugins/XPOrb' },
     { class: TreasureMapHelper, path: './highlite/plugins/TreasureMapHelper' },
     { class: FPSLimiter, path: './highlite/plugins/FPSLimiter' },
-    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel'},
-    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons'},
-    { class: PacketQueue, path: './highlite/plugins/PacketQueue'},
+    { class: DefinitionsPanel, path: './highlite/plugins/DefinitionsPanel' },
+    { class: MinimapIcons, path: './highlite/plugins/MinimapIcons' },
+    { class: PacketQueue, path: './highlite/plugins/PacketQueue' },
     { class: CurrentStatus, path: './highlite/plugins/CurrentStatus' },
     { class: EmojiChat, path: './highlite/plugins/EmojiChat' },
+    { class: EntityHighlight, path: './highlite/plugins/EntityHighlight' },
     { class: BankSearch, path: './highlite/plugins/BankSearch' },
+    { class: AutoSprint, path: './highlite/plugins/AutoSprint' },
     { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
 ];

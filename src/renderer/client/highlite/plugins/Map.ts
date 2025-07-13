@@ -147,6 +147,8 @@ export class WorldMap extends Plugin {
         this.mapWindow.style.backgroundColor = 'white';
         this.mapWindow.style.zIndex = '1000';
         this.mapWindow.style.border = '2px solid black';
+        this.mapWindow.style.display = 'flex';
+        this.mapWindow.style.flexDirection = 'column';
         this.mapWindow.style.boxShadow = '0 0 10px rgba(0, 0, 0, 0.5)';
         //this.mapWindow.style.display = "flex";
         this.mapWindow.style.justifyContent = 'center';

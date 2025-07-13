@@ -11,7 +11,7 @@ export class ContextMenuOptions extends Plugin {
         this.settings.enable = {
             text: 'Enable',
             type: 0,
-            value: true,
+            value: false, // Default to false
             callback: () => {}, //NOOP
         };
 

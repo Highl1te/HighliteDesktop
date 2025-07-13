@@ -42,7 +42,7 @@ export class XPOrb extends Plugin {
         this.settings.enable = {
             text: 'Enable XP Orb',
             type: SettingsTypes.checkbox,
-            value: true,
+            value: false, // Default to false
             callback: () => this.toggleXPTracker(),
         };
         this.settings.xpDrops = {
