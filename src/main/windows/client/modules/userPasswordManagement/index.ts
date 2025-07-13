@@ -1,4 +1,4 @@
-import { app, ipcMain, safeStorage } from "electron";
+import { app, ipcMain, safeStorage } from 'electron';
 import log from 'electron-log';
 import fs from 'fs';
 import path from 'path';
@@ -22,7 +22,10 @@ function loadStore(): Record<string, string> {
 function saveStore(store: Record<string, string>) {
     const storePath = getStorePath();
     try {
-        fs.writeFileSync(storePath, JSON.stringify(store, null, 2), { encoding: 'utf8', mode: 0o600 });
+        fs.writeFileSync(storePath, JSON.stringify(store, null, 2), {
+            encoding: 'utf8',
+            mode: 0o600,
+        });
     } catch (e) {
         log.error('Failed to save password store:', e);
     }
@@ -39,7 +42,7 @@ function decode(buf: Buffer): string {
 // In-memory store as safeStorage is not a credential manager, just encryption
 let credentialStore = loadStore();
 
-ipcMain.handle("save-username-password", async (_event, username, password) => {
+ipcMain.handle('save-username-password', async (_event, username, password) => {
     try {
         const encrypted = encode(password);
         credentialStore[username] = encrypted.toString('base64');
@@ -50,7 +53,7 @@ ipcMain.handle("save-username-password", async (_event, username, password) => {
     }
 });
 
-ipcMain.handle("get-saved-usernames", async () => {
+ipcMain.handle('get-saved-usernames', async () => {
     try {
         return Object.keys(credentialStore);
     } catch (err) {
@@ -59,7 +62,7 @@ ipcMain.handle("get-saved-usernames", async () => {
     }
 });
 
-ipcMain.handle("get-saved-password", async (_event, username) => {
+ipcMain.handle('get-saved-password', async (_event, username) => {
     try {
         const base64 = credentialStore[username];
         if (!base64) return '';
@@ -71,7 +74,7 @@ ipcMain.handle("get-saved-password", async (_event, username) => {
     }
 });
 
-ipcMain.handle("delete-username-password", async (_event, username) => {
+ipcMain.handle('delete-username-password', async (_event, username) => {
     try {
         delete credentialStore[username];
         saveStore(credentialStore);

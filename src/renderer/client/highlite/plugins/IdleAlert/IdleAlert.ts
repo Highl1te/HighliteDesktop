@@ -6,58 +6,67 @@ import { SoundManager } from '../../core/managers/highlite/soundsManager';
 import { SettingsTypes } from '../../core/interfaces/highlite/plugin/pluginSettings.interface';
 
 export class IdleAlert extends Plugin {
-    private notificationManager: NotificationManager = new NotificationManager();
-    private soundManager : SoundManager = new SoundManager();
-    pluginName: string = "Idle Alert";
-    author = "Highlite";
+    private notificationManager: NotificationManager =
+        new NotificationManager();
+    private soundManager: SoundManager = new SoundManager();
+    pluginName: string = 'Idle Alert';
+    author = 'Highlite';
 
     constructor() {
         super();
         this.settings.volume = {
-            text: "Volume",
+            text: 'Volume',
             type: SettingsTypes.range,
             value: 50,
-            callback: () => { } //TODO 
+            callback: () => {}, //TODO
         };
         this.settings.activationTicks = {
-            text: "Activation Ticks",
+            text: 'Activation Ticks',
             type: SettingsTypes.range,
             value: 20,
-            callback: () => { } //TODO 
+            callback: () => {}, //TODO
         };
         this.settings.notification = {
-            text: "Notification",
+            text: 'Notification',
             type: SettingsTypes.checkbox,
             value: false,
-            callback: () => { } //TODO 
+            callback: () => {}, //TODO
         };
 
         this.settings.idleOverlay = {
-            text: "Overlay",
+            text: 'Overlay',
             type: SettingsTypes.checkbox,
             value: false,
-            callback: () => { } //TODO 
+            callback: () => {}, //TODO
         };
     }
 
-    ignoredStates: ActionState[] = [ActionState.BankingState, ActionState.ClimbSameMapLevelState, ActionState.GoThroughDoorState, ActionState.PlayerLoggingOutState, ActionState.PlayerDeadState, ActionState.StunnedState, ActionState.TradingState];
-    actionState : number = ActionState.IdleState;
-    idleTicks : number = 0;
-    shouldTick : boolean = false;
+    ignoredStates: ActionState[] = [
+        ActionState.BankingState,
+        ActionState.ClimbSameMapLevelState,
+        ActionState.GoThroughDoorState,
+        ActionState.PlayerLoggingOutState,
+        ActionState.PlayerDeadState,
+        ActionState.StunnedState,
+        ActionState.TradingState,
+    ];
+    actionState: number = ActionState.IdleState;
+    idleTicks: number = 0;
+    shouldTick: boolean = false;
 
-    idleOverlay : IdleOverlay = new IdleOverlay();
+    idleOverlay: IdleOverlay = new IdleOverlay();
 
     init(): void {
-        this.log("Initialized");
+        this.log('Initialized');
     }
     start(): void {
-        this.log("Started");
+        this.log('Started');
     }
     stop(): void {
-        this.log("Stopped");
+        this.log('Stopped');
     }
-    
-    GameLoop_update(...args : any) {
+
+    GameLoop_update(...args: any) {
         if (!this.settings.enable.value) {
             return;
         }
@@ -67,12 +76,18 @@ export class IdleAlert extends Plugin {
             return;
         }
 
-        if (this.ignoredStates.includes(player._currentState.getCurrentState())) {
+        if (
+            this.ignoredStates.includes(player._currentState.getCurrentState())
+        ) {
             return;
         }
 
         // If player moves we stop tracking ticks since they are no longer during an "AFK" action.
-        if (player._isMoving && player._currentTarget == null && player._currentState.getCurrentState() == ActionState.IdleState) {
+        if (
+            player._isMoving &&
+            player._currentTarget == null &&
+            player._currentState.getCurrentState() == ActionState.IdleState
+        ) {
             this.shouldTick = false;
             this.actionState = ActionState.IdleState;
             return;
@@ -85,15 +100,23 @@ export class IdleAlert extends Plugin {
             this.actionState = player._currentState.getCurrentState();
         }
 
-        if (player._currentState.getCurrentState() == ActionState.IdleState && this.actionState !== ActionState.IdleState && player._currentTarget == null && this.shouldTick) {
-            this.idleTicks++
+        if (
+            player._currentState.getCurrentState() == ActionState.IdleState &&
+            this.actionState !== ActionState.IdleState &&
+            player._currentTarget == null &&
+            this.shouldTick
+        ) {
+            this.idleTicks++;
         } else {
             this.idleTicks = 0;
         }
 
         if (this.idleTicks > (this.settings.activationTicks!.value as number)) {
-            if (this.settings.notification!.value) {``
-                this.notificationManager.createNotification(`${player._name} is idle!`);
+            if (this.settings.notification!.value) {
+                ``;
+                this.notificationManager.createNotification(
+                    `${player._name} is idle!`
+                );
             }
 
             // TODO: settings.notificationOverlay?
@@ -101,13 +124,13 @@ export class IdleAlert extends Plugin {
                 this.idleOverlay.show();
             }
 
-            this.soundManager.playSound("https://cdn.pixabay.com/download/audio/2024/04/01/audio_e939eebbb1.mp3?filename=level-up-3-199576.mp3", (this.settings.volume!.value as number / 100));
+            this.soundManager.playSound(
+                'https://cdn.pixabay.com/download/audio/2024/04/01/audio_e939eebbb1.mp3?filename=level-up-3-199576.mp3',
+                (this.settings.volume!.value as number) / 100
+            );
 
             this.actionState = 0;
             this.idleTicks = 0;
         }
     }
-
-
 }
-
