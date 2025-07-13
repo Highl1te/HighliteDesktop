@@ -18,7 +18,16 @@ export class EntityHighlight extends Plugin {
         this.settings.entityPriorities = { text: "Entities to highlight (Tree,Bank Chest,Water Obelisk)", type: SettingsTypes.text, value: "", callback: () => this.updateEntityPriorities() };
         this.settings.highlightOffset = { text: "Highlight Offset", type: SettingsTypes.range, value: -30, callback: () => {} };
         this.settings.highlightBackground = { text: "Highlight Background", type: SettingsTypes.color, value: "#ff0000", callback: () => this.updateEntityThemes() };
-        this.settings.highlightBackgroundAlpha = { text: "Highlight Alpha", type: SettingsTypes.range, value: 1, min: 1, max: 10, callback: () => {} };
+        this.settings.highlightBackgroundAlpha = {
+            text: "Highlight Alpha",
+            type: SettingsTypes.range,
+            value: 1,
+            callback: () => {},
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 0 && numValue <= 10;
+            }
+        };
     };
 
     EntityDOMElements: {

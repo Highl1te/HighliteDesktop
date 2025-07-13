@@ -12,6 +12,4 @@ export interface PluginSettings {
     value: boolean | number | string;
     callback: Function;
     validation?: (value: boolean | number | string) => boolean;
-    min?: number;
-    max?: number;
 }
