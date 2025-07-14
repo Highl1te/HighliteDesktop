@@ -22,25 +22,12 @@ export class InventoryTooltips extends Plugin {
     constructor() {
         super();
 
-        this.settings.enabled = {
-            text: 'Enable Inventory Tooltips',
-            type: SettingsTypes.checkbox,
-            value: true,
-            callback: () => {
-                if (this.settings.enabled.value) {
-                    this.start();
-                } else {
-                    this.stop();
-                }
-            },
-        } as any;
-
         this.settings.bankTooltips = {
             text: 'Enable Bank Tooltips',
             type: SettingsTypes.checkbox,
             value: false,
             callback: () => {
-                if (this.settings.enabled.value) {
+                if (this.settings.enable.value) {
                     this.start();
                 }
             },
@@ -51,7 +38,7 @@ export class InventoryTooltips extends Plugin {
             type: SettingsTypes.checkbox,
             value: false,
             callback: () => {
-                if (this.settings.enabled.value) {
+                if (this.settings.enable.value) {
                     this.start();
                 }
             },
@@ -63,7 +50,9 @@ export class InventoryTooltips extends Plugin {
             type: SettingsTypes.color,
             value: '#7fff7f',
             callback: () => {
-                this.start();
+                if (this.settings.enable.value) {
+                    this.addPluginStyle();
+                }
             },
         } as any;
         this.settings.colorNegative = {
@@ -71,7 +60,9 @@ export class InventoryTooltips extends Plugin {
             type: SettingsTypes.color,
             value: '#ff7f7f',
             callback: () => {
-                this.start();
+                if (this.settings.enable.value) {
+                    this.addPluginStyle();
+                }
             },
         } as any;
         this.settings.colorOverheal = {
@@ -79,7 +70,9 @@ export class InventoryTooltips extends Plugin {
             type: SettingsTypes.color,
             value: '#ffe97f',
             callback: () => {
-                this.start();
+                if (this.settings.enable.value) {
+                    this.addPluginStyle();
+                }
             },
         } as any;
         // Opacity setting for tooltip background
@@ -88,11 +81,13 @@ export class InventoryTooltips extends Plugin {
             type: SettingsTypes.range,
             value: 98,
             callback: () => {
-                this.addPluginStyle();
+                if (this.settings.enable.value) {
+                    this.addPluginStyle();
+                }
             },
             validation: (value: number) => {
                 return value >= 0 && value <= 100;
-            }
+            },
         } as any;
     }
 
@@ -129,18 +124,16 @@ export class InventoryTooltips extends Plugin {
     onMouseOver = (event: MouseEvent) => {
         const target = event.target as HTMLElement;
         if (!target || typeof target.closest !== 'function') return;
-
         // Build selectors based on settings
         const selectors: string[] = [];
-        if (this.settings.enabled.value)
+        if (this.settings.enable.value)
             selectors.push('.hs-item-table--inventory .hs-item-table__cell');
-        if (this.settings.bankTooltips.value)
+        if (this.settings.enable.value && this.settings.bankTooltips.value)
             selectors.push('.hs-item-table--bank .hs-item-table__cell');
-        if (this.settings.shopTooltips.value)
+        if (this.settings.enable.value && this.settings.shopTooltips.value)
             selectors.push('.hs-item-table--shop .hs-item-table__cell');
         if (selectors.length === 0) return;
         const selector = selectors.join(', ');
-
         const itemEl = target.closest(selector);
         if (!itemEl) return;
         // Get the slot ID from the element
@@ -186,7 +179,7 @@ export class InventoryTooltips extends Plugin {
      */
     showTooltip(event: MouseEvent, itemDef: any) {
         this.removeTooltip();
-
+        this.log(itemDef);
         this.tooltipUI = this.uiManager.createElement(
             UIManagerScope.ClientInternal
         );
@@ -203,54 +196,100 @@ export class InventoryTooltips extends Plugin {
         const hoveredSkills = new Set<number>(
             bonuses.map((b: any) => b._skill)
         );
+        if (bonuses.length > 0) {
+            bonusText += `<div class="hs-ui-item-tooltip-section">`;
+            for (const bonus of bonuses) {
+                bonusText += `<div class="hs-ui-item-tooltip-effect"> • `;
+                const equippedBonus = equippedEffects.find(
+                    (e: any) => e._skill === bonus._skill
+                );
+                let diff: number;
+                if (equippedBonus) {
+                    diff = bonus._amount - equippedBonus._amount;
+                } else {
+                    diff = bonus._amount;
+                }
+                bonusText += `<span class="hlt-tooltip-bonus ${diff > 0 ? 'hlt-tooltip-positive' : diff < 0 ? 'hlt-tooltip-negative' : ''}">${diff > 0 ? '+' : ''}${diff}</span> ${this.getSkillName(bonus._skill)}`;
+                bonusText += `</div>`;
+            }
 
+            // Show bonuses that are only on equipped item (not on hovered item) as a loss
+            for (const equippedBonus of equippedEffects) {
+                if (!hoveredSkills.has(equippedBonus._skill)) {
+                    bonusText += `<div class="hs-ui-item-tooltip-effect"> • `;
+                    // The hovered item does not have this bonus, so you lose it
+                    const diff = -equippedBonus._amount;
+                    bonusText += `<span class="hlt-tooltip-bonus ${diff < 0 ? 'hlt-tooltip-negative' : diff > 0 ? 'hlt-tooltip-positive' : ''}">${diff > 0 ? '+' : ''}${diff}</span> ${this.getSkillName(equippedBonus._skill)}<br>`;
+                    bonusText += `</div>`;
+                }
+            }
+            bonusText += `</div>`;
+        }
         // Show all bonuses from hovered item, comparing to equipped
-        for (const bonus of bonuses) {
-            const equippedBonus = equippedEffects.find(
-                (e: any) => e._skill === bonus._skill
-            );
-            let diff: number;
-            if (equippedBonus) {
-                diff = bonus._amount - equippedBonus._amount;
-            } else {
-                diff = bonus._amount;
-            }
-            bonusText += `${this.getSkillName(bonus._skill)}: <span class="hlt-tooltip-bonus ${diff > 0 ? 'hlt-tooltip-positive' : diff < 0 ? 'hlt-tooltip-negative' : ''}">${diff > 0 ? '+' : ''}${diff}</span><br>`;
-        }
-
-        // Show bonuses that are only on equipped item (not on hovered item) as a loss
-        for (const equippedBonus of equippedEffects) {
-            if (!hoveredSkills.has(equippedBonus._skill)) {
-                // The hovered item does not have this bonus, so you lose it
-                const diff = -equippedBonus._amount;
-                bonusText += `${this.getSkillName(equippedBonus._skill)}: <span class="hlt-tooltip-bonus ${diff < 0 ? 'hlt-tooltip-negative' : diff > 0 ? 'hlt-tooltip-positive' : ''}">${diff}</span><br>`;
-            }
-        }
 
         // Edible effect display with heal color logic
         const consumableBonuses = itemDef._edibleEffects || [];
         let edibleText = '';
         if (consumableBonuses.length > 0) {
+            this.log('Edible bonuses found:', consumableBonuses);
             const currentHp = mainPlayer._hitpoints?._currentLevel ?? 0;
             const maxHp = mainPlayer._hitpoints?._level ?? 0;
-            for (const bonus of consumableBonuses) {
-                bonusText += `${
-                    bonus._skill === 0
-                        ? 'Heals for'
-                        : this.getSkillName(bonus._skill)
-                }: <span class="hlt-tooltip-bonus ${
-                    bonus._skill === 0 && currentHp + bonus._amount > maxHp
-                        ? 'hlt-tooltip-edible-heal-over'
-                        : 'hlt-tooltip-edible-heal-normal'
-                }">${bonus._amount}</span><br>`;
+            bonusText += `<div class="hs-ui-item-tooltip-section">`;
+            // Combine combat and non-combat skills into one lookup array
+            const allSkills: any[] = [];
+            // _combat._skills is usually first, then _skills._skills
+            if (mainPlayer._combat?._skills) {
+                for (let i = 0; i < mainPlayer._combat._skills.length; i++) {
+                    allSkills[i] = mainPlayer._combat._skills[i];
+                }
             }
+            if (mainPlayer._skills?._skills) {
+                for (let i = 0; i < mainPlayer._skills._skills.length; i++) {
+                    if (mainPlayer._skills._skills[i]) {
+                        allSkills[i] = mainPlayer._skills._skills[i];
+                    }
+                }
+            }
+            for (const bonus of consumableBonuses) {
+                let value = bonus._amount;
+                let valueDisplay = value;
+                let colorClass = '';
+                let isPercent = false;
+                // If value is float, treat as percent of skill
+                if (typeof value === 'number' && !Number.isInteger(value)) {
+                    isPercent = true;
+                    // Get current skill value
+                    let skillValue = 0;
+                    if (bonus._skill === 0) {
+                        skillValue = currentHp;
+                    } else {
+                        // Try to get skill value from combined array
+                        const skillObj = allSkills[bonus._skill];
+                        this.log('allSkills:', allSkills);
+                        this.log('skillObj:', skillObj);
+                        skillValue = skillObj?._level ?? 1;
+                    }
+                    valueDisplay = Math.round(skillValue * value);
+                }
+                // Color logic
+                if (value < 0) {
+                    colorClass = 'hlt-tooltip-negative';
+                } else if (bonus._skill === 0 && currentHp + value > maxHp) {
+                    colorClass = 'hlt-tooltip-edible-heal-over';
+                } else {
+                    colorClass = 'hlt-tooltip-edible-heal-normal';
+                }
+                bonusText += `<div class="hs-ui-item-tooltip-effect"> • 
+                <span class="hlt-tooltip-bonus ${colorClass}">${value < 0 ? '' : '+'}${isPercent ? Math.max(valueDisplay, 1) : value}${isPercent ? ' (' + Math.round(value * 100) + '%)' : ''}</span> ${this.getSkillName(bonus._skill)}</div>`;
+            }
+            bonusText += `</div>`;
         }
         this.tooltip = document.createElement('div');
-        this.tooltip.className = 'hlt-tooltip';
+        this.tooltip.className = 'hs-ui-item-tooltip hlt-tooltip';
         this.tooltip.style.left = `${event.clientX + 10}px`;
         this.tooltip.style.top = `${event.clientY + 10}px`;
         this.tooltip.innerHTML = `
-        <strong class="hlt-tooltip-title">${itemDef._name}</strong>
+        <div class="hs-ui-item-tooltip-title"> <div class="hs-ui-item-tooltip-name">${itemDef._name}</div></div>
         ${bonusText}
         ${edibleText}
     `;
@@ -296,7 +335,7 @@ export class InventoryTooltips extends Plugin {
      * Injects the plugin's tooltip CSS styles into the document head.
      */
     private addPluginStyle(): void {
-        if(this.tooltipStyle)   {
+        if (this.tooltipStyle) {
             this.tooltipStyle.remove();
             this.tooltipStyle = null;
         }
@@ -306,28 +345,14 @@ export class InventoryTooltips extends Plugin {
         const colorPositive = this.settings.colorPositive?.value || '#7fff7f';
         const colorNegative = this.settings.colorNegative?.value || '#ff7f7f';
         const colorOverheal = this.settings.colorOverheal?.value || '#ffe97f';
-        const bgOpacity = (Number(this.settings.tooltipBgOpacity?.value) ?? 97) / 100;
+        const bgOpacity =
+            (Number(this.settings.tooltipBgOpacity?.value) ?? 97) / 100;
         this.tooltipStyle.textContent = `
           .hlt-tooltip {
             position: fixed;
-            background: rgba(30, 30, 40, ${bgOpacity});
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.5);
-            z-index: 9999;
-            font-family: inherit;
-            pointer-events: none;
-            max-width: 320px;
-            font-size: 14px;
-          }
-          .hlt-tooltip-title {
-            font-weight: bold;
-            font-size: 15px;
             display: block;
-          }
-          .hlt-tooltip-bonus {
-            font-weight: bold;
+            min-width: 100px;
+            background: linear-gradient(145deg, rgba(42, 42, 42, ${bgOpacity}), rgba(26, 26, 26, ${bgOpacity}));
           }
           .hlt-tooltip-positive {
             color: ${colorPositive};
@@ -339,10 +364,6 @@ export class InventoryTooltips extends Plugin {
             color: ${colorOverheal};
             font-size: 13px;
             font-style: italic;
-          }
-          .hlt-tooltip-edible-heal {
-            font-weight: bold;
-            margin-left: 6px;
           }
           .hlt-tooltip-edible-heal-normal {
             color: ${colorPositive};
@@ -362,16 +383,19 @@ export class InventoryTooltips extends Plugin {
         if (this.tooltip) {
             const tooltipRect = this.tooltip.getBoundingClientRect();
             const padding = 5;
-            let left = event.clientX + padding;
+            // Default: show to the left of the cursor
+            let left = event.clientX - tooltipRect.width + padding;
             let top = event.clientY + padding;
 
             // Get viewport dimensions
-            const viewportWidth = window.innerWidth - 24;
-            const viewportHeight = window.innerHeight - 20;
+            let gameClient = document
+                .getElementById('game-container')!
+                .getBoundingClientRect();
+            const viewportHeight = gameClient.height - 20;
 
-            // If tooltip would go off right edge, show to the left
-            if (left + tooltipRect.width > viewportWidth) {
-                left = event.clientX - tooltipRect.width - padding;
+            // If tooltip would go off left edge, show to the right
+            if (left < padding) {
+                left = event.clientX + padding;
             }
 
             // If tooltip would go off bottom edge, show above
