@@ -359,7 +359,6 @@ export class InventoryTooltips extends Plugin {
      */
     private updateTooltipPosition(event: MouseEvent) {
         if (this.tooltip) {
-            console.log('Updating tooltip position');
             const tooltipRect = this.tooltip.getBoundingClientRect();
             const padding = 5;
             let left = event.clientX + padding;
@@ -382,7 +381,6 @@ export class InventoryTooltips extends Plugin {
             // Prevent negative positions
             left = Math.max(left, padding);
             top = Math.max(top, padding);
-            console.log('Tooltip Position:', left, top);
             this.tooltip.style.left = `${left}px`;
             this.tooltip.style.top = `${top}px`;
         }
