@@ -138,6 +138,7 @@ export class InventoryTooltips extends Plugin {
             selectors.push('.hs-item-table--bank .hs-item-table__cell');
         if (this.settings.shopTooltips.value)
             selectors.push('.hs-item-table--shop .hs-item-table__cell');
+        if (selectors.length === 0) return;
         const selector = selectors.join(', ');
 
         const itemEl = target.closest(selector);
