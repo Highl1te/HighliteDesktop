@@ -179,7 +179,7 @@ export class InventoryTooltips extends Plugin {
      */
     showTooltip(event: MouseEvent, itemDef: any) {
         this.removeTooltip();
-        this.log(itemDef);
+
         this.tooltipUI = this.uiManager.createElement(
             UIManagerScope.ClientInternal
         );
@@ -231,7 +231,6 @@ export class InventoryTooltips extends Plugin {
         const consumableBonuses = itemDef._edibleEffects || [];
         let edibleText = '';
         if (consumableBonuses.length > 0) {
-            this.log('Edible bonuses found:', consumableBonuses);
             const currentHp = mainPlayer._hitpoints?._currentLevel ?? 0;
             const maxHp = mainPlayer._hitpoints?._level ?? 0;
             bonusText += `<div class="hs-ui-item-tooltip-section">`;
@@ -265,8 +264,6 @@ export class InventoryTooltips extends Plugin {
                     } else {
                         // Try to get skill value from combined array
                         const skillObj = allSkills[bonus._skill];
-                        this.log('allSkills:', allSkills);
-                        this.log('skillObj:', skillObj);
                         skillValue = skillObj?._level ?? 1;
                     }
                     valueDisplay = Math.round(skillValue * value);
