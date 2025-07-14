@@ -179,7 +179,6 @@ export class InventoryTooltips extends Plugin {
      */
     showTooltip(event: MouseEvent, itemDef: any) {
         this.removeTooltip();
-
         this.tooltipUI = this.uiManager.createElement(
             UIManagerScope.ClientInternal
         );
@@ -277,7 +276,7 @@ export class InventoryTooltips extends Plugin {
                     colorClass = 'hlt-tooltip-edible-heal-normal';
                 }
                 bonusText += `<div class="hs-ui-item-tooltip-effect"> • 
-                <span class="hlt-tooltip-bonus ${colorClass}">${value < 0 ? '' : '+'}${isPercent ? Math.max(valueDisplay, 1) : value}${isPercent ? ' (' + Math.round(value * 100) + '%)' : ''}</span> ${this.getSkillName(bonus._skill)}</div>`;
+                <span class="hlt-tooltip-bonus ${colorClass}">${value < 0 ? '-' : '+'}${isPercent ? Math.max(valueDisplay, 1) : value}${isPercent ? ' (' + Math.round(value * 100) + '%)' : ''}</span> ${this.getSkillName(bonus._skill)}</div>`;
             }
             bonusText += `</div>`;
         }
@@ -286,7 +285,7 @@ export class InventoryTooltips extends Plugin {
         this.tooltip.style.left = `${event.clientX + 10}px`;
         this.tooltip.style.top = `${event.clientY + 10}px`;
         this.tooltip.innerHTML = `
-        <div class="hs-ui-item-tooltip-title"> <div class="hs-ui-item-tooltip-name">${itemDef._name}</div></div>
+        <div class="hs-ui-item-tooltip-title"> <div class="hs-ui-item-tooltip-name">${itemDef._nameCapitalized}</div></div>
         ${bonusText}
         ${edibleText}
     `;
