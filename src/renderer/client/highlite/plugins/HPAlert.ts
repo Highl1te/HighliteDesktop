@@ -37,6 +37,30 @@ export class HPAlert extends Plugin {
             value: true,
             callback: () => {}, //NOOP
         };
+        this.settings.useCustomSound = {
+            text: 'Use Custom Sound',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {}, //NOOP
+        };
+        this.settings.customSoundUrl = {
+            text: 'Custom Sound URL',
+            type: SettingsTypes.text,
+            value: '',
+            callback: () => {
+                // Optional: Log when URL changes
+                const url = this.settings.customSoundUrl.value as string;
+                if (url) {
+                    this.log(`Custom sound URL updated: ${url}`);
+                }
+            },
+        };
+        this.settings.testCustomSound = {
+            text: 'Test Custom Sound',
+            type: SettingsTypes.button,
+            value: 'Play Sound',
+            callback: () => this.testPlayCustomSound(),
+        };
     }
 
     init(): void {
@@ -51,7 +75,27 @@ export class HPAlert extends Plugin {
         this.log('Stopped');
     }
 
-    GameLoop_update(...args: any) {
+    private testPlayCustomSound(): void {
+        try {
+            const customSoundUrl = this.settings.customSoundUrl?.value as string;
+            const volume = (this.settings.volume?.value as number) / 100;
+
+            if (!customSoundUrl || customSoundUrl.trim() === '') {
+                alert('Please enter a custom sound URL first');
+                this.log('No custom sound URL provided for test');
+                return;
+            }
+
+            this.log(`Testing custom sound: ${customSoundUrl}`);
+            this.soundManager.playSound(customSoundUrl, volume);
+            
+        } catch (error) {
+            this.error(`Error testing custom sound: ${error}`);
+            alert('Failed to play custom sound. Please check the URL and try again.');
+        }
+    }
+
+    GameLoop_update(): void {
         if (!this.settings.enable.value) {
             return;
         }
@@ -100,6 +144,8 @@ export class HPAlert extends Plugin {
                         player.CurrentTarget != undefined))
             ) {
                 this.soundManager.playSound(
+                    // Use custom sound if enabled and url exists, otherwise use default
+                    this.settings.useCustomSound && this.settings.customSoundUrl.value != '' ? this.settings.customSoundUrl.value as string :
                     'https://cdn.pixabay.com/download/audio/2022/03/20/audio_c35359a867.mp3',
                     (this.settings.volume!.value as number) / 100
                 );
