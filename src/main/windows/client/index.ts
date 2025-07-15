@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, contextBridge, shell } from 'electron';
 import path from 'path';
 import { format } from 'url';
 
@@ -93,7 +93,9 @@ export async function createClientWindow() {
         mainWindow.webContents.setZoomLevel(0);
     });
 
-    mainWindow.webContents.send('is-darwin', process.platform === 'darwin');
+    contextBridge.exposeInMainWorld('electron', {
+        platform: process.platform
+    });
 
     return mainWindow;
 }
