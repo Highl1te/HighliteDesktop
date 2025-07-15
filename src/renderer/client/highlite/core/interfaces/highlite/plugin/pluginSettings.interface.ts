@@ -3,6 +3,7 @@ export enum SettingsTypes {
     range,
     color,
     text,
+    button,
 }
 
 export interface PluginSettings {

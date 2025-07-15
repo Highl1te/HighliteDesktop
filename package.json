@@ -1,7 +1,7 @@
 {
   "name": "highlite",
   "productName": "HighLite",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "A RuneLite-esque Client for the game High Spell",
   "homepage": "https://github.com/Highl1te/HighliteDesktop#readme",
   "engines": {
@@ -31,6 +31,10 @@
   },
   "build": {
     "appId": "com.highlite.desktop",
+    "asar": true,
+    "files": [
+      "out/**/*"
+    ],
     "productName": "HighLite",
     "publish": [
       {
@@ -56,7 +60,8 @@
         {
           "target": "nsis",
           "arch": [
-            "x64"
+            "x64",
+            "arm64"
           ]
         }
       ],
@@ -67,12 +72,23 @@
         {
           "target": "AppImage",
           "arch": [
-            "x64"
+            "x64",
+            "arm64"
           ]
         }
       ],
       "icon": "build/icon.png"
     }
+  },
+  "nsis": {
+    "oneClick": false,
+    "allowToChangeInstallationDirectory": true,
+    "installerIcon": "build/icon.ico",
+    "uninstallerIcon": "build/icon.ico",
+    "uninstallDisplayName": "HighLite",
+    "createDesktopShortcut": true,
+    "createStartMenuShortcut": true,
+    "shortcutName": "HighLite"
   },
   "dependencies": {
     "@babylonjs/core": "^8.11.0",

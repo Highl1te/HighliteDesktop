@@ -14,7 +14,7 @@ if (!gotTheLock) {
 }
 
 app.whenReady().then(async () => {
-    electronApp.setAppUserModelId('com.highlite');
+    electronApp.setAppUserModelId('com.highlite.desktop');
     const updateWindow: BrowserWindow = await createUpdateWindow();
 
     ipcMain.once('delay-update', async () => {

@@ -305,7 +305,7 @@ export class MinimapIcons extends Plugin {
         this.settings.enable = {
             text: 'Enable Minimap Icons',
             type: SettingsTypes.checkbox,
-            value: true,
+            value: false, // Default to false 
             callback: () => this.toggleVisibility(),
         };
 

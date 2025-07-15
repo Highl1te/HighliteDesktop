@@ -1,4 +1,5 @@
 import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
+import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
 
 export class BankSearch extends Plugin {
     pluginName = 'Bank Search';
@@ -10,6 +11,13 @@ export class BankSearch extends Plugin {
 
     constructor() {
         super();
+
+        this.settings.memory = {
+            text: 'Remember search between banking session',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {},
+        }
     }
 
     start(): void {
@@ -32,10 +40,23 @@ export class BankSearch extends Plugin {
         }
         this.injectSearchBox();
         this.updateSearchBoxVisibility();
+
+        const mainPlayer = document.highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+        const bankStorage = mainPlayer.BankStorageItems;
+
+        if (mainPlayer && bankStorage) {
+            bankStorage.OnInventoryChangeListener.add(this.updateSearch.bind(this));
+            bankStorage.OnReorganizedItemsListener.add(this.updateSearch.bind(this));
+        }
     }
+
 
     BankUIManager_handleCenterMenuWillBeRemoved() {
         this.destroy();
+    }
+
+    updateSearch() {
+        this.highlightBankQuery(this.lastQuery)
     }
 
     updateSearchBoxVisibility() {
@@ -110,7 +131,7 @@ export class BankSearch extends Plugin {
         input.classList.add('bank-helper-search-input');
         input.style.width = '180px';
         input.style.outline = 'none';
-        input.value = this.lastQuery; // Set input value to last query
+        input.value = this.settings.memory.value ? this.lastQuery : ''; // Set input value to last query
 
         // Prevent game from processing keystrokes while typing
         input.addEventListener('keydown', e => e.stopPropagation());
@@ -235,8 +256,8 @@ export class BankSearch extends Plugin {
     highlightBankQuery(query) {
         // Get bank items from the game data
         const bankItems =
-            document.highlite?.gameHooks?.EntityManager?.Instance
-                ?.MainPlayer?._bankItems?.Items || [];
+            document.highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer
+                ?._bankItems?.Items || [];
 
         // Find all bank item elements by data-slot attribute
         const bankMenu = document.getElementById('hs-bank-menu');
@@ -261,9 +282,11 @@ export class BankSearch extends Plugin {
             if (!bankItem) continue; // Skip null/empty slots
 
             // Get item definition
-            const itemDef = document.highlite?.gameHooks?.ItemDefMap
-                ?.ItemDefMap?.get
-                ? document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(bankItem._id)
+            const itemDef = document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap
+                ?.get
+                ? document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(
+                      bankItem._id
+                  )
                 : null;
 
             const itemName = itemDef
@@ -290,6 +313,18 @@ export class BankSearch extends Plugin {
 
     // Cleanup method
     destroy() {
+        const mainPlayer = document.highlite?.gameHooks?.EntityManager?.Instance?.MainPlayer;
+        const bankStorage = mainPlayer.BankStorageItems;
+
+        if (mainPlayer && bankStorage) {
+            bankStorage.OnInventoryChangeListener.remove(this.updateSearch);
+            bankStorage.OnReorganizedItemsListener.remove(this.updateSearch);
+        }
+      
+        if (!this.settings.memory.value) {
+            this.lastQuery = '';
+        }
+
         // Find all bank item elements by data-slot attribute
         const bankMenu = document.getElementById('hs-bank-menu');
         if (!bankMenu) return;
