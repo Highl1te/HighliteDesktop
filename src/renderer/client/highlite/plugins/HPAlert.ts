@@ -145,7 +145,7 @@ export class HPAlert extends Plugin {
             ) {
                 this.soundManager.playSound(
                     // Use custom sound if enabled and url exists, otherwise use default
-                    this.settings.useCustomSound && this.settings.customSoundUrl.value != '' ? this.settings.customSoundUrl.value as string :
+                    this.settings.useCustomSound?.value && this.settings.customSoundUrl.value != '' ? this.settings.customSoundUrl.value as string :
                     'https://cdn.pixabay.com/download/audio/2022/03/20/audio_c35359a867.mp3',
                     (this.settings.volume!.value as number) / 100
                 );
