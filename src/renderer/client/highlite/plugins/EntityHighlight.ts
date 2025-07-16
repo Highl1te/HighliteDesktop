@@ -1,7 +1,7 @@
-import { Vector3 } from '@babylonjs/core/Maths/math';
-import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
-import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
-import { UIManager, UIManagerScope } from '../core/managers/highlite/uiManager';
+import {Vector3} from '@babylonjs/core/Maths/math';
+import {Plugin} from '../core/interfaces/highlite/plugin/plugin.class';
+import {SettingsTypes} from '../core/interfaces/highlite/plugin/pluginSettings.interface';
+import {UIManager, UIManagerScope} from '../core/managers/highlite/uiManager';
 
 export class EntityHighlight extends Plugin {
     pluginName = 'EntityHighlight Plugin';
@@ -15,12 +15,6 @@ export class EntityHighlight extends Plugin {
 
         this.uiManager = new UIManager();
 
-        this.settings.entityPriorities = {
-            text: 'Entities to highlight (Tree,Bank Chest,Water Obelisk)',
-            type: SettingsTypes.text,
-            value: '',
-            callback: () => this.updateEntityPriorities(),
-        };
         this.settings.highlightOffset = {
             text: 'Highlight Offset',
             type: SettingsTypes.range,
@@ -37,11 +31,15 @@ export class EntityHighlight extends Plugin {
             text: 'Highlight Alpha',
             type: SettingsTypes.range,
             value: 1,
+            min: 1,
+            max: 10,
             callback: () => {},
-            validation: (value: string | number | boolean) => {
-                const numValue = value as number;
-                return numValue >= 0 && numValue <= 10;
-            },
+        };
+        this.settings.entityPriorities = {
+            text: 'Entities to highlight',
+            type: SettingsTypes.text,
+            value: 'Tree,Bank Chest',
+            callback: () => this.updateEntityPriorities(),
         };
     }
 
@@ -55,9 +53,11 @@ export class EntityHighlight extends Plugin {
 
     private positionTracker: Map<string, number> = new Map();
     private entitiesToHighlight: string[] = [];
+    private showAllEntities: boolean = false;
 
     init(): void {
         this.log('Initializing');
+        this.setupKeyboardListeners();
     }
 
     start(): void {
@@ -89,6 +89,33 @@ export class EntityHighlight extends Plugin {
 
         this.cleanStaleWorldEntities(WorldEntities);
         this.processWorldEntities(WorldEntities);
+    }
+
+
+    private setupKeyboardListeners(): void {
+        this.log("Setting up keyboard listeners");
+        document.addEventListener('keydown', e=> {
+            if (e.key === 'Alt') {
+                this.showAllEntities = true;
+                this.updatePriorityButtonsVisibility();
+            }
+        });
+        document.addEventListener('keyup', e=> {
+            if (e.key === 'Alt') {
+                this.showAllEntities = false;
+                this.updateEntityPriorities();
+        });
+    }
+
+    private updatePriorityButtonsVisibility(): void {
+        const buttons = document.querySelectorAll('.priority-button');
+        buttons.forEach(button => {
+            if (this.showAllEntities) {
+                (button as HTMLElement).style.display = 'inline-block';
+            } else {
+                (button as HTMLElement).style.display = 'none';
+            }
+        });
     }
 
     private cleanStaleWorldEntities(WorldEntities: any): void {
@@ -123,40 +150,46 @@ export class EntityHighlight extends Plugin {
     }
 
     private processWorldEntities(WorldEntities: any[]): void {
-        for (const entity of WorldEntities) {
-            if (this.entitiesToHighlight.includes(entity[1]._name)) {
-                if (!this.EntityDOMElements[entity[1]._entityTypeId]) {
-                    this.createEntityElement(
-                        entity[1]._entityTypeId,
-                        entity[1]
-                    );
-                }
-                const entityTypeId = entity[1]._entityTypeId;
-                const element = this.EntityDOMElements[entityTypeId].element;
-                element.style.color = 'white';
-
-                this.applyEntityColors(element);
-
-                const worldPos = this.getEntityWorldPosition(entity[1]);
-                if (worldPos) {
-                    this.EntityDOMElements[entity[1]._entityTypeId].position =
-                        worldPos;
-
-                    const positionKey = this.getPositionKey(worldPos);
-                    const currentCount =
-                        this.positionTracker.get(positionKey) || 0;
-                    this.positionTracker.set(positionKey, currentCount + 1);
-                }
-
-                const entityMesh = entity[1]._appearance._bjsMeshes[0];
+            for (const entity of WorldEntities) {
                 try {
-                    this.updateElementPosition(
-                        entityMesh,
-                        this.EntityDOMElements[entity[1]._entityTypeId]
-                    );
-                } catch (e) {
-                    this.log('Error updating entity element position: ', e);
+                let entityName = entity[1]._name;
+                if(entityName.length <= 1) continue;
+                if (this.entitiesToHighlight.includes(entity[1]._name) || this.showAllEntities) {
+                    if (!this.EntityDOMElements[entity[1]._entityTypeId]) {
+                        this.createEntityElement(
+                            entity[1]._entityTypeId,
+                            entity[1]
+                        );
+                    }
+                    const entityTypeId = entity[1]._entityTypeId;
+                    const element = this.EntityDOMElements[entityTypeId].element;
+                    element.style.color = 'white';
+
+                    this.applyEntityColors(element);
+
+                    const worldPos = this.getEntityWorldPosition(entity[1]);
+                    if (worldPos) {
+                        this.EntityDOMElements[entity[1]._entityTypeId].position =
+                            worldPos;
+
+                        const positionKey = this.getPositionKey(worldPos);
+                        const currentCount =
+                            this.positionTracker.get(positionKey) || 0;
+                        this.positionTracker.set(positionKey, currentCount + 1);
+                    }
+
+                    const entityMesh = entity[1]._appearance._bjsMeshes[0];
+                    try {
+                        this.updateElementPosition(
+                            entityMesh,
+                            this.EntityDOMElements[entity[1]._entityTypeId]
+                        );
+                    } catch (e) {
+                        this.log('Error updating entity element position: ', e);
+                    }
                 }
+            } catch (e) {
+                this.log("Error with entity: ", entity[0], entity[1]);
             }
         }
     }
@@ -248,10 +281,15 @@ export class EntityHighlight extends Plugin {
     }
 
     private createEntityElement(entityId: number, entity: any): void {
+
+        if(entity._name.length <= 1) return;
+
         const element = document.createElement('div');
         element.id = `entity-highlight-${entityId}`;
         element.style.position = 'absolute';
         element.style.pointerEvents = 'none';
+        element.style.alignItems = 'center';
+        element.style.justifyContent = 'center';
         element.style.zIndex = '1000';
         element.style.color = 'white';
         element.style.fontSize = '12px';
@@ -259,10 +297,41 @@ export class EntityHighlight extends Plugin {
         element.style.background = this.settings.highlightBackground
             .value as string;
         element.style.borderRadius = '4px';
-        element.style.padding = '2px 6px';
+        element.style.gap = '4px';
+        element.style.padding = '2px 20px';
         element.style.border = '1px solid rgba(255, 255, 255, 0.3)';
         element.style.textShadow = '1px 1px 2px rgba(0, 0, 0, 0.8)';
         element.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
+
+        const priorityBtn = document.createElement('button');
+        priorityBtn.className = 'priority-button';
+        priorityBtn.style.display = this.showAllEntities
+            ? 'inline-block'
+            : 'none';
+        let highlightedEntity = this.entitiesToHighlight.includes(entity._name)
+        if(highlightedEntity) {
+            priorityBtn.innerText = '-';
+            priorityBtn.style.background = 'red';
+        } else {
+            priorityBtn.innerText = '+';
+            priorityBtn.style.background = 'green';
+        }
+        priorityBtn.style.color = 'white';
+        priorityBtn.style.border = '1px solid rgba(255, 255, 255, 0.3)';
+        priorityBtn.style.borderRadius = '2px';
+        priorityBtn.style.padding = '1px 4px';
+        priorityBtn.style.fontSize = '10px';
+        priorityBtn.style.cursor = 'pointer';
+        priorityBtn.style.fontWeight = 'bold';
+        priorityBtn.style.pointerEvents = 'auto';
+        priorityBtn.style.zIndex = '1001';
+        priorityBtn.style.userSelect = 'none';
+
+        this.uiManager.bindOnClickBlockHsMask(priorityBtn, () => {
+            this.toggleItemPriority(entity._name);
+        });
+
+        element.appendChild(priorityBtn);
 
         this.EntityDOMElements[entityId] = {
             element: element,
@@ -275,52 +344,15 @@ export class EntityHighlight extends Plugin {
             ?.appendChild(element);
     }
 
-    private injectCSSVariables(): void {
-        if (!this.DOMElement) return;
-
-        try {
-            const screenMask = document.getElementById('hs-screen-mask');
-            if (!screenMask) return;
-
-            const computedStyle = getComputedStyle(screenMask);
-            const cssVariables = [
-                '--hs-color-cmbt-lvl-diff-pos-10',
-                '--hs-color-cmbt-lvl-diff-pos-9',
-                '--hs-color-cmbt-lvl-diff-pos-8',
-                '--hs-color-cmbt-lvl-diff-pos-7',
-                '--hs-color-cmbt-lvl-diff-pos-6',
-                '--hs-color-cmbt-lvl-diff-pos-5',
-                '--hs-color-cmbt-lvl-diff-pos-4',
-                '--hs-color-cmbt-lvl-diff-pos-3',
-                '--hs-color-cmbt-lvl-diff-pos-2',
-                '--hs-color-cmbt-lvl-diff-pos-1',
-                '--hs-color-cmbt-lvl-diff-pos-0',
-                '--hs-color-cmbt-lvl-diff-neg-1',
-                '--hs-color-cmbt-lvl-diff-neg-2',
-                '--hs-color-cmbt-lvl-diff-neg-3',
-                '--hs-color-cmbt-lvl-diff-neg-4',
-                '--hs-color-cmbt-lvl-diff-neg-5',
-                '--hs-color-cmbt-lvl-diff-neg-6',
-                '--hs-color-cmbt-lvl-diff-neg-7',
-                '--hs-color-cmbt-lvl-diff-neg-8',
-                '--hs-color-cmbt-lvl-diff-neg-9',
-                '--hs-color-cmbt-lvl-diff-neg-10',
-            ];
-
-            let styleString = '';
-            cssVariables.forEach(variable => {
-                const value = computedStyle.getPropertyValue(variable);
-                if (value) {
-                    styleString += `${variable}: ${value}; `;
-                }
-            });
-
-            if (styleString) {
-                this.DOMElement.style.cssText += styleString;
-            }
-        } catch (error) {
-            this.error('Error injecting CSS variables:', error);
+    private toggleItemPriority(entityName: string): void {
+        if(this.entitiesToHighlight.indexOf(entityName) === -1) {
+            this.settings.entityPriorities.value += "," + entityName;
+            this.entitiesToHighlight.push(entityName);
+        } else {
+            let newPriorityList = this.entitiesToHighlight.filter(entity => entity !== entityName);
+            this.settings.entityPriorities.value = newPriorityList.join(',');
         }
+        this.updateEntityPriorities();
     }
 
     private cleanupElementCollection(collection: any): void {
@@ -365,9 +397,6 @@ export class EntityHighlight extends Plugin {
             this.DOMElement.style.fontFamily = 'Inter';
             this.DOMElement.style.fontSize = '12px';
             this.DOMElement.style.fontWeight = 'bold';
-
-            // Inject CSS variables from screen mask to ensure proper styling
-            this.injectCSSVariables();
         }
     }
 }

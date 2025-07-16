@@ -524,8 +524,37 @@ export class SettingsManager {
                         numberInput.style.boxShadow = 'none';
                     });
 
+                    if(setting.min !== undefined) {
+                        numberInput.min = setting.min.toString();
+                    }
+
+                    if(setting.max !== undefined) {
+                        numberInput.max = setting.max.toString();
+                    }
+
+                    // numberInput.addEventListener('input', async () => {
+                    //     const newValue = parseFloat(numberInput.value);
+                    //     const min = parseFloat(numberInput.min);
+                    //     const max = parseFloat(numberInput.max);
+                    //     if(newValue <= min || newValue >= max) {
+                    //         numberInput.style.border = '1px solid #ff4444';
+                    //         numberInput.style.boxShadow =
+                    //             '0 0 0 2px rgba(255, 68, 68, 0.2)';
+                    //         return;
+                    //     }
+                    // })
+
                     numberInput.addEventListener('change', async () => {
                         const newValue = parseFloat(numberInput.value);
+                        const min = parseFloat(numberInput.min);
+                        const max = parseFloat(numberInput.max);
+
+                        if(newValue <= min || newValue >= max) {
+                            numberInput.style.border = '1px solid #ff4444';
+                            numberInput.style.boxShadow =
+                                '0 0 0 2px rgba(255, 68, 68, 0.2)';
+                            return;
+                        }
 
                         // Check validation if it exists
                         if (
