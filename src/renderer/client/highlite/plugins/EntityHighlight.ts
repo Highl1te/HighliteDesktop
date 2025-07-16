@@ -98,12 +98,14 @@ export class EntityHighlight extends Plugin {
             if (e.key === 'Alt') {
                 this.showAllEntities = true;
                 this.updatePriorityButtonsVisibility();
+                //this.disableScreenMaskPointerEvents();
             }
         });
         document.addEventListener('keyup', e=> {
             if (e.key === 'Alt') {
                 this.showAllEntities = false;
                 this.updateEntityPriorities();
+            }
         });
     }
 
@@ -328,7 +330,7 @@ export class EntityHighlight extends Plugin {
         priorityBtn.style.userSelect = 'none';
 
         this.uiManager.bindOnClickBlockHsMask(priorityBtn, () => {
-            this.toggleItemPriority(entity._name);
+            this.toggleEntityHighlight(entity._name);
         });
 
         element.appendChild(priorityBtn);
@@ -344,7 +346,7 @@ export class EntityHighlight extends Plugin {
             ?.appendChild(element);
     }
 
-    private toggleItemPriority(entityName: string): void {
+    private toggleEntityHighlight(entityName: string): void {
         if(this.entitiesToHighlight.indexOf(entityName) === -1) {
             this.settings.entityPriorities.value += "," + entityName;
             this.entitiesToHighlight.push(entityName);
