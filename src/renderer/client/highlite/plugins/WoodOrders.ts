@@ -72,7 +72,7 @@ export class WoodOrders extends Plugin {
         this.isLoggedIn = true;
         this.buildPanelContent();
         this.updateOrders();
-        this.updateId = setInterval(() => {this.updateOrders();}, 5000);
+        this.updateId = setInterval(() => {this.updateOrders();}, 30000);
     }
 
     SocketManager_handleLoggedOut(): void {
@@ -238,22 +238,38 @@ export class WoodOrders extends Plugin {
             itemContainer.innerHTML =  `
                 <span>Requested by: ` + results[index][1] + `</span><br>
                 <span>Type: ` + results[index][2] + `</span><br>
-                <span>Amount: ` + results[index][3] + `</span><br>
-                <span>Price per item: ` + results[index][4] + `</span><br>
-                <span>Location: X: ` + results[index][5] + ` Z: ` + results[index][7] + `</span>
+                <span>Amount: ` + results[index][4] + `/` + results[index][3] + `</span><br>
+                <span>Price per item: ` + results[index][5] + `</span><br>
+                <span>Location: X: ` + results[index][6] + ` Z: ` + results[index][8] + `</span><br>
             `;
             if (results[index][1] == this.gameHooks.EntityManager.Instance.MainPlayer._name){
-                let deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Mark Complete';
-                deleteBtn.onclick =  () => this.markOrderComplete(results[index][0]);
-                itemContainer.appendChild(deleteBtn);
+                let usernameInput = document.createElement("input");
+                usernameInput.type = "text";
+                usernameInput.name = "username";
+                usernameInput.className = "wood-orders-item-text-input";
+                usernameInput.placeholder = "Username";
+
+                let amountInput = document.createElement("input");
+                amountInput.type = "text";
+                amountInput.name = "amount";
+                amountInput.className = "wood-orders-item-text-input";
+                amountInput.placeholder = "Amount delivered";
+
+                let updateOrderBtn = document.createElement('button');
+                updateOrderBtn.textContent = 'Update Order';
+                updateOrderBtn.onclick =  () => this.markOrderComplete(results[index][0], usernameInput, amountInput);
+
+                itemContainer.appendChild(usernameInput);
+                itemContainer.appendChild(amountInput);
+                itemContainer.appendChild(updateOrderBtn);
             }
             this.itemListContainer.appendChild(itemContainer);
         }
     }
 
-    private markOrderComplete(id): void {
-        fetch("https://highspellwoodcuttersunion.online/complete_order.php/?id=" + id)
+    private markOrderComplete(id, usernameInput, amountInput): void {
+        fetch("https://highspellwoodcuttersunion.online/complete_order.php/?id=" + id + 
+            "&username=" + usernameInput.value + "&amount=" + amountInput.value)
             .then((response) => response.json())
             .then((result) => this.updateOrders())
             .catch((error) => this.error(error));
@@ -299,6 +315,18 @@ export class WoodOrders extends Plugin {
                 font-size: 14px;
                 box-sizing: border-box;
             }
+
+            .wood-orders-item-text-input {
+                width: 100%;
+                padding: 10px 15px;
+                margin: 5px 0px;
+                background: rgba(0, 0, 0, 0.5);
+                border: 1px solid #555;
+                border-radius: 4px;
+                color: white;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
             
             .wood-orders-order-input-container select {
                 width: 100%;
@@ -332,6 +360,11 @@ export class WoodOrders extends Plugin {
                 outline: none;
                 border-color: #4a9eff;
                 box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2);
+            }
+
+            .wood-orders-list-container{
+                flex-grow: 1;
+                overflow: auto;
             }
 
             .wood-orders-order-container {
