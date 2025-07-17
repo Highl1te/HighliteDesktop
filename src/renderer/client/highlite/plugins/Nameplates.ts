@@ -2,6 +2,8 @@ import { Vector3 } from '@babylonjs/core/Maths/math';
 import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
 import { SettingsTypes } from '../core/interfaces/highlite/plugin/pluginSettings.interface';
 import { UIManager, UIManagerScope } from '../core/managers/highlite/uiManager';
+import { NotificationManager } from '../core/managers/highlite/notificationManager';
+import { SoundManager } from '../core/managers/highlite/soundsManager';
 
 export class Nameplates extends Plugin {
     pluginName = 'Nameplates';
@@ -11,6 +13,11 @@ export class Nameplates extends Plugin {
     // Priority system properties
     private altKeyPressed: boolean = false;
     private uiManager: UIManager;
+    
+    // Alert system properties
+    private notificationManager: NotificationManager = new NotificationManager();
+    private soundManager: SoundManager = new SoundManager();
+    private trackedGroundItems: Set<string> = new Set(); // Track seen ground items to detect new ones
 
     constructor() {
         super();
@@ -157,6 +164,36 @@ export class Nameplates extends Plugin {
             value: '#ff0000',
             callback: () => this.updateAllGroundItemElements(),
         };
+
+        // Priority item alert settings
+        this.settings.priorityItemAlerts = {
+            text: 'Enable Priority Item Alerts',
+            type: SettingsTypes.checkbox,
+            value: true,
+            callback: () => {}, //NOOP
+        };
+        this.settings.priorityItemNotifications = {
+            text: 'Priority Item Notifications',
+            type: SettingsTypes.checkbox,
+            value: false,
+            callback: () => {}, //NOOP
+        };
+        this.settings.priorityItemSounds = {
+            text: 'Priority Item Sounds',
+            type: SettingsTypes.checkbox,
+            value: true,
+            callback: () => {}, //NOOP
+        };
+        this.settings.priorityItemAlertVolume = {
+            text: 'Priority Item Alert Volume',
+            type: SettingsTypes.range,
+            value: 50,
+            callback: () => {}, //NOOP
+            validation: (value: string | number | boolean) => {
+                const numValue = value as number;
+                return numValue >= 0 && numValue <= 100;
+            },
+        };
     }
 
     NPCDomElements: {
@@ -204,6 +241,7 @@ export class Nameplates extends Plugin {
 
     SocketManager_handleLoggedOut(): void {
         this.cleanupAllElements();
+        this.trackedGroundItems.clear(); // Reset tracked items on logout
     }
 
     private setupKeyboardListeners(): void {
@@ -497,6 +535,56 @@ export class Nameplates extends Plugin {
         return '#ff0000'; // Default red color
     }
 
+    private checkForNewPriorityItems(GroundItems: Map<number, any>): void {
+        if (!this.settings.priorityItemAlerts?.value) {
+            return;
+        }
+
+        const priorityItems = this.getPriorityItemsSet();
+        if (priorityItems.size === 0) {
+            return; // No priority items configured
+        }
+
+        const currentGroundItems = new Set<string>();
+        
+        // Build set of current ground items
+        for (const [key, groundItem] of GroundItems) {
+            const itemKey = `${key}_${groundItem._def._nameCapitalized}`;
+            currentGroundItems.add(itemKey);
+            
+            // Check if this is a new priority item
+            if (!this.trackedGroundItems.has(itemKey)) {
+                const itemName = groundItem._def._nameCapitalized;
+                if (priorityItems.has(itemName)) {
+                    this.alertPriorityItemDropped(itemName);
+                }
+            }
+        }
+
+        // Update tracked items
+        this.trackedGroundItems = currentGroundItems;
+    }
+
+    private alertPriorityItemDropped(itemName: string): void {
+        this.log(`Priority item detected: ${itemName}`);
+
+        // Send notification if enabled
+        if (this.settings.priorityItemNotifications?.value) {
+            this.notificationManager.createNotification(
+                `Priority item dropped: ${itemName}!`
+            );
+        }
+
+        // Play sound if enabled
+        if (this.settings.priorityItemSounds?.value) {
+            const volume = (this.settings.priorityItemAlertVolume?.value as number) / 100;
+            this.soundManager.playSound(
+                'https://cdn.pixabay.com/download/audio/2024/02/19/audio_e4043ea6be.mp3',
+                volume
+            );
+        }
+    }
+
     GameLoop_draw(): void {
         const NPCS = this.gameHooks.EntityManager.Instance._npcs;
         const Players = this.gameHooks.EntityManager.Instance._players;
@@ -523,6 +611,7 @@ export class Nameplates extends Plugin {
         this.cleanupStaleEntities(NPCS, Players, MainPlayer);
         this.processNPCs(NPCS, MainPlayer, BW);
         this.processPlayers(Players, MainPlayer, playerFriends);
+        this.checkForNewPriorityItems(GroundItems);
         this.processGroundItems(GroundItems);
     }
 
