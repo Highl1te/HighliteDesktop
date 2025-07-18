@@ -13,4 +13,5 @@ export interface PluginSettings {
     callback: Function;
     validation?: (value: boolean | number | string) => boolean;
     hidden?: boolean;
+    disabled?: boolean;
 }

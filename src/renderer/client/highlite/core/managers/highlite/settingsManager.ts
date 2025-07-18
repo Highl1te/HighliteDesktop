@@ -56,6 +56,14 @@ export class SettingsManager {
                         }, 0);
                     }
                     
+                    // If the disabled property changed, update the UI
+                    if (property === 'disabled' && oldValue !== value) {
+                        // Small delay to ensure the property change is complete
+                        setTimeout(() => {
+                            this.refreshPluginSettingsDisabled(plugin);
+                        }, 0);
+                    }
+                    
                     return true;
                 }
             });
@@ -502,6 +510,9 @@ export class SettingsManager {
                         
                         // Refresh visibility of all settings in case dependencies changed
                         this.refreshPluginSettingsVisibility(plugin);
+                        
+                        // Refresh disabled state of all settings in case dependencies changed
+                        this.refreshPluginSettingsDisabled(plugin);
 
                         // Reset styling to normal
                         toggleSwitch.style.accentColor = 'var(--theme-accent)';
@@ -866,6 +877,18 @@ export class SettingsManager {
                     );
             }
 
+            // Handle initial disabled state
+            if (setting.disabled) {
+                const inputs = contentRow.querySelectorAll('input, button');
+                inputs.forEach(input => {
+                    const htmlInput = input as HTMLInputElement | HTMLButtonElement;
+                    htmlInput.disabled = true;
+                    htmlInput.style.opacity = '0.5';
+                    htmlInput.style.cursor = 'not-allowed';
+                    htmlInput.style.filter = 'grayscale(50%)';
+                });
+            }
+
             this.pluginSettingsView.appendChild(contentRow);
         }
 
@@ -1024,6 +1047,41 @@ export class SettingsManager {
                     }, 10);
                 }
             }
+        }
+    }
+
+    /**
+     * Refresh the disabled state of all settings for a plugin based on their current disabled state
+     * @param plugin - The plugin whose settings disabled state should be refreshed
+     */
+    private refreshPluginSettingsDisabled(plugin: Plugin): void {
+        for (const settingKey in plugin.settings) {
+            if (settingKey === 'enable') continue; // Skip enable setting
+            
+            const setting = plugin.settings[settingKey];
+            const contentRow = document.getElementById(`highlite-settings-content-row-${settingKey}`);
+            
+            if (!contentRow) continue;
+            
+            // Find all input elements in the content row
+            const inputs = contentRow.querySelectorAll('input, button');
+            
+            inputs.forEach(input => {
+                const htmlInput = input as HTMLInputElement | HTMLButtonElement;
+                if (setting.disabled) {
+                    // Disable with visual feedback
+                    htmlInput.disabled = true;
+                    htmlInput.style.opacity = '0.5';
+                    htmlInput.style.cursor = 'not-allowed';
+                    htmlInput.style.filter = 'grayscale(50%)';
+                } else {
+                    // Enable with normal styling
+                    htmlInput.disabled = false;
+                    htmlInput.style.opacity = '1';
+                    htmlInput.style.cursor = 'pointer';
+                    htmlInput.style.filter = 'none';
+                }
+            });
         }
     }
 
