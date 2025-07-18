@@ -87,6 +87,11 @@ export class SettingsManager {
                         // found the setting in the store
                         pluginSettings[settingKey]!.value =
                             settingStore[settingKey];
+                        
+                        // Call the setting's onLoaded callback if it exists
+                        if (pluginSettings[settingKey]!.onLoaded) {
+                            pluginSettings[settingKey]!.onLoaded.call(plugin);
+                        }
                     }
                 }
             }
