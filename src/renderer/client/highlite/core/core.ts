@@ -111,12 +111,12 @@ export class Highlite {
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(
-            'nz',
+            'dX',
             '_createInventoryItemContextMenuItems',
             this.contextMenuManager.inventoryContextHook
         );
         this.contextMenuManager.registerContextHook(
-            'nz',
+            'dX',
             '_createGameWorldContextMenuItems',
             this.contextMenuManager.gameWorldContextHook
         );
