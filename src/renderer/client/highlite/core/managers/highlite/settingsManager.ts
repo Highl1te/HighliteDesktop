@@ -32,6 +32,36 @@ export class SettingsManager {
         this.createMenu();
     }
 
+    /**
+     * Create reactive proxies for plugin settings that automatically update UI when hidden property changes
+     * @param plugin - The plugin whose settings should be made reactive
+     */
+    private makeSettingsReactive(plugin: Plugin): void {
+        for (const settingKey in plugin.settings) {
+            if (settingKey === 'enable') continue; // Skip enable setting
+            
+            const setting = plugin.settings[settingKey];
+            
+            // Create a proxy that intercepts property changes
+            plugin.settings[settingKey] = new Proxy(setting, {
+                set: (target, property, value) => {
+                    const oldValue = target[property as keyof typeof target];
+                    (target as any)[property] = value;
+                    
+                    // If the hidden property changed, update the UI
+                    if (property === 'hidden' && oldValue !== value) {
+                        // Small delay to ensure the property change is complete
+                        setTimeout(() => {
+                            this.refreshPluginSettingsVisibility(plugin);
+                        }, 0);
+                    }
+                    
+                    return true;
+                }
+            });
+        }
+    }
+
     async registerPlugins() {
         for (let plugin of this.pluginList) {
             let pluginSettings = plugin.settings;
@@ -53,6 +83,10 @@ export class SettingsManager {
                 }
             }
             await this.storePluginSettings(plugin); // store the settings after load which effectively updates the store with any new setting
+            
+            // Make settings reactive to automatically update UI when hidden property changes
+            this.makeSettingsReactive(plugin);
+            
             this.createPluginSettings(plugin);
         }
     }
@@ -399,6 +433,16 @@ export class SettingsManager {
             contentRow.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.3)';
             contentRow.style.transition = 'all 0.2s ease';
 
+            // Handle hidden property with smooth transition
+            if (setting.hidden) {
+                contentRow.style.display = 'none';
+                contentRow.style.opacity = '0';
+                contentRow.style.transform = 'translateY(-10px)';
+            } else {
+                contentRow.style.opacity = '1';
+                contentRow.style.transform = 'translateY(0)';
+            }
+
             // Add hover effect
             contentRow.addEventListener('mouseenter', () => {
                 contentRow.style.background = 'var(--theme-background-light)';
@@ -455,6 +499,9 @@ export class SettingsManager {
                         setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Refresh visibility of all settings in case dependencies changed
+                        this.refreshPluginSettingsVisibility(plugin);
 
                         // Reset styling to normal
                         toggleSwitch.style.accentColor = 'var(--theme-accent)';
@@ -544,6 +591,9 @@ export class SettingsManager {
                         setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Refresh visibility of all settings in case dependencies changed
+                        this.refreshPluginSettingsVisibility(plugin);
 
                         // Reset styling to normal
                         numberInput.style.border =
@@ -631,6 +681,9 @@ export class SettingsManager {
                         setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Refresh visibility of all settings in case dependencies changed
+                        this.refreshPluginSettingsVisibility(plugin);
 
                         // Reset styling to normal
                         colorInput.style.border =
@@ -715,6 +768,9 @@ export class SettingsManager {
                         setting.value = newValue;
                         setting.callback.call(plugin);
                         await this.storePluginSettings(plugin);
+                        
+                        // Refresh visibility of all settings in case dependencies changed
+                        this.refreshPluginSettingsVisibility(plugin);
 
                         // Reset styling to normal
                         textInput.style.border =
@@ -775,6 +831,9 @@ export class SettingsManager {
 
                     buttonInput.addEventListener('click', async () => {
                         setting.callback.call(plugin);
+                        
+                        // Refresh visibility of all settings in case dependencies changed
+                        this.refreshPluginSettingsVisibility(plugin);
 
                         // Reset styling to normal
                         buttonInput.style.border =
@@ -928,5 +987,103 @@ export class SettingsManager {
                     break;
             }
         }
+    }
+
+    /**
+     * Refresh the visibility of all settings for a plugin based on their current hidden state
+     * @param plugin - The plugin whose settings visibility should be refreshed
+     */
+    private refreshPluginSettingsVisibility(plugin: Plugin): void {
+        for (const settingKey in plugin.settings) {
+            if (settingKey === 'enable') continue; // Skip enable setting
+            
+            const setting = plugin.settings[settingKey];
+            const contentRow = document.getElementById(`highlite-settings-content-row-${settingKey}`);
+            
+            if (!contentRow) continue;
+            
+            if (setting.hidden) {
+                // Hide with animation
+                contentRow.style.opacity = '0';
+                contentRow.style.transform = 'translateY(-10px)';
+                
+                setTimeout(() => {
+                    contentRow.style.display = 'none';
+                }, 200);
+            } else {
+                // Show with animation
+                if (contentRow.style.display === 'none') {
+                    contentRow.style.display = 'flex';
+                    
+                    // Force reflow
+                    contentRow.offsetHeight;
+                    
+                    setTimeout(() => {
+                        contentRow.style.opacity = '1';
+                        contentRow.style.transform = 'translateY(0)';
+                    }, 10);
+                }
+            }
+        }
+    }
+
+    /**
+     * Toggle the visibility of a specific setting for a plugin with smooth animation
+     * @param pluginName - The name of the plugin
+     * @param settingKey - The key of the setting to toggle
+     * @param hidden - Optional: force hidden state (true/false), otherwise toggles current state
+     */
+    public toggleSettingVisibility(pluginName: string, settingKey: string, hidden?: boolean): void {
+        const contentRow = document.getElementById(`highlite-settings-content-row-${settingKey}`);
+        if (!contentRow) return;
+
+        // Find the plugin and setting
+        const plugin = this.pluginList.find(p => p.pluginName === pluginName);
+        if (!plugin || !plugin.settings[settingKey]) return;
+
+        const setting = plugin.settings[settingKey];
+        const newHiddenState = hidden !== undefined ? hidden : !setting.hidden;
+
+        // Update the setting's hidden property
+        setting.hidden = newHiddenState;
+
+        if (newHiddenState) {
+            // Hide with animation
+            contentRow.style.opacity = '0';
+            contentRow.style.transform = 'translateY(-10px)';
+            
+            setTimeout(() => {
+                contentRow.style.display = 'none';
+            }, 200); // Wait for transition to complete
+        } else {
+            // Show with animation
+            contentRow.style.display = 'flex';
+            
+            // Force reflow to ensure display change takes effect
+            contentRow.offsetHeight;
+            
+            setTimeout(() => {
+                contentRow.style.opacity = '1';
+                contentRow.style.transform = 'translateY(0)';
+            }, 10); // Small delay to ensure smooth transition
+        }
+    }
+
+    /**
+     * Show a hidden setting with smooth animation
+     * @param pluginName - The name of the plugin
+     * @param settingKey - The key of the setting to show
+     */
+    public showSetting(pluginName: string, settingKey: string): void {
+        this.toggleSettingVisibility(pluginName, settingKey, false);
+    }
+
+    /**
+     * Hide a setting with smooth animation
+     * @param pluginName - The name of the plugin
+     * @param settingKey - The key of the setting to hide
+     */
+    public hideSetting(pluginName: string, settingKey: string): void {
+        this.toggleSettingVisibility(pluginName, settingKey, true);
     }
 }

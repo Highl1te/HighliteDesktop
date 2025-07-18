@@ -62,4 +62,12 @@ export abstract class Plugin {
     error(...args: any[]): void {
         console.error(`[Highlite][${this.pluginName} Plugin]`, ...args);
     }
+
+    // Toggle the visibility of a settings box
+    // settingKey - The key of the setting to toggle
+    setSettingVisibility(settingKey: string, isVisible: boolean): void {
+        if (this.settings[settingKey]) {
+            this.settings[settingKey].hidden = isVisible !== undefined ? isVisible : !this.settings[settingKey].hidden;
+        }
+    }
 }
