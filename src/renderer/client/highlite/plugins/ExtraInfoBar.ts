@@ -12,6 +12,7 @@ export class ExtrAInfoBar extends Plugin {
     restoreCycleStart: number | null = null; // ms timestamp of last restore packet
     restoreCycleLength = 60000;
     combatSkillIds = [0, 1, 2, 3, 4, 15];
+    currentAmmo: number |null = null;
     activeSkillBoosts: {
         [skillId: number]: {
             expiresAt: number; // ms timestamp
@@ -79,6 +80,7 @@ export class ExtrAInfoBar extends Plugin {
     }
     //IMPROVEMENT color impacted stats
     SocketManager_handleForcedSkillCurrentLevelChangedPacket(...args) {
+        this.log(args);
         const [skillId, newValue, wasSuccessful] = args[0];
         if (!wasSuccessful) return;
 
@@ -111,7 +113,7 @@ export class ExtrAInfoBar extends Plugin {
                 this.activeSkillBoosts[skillId] = {
                     expiresAt,
                     itemId: this.lastUsedPotion.itemId,
-                    boostAmount: skillObj._currentlevel - skillObj._level, // can be positive or negative
+                    boostAmount: skillObj._currentLevel - skillObj._level, // can be positive or negative
                 };
                 this.log("the array values is",this.activeSkillBoosts[skillId] ) 
             }
@@ -140,8 +142,9 @@ export class ExtrAInfoBar extends Plugin {
         }
     }
 
-    async SocketManager_handleRestoredStatsPacket(args) {
+    async SocketManager_handleRestoredStatsPacket(...args) {
         this.restoreCycleStart = Date.now();
+        this.log("args", ...args)
     }
 
     GameLoop_update(...args) {
@@ -149,7 +152,8 @@ export class ExtrAInfoBar extends Plugin {
             const player = this.gameHooks.EntityManager.Instance._mainPlayer;
             const ammoSlot = player._loadout._items[9];
             if (player && ammoSlot) {
-                this.drawIcon(ammoSlot._id, ammoSlot._amount, 9);
+                this.currentAmmo = ammoSlot._id
+                this.drawIcon(this.currentAmmo, ammoSlot._amount, 9);
             } else {
                 const iconElement = document.getElementById(`eib-item-9`);
                 if (iconElement) {
@@ -275,11 +279,12 @@ export class ExtrAInfoBar extends Plugin {
                 right: 480px;
             }
             .eib-item {
+                position: relative;
                 height: var(--hs-inventory-item-size);
                 width: var(--hs-inventory-item-size);
                 border-radius: 4px;
                 margin-right: 5px;
-                line-height: 4rem;
+                line-height: 5rem;
                 text-align: right;
                 background-color: rgba(0, 0, 0, 0.5);
             }
@@ -297,11 +302,11 @@ export class ExtrAInfoBar extends Plugin {
             }
             .eib-timer-value {
                 position:absolute;
-                line-height: 1rem
+                line-height: 1rem;
                 left:0;
                 width:100%;
-                textAlign:center;
-                fontSize:0.8em;
+                text-align:center;
+                font-size:0.8em;
                 color:#FFD700;
                 bottom: 0;
             }
