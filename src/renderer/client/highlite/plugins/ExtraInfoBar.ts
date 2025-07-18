@@ -12,7 +12,8 @@ export class ExtrAInfoBar extends Plugin {
     restoreCycleStart: number | null = null; // ms timestamp of last restore packet
     restoreCycleLength = 60000;
     combatSkillIds = [0, 1, 2, 3, 4, 15];
-    currentAmmo: number |null = null;
+    currentAmmo: number | null = null;
+    pendingBoosts: [number, number, boolean][] = [];
     activeSkillBoosts: {
         [skillId: number]: {
             expiresAt: number; // ms timestamp
@@ -45,12 +46,6 @@ export class ExtrAInfoBar extends Plugin {
      */
     start() {
         this.removeBar();
-        this.log(
-            'Extra Info Bar started',
-            this.settings.enable.value,
-            this.isLoggedIn,
-            this.infoBarUI
-        );
         if (this.settings.enable.value && this.isLoggedIn && !this.infoBarUI) {
             this.createBar();
         }
@@ -73,62 +68,68 @@ export class ExtrAInfoBar extends Plugin {
         this.removeBar();
         this.createBar();
     }
+
     // Logged Out
     SocketManager_handleLoggedOut(): void {
         this.isLoggedIn = false;
         this.removeBar();
     }
-    //IMPROVEMENT color impacted stats
+
     SocketManager_handleForcedSkillCurrentLevelChangedPacket(...args) {
-        this.log(args);
         const [skillId, newValue, wasSuccessful] = args[0];
         if (!wasSuccessful) return;
 
+        this.pendingBoosts.push(args[0]);
+        setTimeout(() => this.flushPendingBoosts(), 100); // Wait 1 tick (~50ms)
+
+    }
+
+    applySkillBoost(skillId: number) {
         if (
-            this.lastUsedPotion &&
-            this.lastUsedPotion.impactedSkills.includes(skillId)
-        ) {
-            let player = this.gameHooks.EntityManager.Instance._mainPlayer;
-            let skillObj;
-            if (this.combatSkillIds.includes(skillId)) {
-                skillObj = player._combat._skills[skillId];
-            } else {
-                skillObj = player._skills._skills[skillId];
-            }
-            const boostAmount = Math.abs(
-                skillObj._currentLevel - skillObj._level
-            );
-            this.log("the boost amount is",boostAmount )
-            if (boostAmount > 0 && this.restoreCycleStart !== null) {
+            !this.lastUsedPotion ||
+            !this.lastUsedPotion.impactedSkills.includes(skillId)
+        )
+            return;
+
+        const player = this.gameHooks.EntityManager.Instance._mainPlayer;
+        const skillObj = this.combatSkillIds.includes(skillId)
+            ? player._combat._skills[skillId]
+            : player._skills._skills[skillId];
+
+        const boostAmount = Math.abs(skillObj._currentLevel - skillObj._level);
+        if (boostAmount > 0) {
+            let expiresAt;
+            if (this.restoreCycleStart !== null) {
                 const now = Date.now();
                 const msIntoCycle =
                     (now - this.restoreCycleStart + this.restoreCycleLength) %
                     this.restoreCycleLength;
                 const msLeftThisCycle = this.restoreCycleLength - msIntoCycle;
-                const expiresAt =
+                expiresAt =
                     now +
                     msLeftThisCycle +
                     this.restoreCycleLength * (boostAmount - 1);
-
-                this.activeSkillBoosts[skillId] = {
-                    expiresAt,
-                    itemId: this.lastUsedPotion.itemId,
-                    boostAmount: skillObj._currentLevel - skillObj._level, // can be positive or negative
-                };
-                this.log("the array values is",this.activeSkillBoosts[skillId] ) 
+            } else {
+                expiresAt = null; // Or 0, or 'unknown', just be consistent
             }
-            // Don't remove lastUsedPotion yet, we want all skills from this potion to be handled
-            // Remove only after all expected skills are processed (optional improvement)
+
+            this.activeSkillBoosts[skillId] = {
+                expiresAt,
+                itemId: this.lastUsedPotion.itemId,
+                boostAmount: skillObj._currentLevel - skillObj._level,
+            };
+        }
+    }
+
+    flushPendingBoosts() {
+        while (this.pendingBoosts.length > 0) {
+            const [skillId] = this.pendingBoosts.shift()!;
+            this.applySkillBoost(skillId);
         }
     }
 
     async SocketManager_handleInvokedInventoryItemActionPacket(...args) {
-        this.log(
-            'SocketManager_handleInvokedInventoryItemActionPacket called with args:',
-            args
-        );
         if (!args[0][6] || args[0][0] == 19) return;
-        this.log('Drawing icon for item:', args[0][3]);
         const itemId = args[0][3];
         const item = this.gameHooks.ItemDefMap.ItemDefMap.get(itemId);
         if (item._edibleEffects) {
@@ -144,7 +145,28 @@ export class ExtrAInfoBar extends Plugin {
 
     async SocketManager_handleRestoredStatsPacket(...args) {
         this.restoreCycleStart = Date.now();
-        this.log("args", ...args)
+
+        for (const skillId in this.activeSkillBoosts) {
+            const boost = this.activeSkillBoosts[skillId];
+            if (boost.boostAmount > 0) {
+                boost.boostAmount -= 1;
+            } else if (boost.boostAmount < 0) {
+                boost.boostAmount += 1;
+            }
+            if (boost.expiresAt === null) {
+                // recalc with restoreCycleStart
+                const boostAmount = Math.abs(boost.boostAmount);
+                const now = Date.now();
+                const msIntoCycle =
+                    (now - this.restoreCycleStart + this.restoreCycleLength) %
+                    this.restoreCycleLength;
+                const msLeftThisCycle = this.restoreCycleLength - msIntoCycle;
+                boost.expiresAt =
+                    now +
+                    msLeftThisCycle +
+                    this.restoreCycleLength * (boostAmount - 1);
+            }
+        }
     }
 
     GameLoop_update(...args) {
@@ -152,10 +174,11 @@ export class ExtrAInfoBar extends Plugin {
             const player = this.gameHooks.EntityManager.Instance._mainPlayer;
             const ammoSlot = player._loadout._items[9];
             if (player && ammoSlot) {
-                this.currentAmmo = ammoSlot._id
-                this.drawIcon(this.currentAmmo, ammoSlot._amount, 9);
+                this.currentAmmo = ammoSlot._id;
+                this.drawIcon(this.currentAmmo, ammoSlot._amount, `ammoslot-9`);
             } else {
-                const iconElement = document.getElementById(`eib-item-9`);
+                const iconElement =
+                    document.getElementById(`eib-item-ammoslot-9`);
                 if (iconElement) {
                     this.removeIcon(iconElement);
                 }
@@ -164,11 +187,24 @@ export class ExtrAInfoBar extends Plugin {
             const now = Date.now();
             for (const skillId in this.activeSkillBoosts) {
                 const boost = this.activeSkillBoosts[skillId];
+                let secondsLeft;
+                // If we haven't received the restore tick yet, ALWAYS show '?'
+                if (this.restoreCycleStart === null) {
+                    secondsLeft = '?';
+                    this.drawIcon(
+                        boost.itemId,
+                        boost.boostAmount,
+                        `boost-timer-${skillId}`,
+                        secondsLeft
+                    );
+                    // Don't expire any boosts until first tick
+                    continue;
+                }
+
+                // After the first restore tick, handle as normal
                 const msRemaining = boost.expiresAt - now;
-                this.log(boost);
                 if (msRemaining > 0) {
-                    const secondsLeft = this.restoreCycleStart ? Math.ceil(msRemaining / 1000) : '?';
-                    // Optionally: Add icon or color for negative effect (boostAmount < 0)
+                    secondsLeft = Math.max(0, Math.ceil(msRemaining / 1000));
                     this.drawIcon(
                         boost.itemId,
                         boost.boostAmount,
@@ -197,7 +233,6 @@ export class ExtrAInfoBar extends Plugin {
         );
 
         if (!this.infoBarUI) {
-            this.log('Failed to create status UI element.');
             this.settings.enable.value = false;
             return;
         }
@@ -206,6 +241,7 @@ export class ExtrAInfoBar extends Plugin {
         this.infoBarUI?.appendChild(this.infoBarWrapper);
         this.addPluginStyle();
     }
+    
     /**
      * Removes the tooltip and mousemove event listener.
      */
@@ -249,14 +285,13 @@ export class ExtrAInfoBar extends Plugin {
             }
             this.infoBarWrapper.appendChild(iconWrapper);
             iconWrapper!.querySelector('.eib-item-sprite')!.innerHTML = value;
-            iconWrapper!.querySelector('.eib-timer-value')!.innerHTML = timerValue ?? '';
-
+            iconWrapper!.querySelector('.eib-timer-value')!.innerHTML =
+                timerValue ?? '';
         } else {
             existingIcon!.querySelector('.eib-item-sprite')!.innerHTML = value;
-            existingIcon!.querySelector('.eib-timer-value')!.innerHTML = timerValue ?? '';
+            existingIcon!.querySelector('.eib-timer-value')!.innerHTML =
+                timerValue ?? '';
         }
-
-        // TIMER BELOW ICON: Add/update the timer value absolutely positione
     }
 
     removeIcon(iconElement) {
@@ -306,9 +341,9 @@ export class ExtrAInfoBar extends Plugin {
                 left:0;
                 width:100%;
                 text-align:center;
-                font-size:0.8em;
+                font-size:0.8em !important;
                 color:#FFD700;
-                bottom: 0;
+                top: 100%;
             }
         `;
         this.infoBarUI?.appendChild(this.infoBarStyle);
