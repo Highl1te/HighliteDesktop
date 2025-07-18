@@ -111,18 +111,18 @@ export class Highlite {
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(
-            'nz',
+            'cz',
             '_createInventoryItemContextMenuItems',
             this.contextMenuManager.inventoryContextHook
         );
         this.contextMenuManager.registerContextHook(
-            'nz',
+            'cz',
             '_createGameWorldContextMenuItems',
             this.contextMenuManager.gameWorldContextHook
         );
-        this.hookManager.registerStaticClassHook('BV', 'handleTargetAction');
+        this.hookManager.registerStaticClassHook('GV', 'handleTargetAction');
         this.hookManager.registerStaticClassHook(
-            'BV',
+            'GV',
             'getActionsAndEntitiesAtMousePointer',
             this.contextMenuManager.ActionSorting
         );
@@ -136,7 +136,7 @@ export class Highlite {
         document.highlite.gameLookups['EquipmentTypes'] =
             document.client.get('oP');
         document.highlite.gameLookups['EntityTypes'] =
-            document.client.get('PF');
+            document.client.get('RF');
         document.highlite.gameLookups['AppearanceTypes'] =
             document.client.get('YP');
     }
