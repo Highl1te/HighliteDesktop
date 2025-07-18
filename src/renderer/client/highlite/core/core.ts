@@ -40,36 +40,36 @@ export class Highlite {
         this.databaseManager = new DatabaseManager();
 
         // Class Mappings
-        this.hookManager.registerClass('Lk', 'EntityManager');
-        this.hookManager.registerClass('CN', 'GroundItemManager');
-        this.hookManager.registerClass('vF', 'MeshManager');
+        this.hookManager.registerClass('Bk', 'EntityManager');
+        this.hookManager.registerClass('yN', 'GroundItemManager');
+        this.hookManager.registerClass('zF', 'MeshManager');
         this.hookManager.registerClass('If', 'WorldMapManager');
         this.hookManager.registerClass('zR', 'AtmosphereManager');
         this.hookManager.registerClass('aD', 'WorldEntityManager');
-        this.hookManager.registerClass('dW', 'SpellManager');
-        this.hookManager.registerClass('Xk', 'SpellMeshManager');
-        this.hookManager.registerClass('pW', 'GameLoop');
+        this.hookManager.registerClass('CW', 'SpellManager');
+        this.hookManager.registerClass('$k', 'SpellMeshManager');
+        this.hookManager.registerClass('SW', 'GameLoop');
         this.hookManager.registerClass('jG', 'ChatManager');
-        this.hookManager.registerClass('uG', 'RangeManager');
-        this.hookManager.registerClass('FG', 'SocketManager');
-        this.hookManager.registerClass('gW', 'GameEngine');
-        this.hookManager.registerClass('qV', 'ItemManager');
-        this.hookManager.registerClass('MW', 'LoginScreen');
-        this.hookManager.registerClass('JW', 'PrivateChatMessageList');
-        this.hookManager.registerClass('kF', 'InventoryManager');
+        this.hookManager.registerClass('_G', 'RangeManager');
+        this.hookManager.registerClass('$G', 'SocketManager');
+        this.hookManager.registerClass('xW', 'GameEngine');
+        this.hookManager.registerClass('KV', 'ItemManager');
+        this.hookManager.registerClass('FW', 'LoginScreen');
+        this.hookManager.registerClass('aH', 'PrivateChatMessageList');
+        this.hookManager.registerClass('VF', 'InventoryManager');
         this.hookManager.registerClass('HR', 'HR'); // Potential name: UIManager?
-        this.hookManager.registerClass('dH', 'InventoryItemSpriteManager');
+        this.hookManager.registerClass('CH', 'InventoryItemSpriteManager');
         this.hookManager.registerClass('DP', 'ItemDefMap');
-        this.hookManager.registerClass('bz', 'BankUIManager');
+        this.hookManager.registerClass('Oz', 'BankUIManager');
         // this.hookManager.registerClass("LF", "MainPlayer");
         this.hookManager.registerClass('eR', 'GameCameraManager'); // Tip to find: contains call initializeCamera(e ,t)
-        this.hookManager.registerClass('Ck', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
-        this.hookManager.registerClass('EB', 'NpcDefinitionManager');
-        this.hookManager.registerClass('IV', 'SpellDefinitionManager');
-        this.hookManager.registerClass('tk', 'AppearanceUtils');
-        this.hookManager.registerClass('SR', 'BlobLoader');
-        this.hookManager.registerClass('oq', 'HTMLUIManager'); // Tip to find: contains getGameContainer()
-        this.hookManager.registerClass('KH', 'ScreenMask');
+        this.hookManager.registerClass('xk', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
+        this.hookManager.registerClass('dB', 'NpcDefinitionManager');
+        this.hookManager.registerClass('RV', 'SpellDefinitionManager');
+        this.hookManager.registerClass('sk', 'AppearanceUtils');
+        this.hookManager.registerClass('CR', 'BlobLoader');
+        this.hookManager.registerClass('_q', 'HTMLUIManager'); // Tip to find: contains getGameContainer()
+        this.hookManager.registerClass('nX', 'ScreenMask');
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook(
@@ -120,9 +120,9 @@ export class Highlite {
             '_createGameWorldContextMenuItems',
             this.contextMenuManager.gameWorldContextHook
         );
-        this.hookManager.registerStaticClassHook('BV', 'handleTargetAction');
+        this.hookManager.registerStaticClassHook('GV', 'handleTargetAction');
         this.hookManager.registerStaticClassHook(
-            'BV',
+            'GV',
             'getActionsAndEntitiesAtMousePointer',
             this.contextMenuManager.ActionSorting
         );
@@ -136,7 +136,7 @@ export class Highlite {
         document.highlite.gameLookups['EquipmentTypes'] =
             document.client.get('oP');
         document.highlite.gameLookups['EntityTypes'] =
-            document.client.get('PF');
+            document.client.get('RF');
         document.highlite.gameLookups['AppearanceTypes'] =
             document.client.get('YP');
     }
