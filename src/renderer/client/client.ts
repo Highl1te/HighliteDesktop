@@ -28,6 +28,7 @@ import { EntityHighlight } from './highlite/plugins/EntityHighlight';
 import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
 import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
+import { ExtrAInfoBar } from './highlite/plugins/ExtraInfoBar';
 
 import '@iconify/iconify';
 import '@static/css/index.css';
@@ -36,6 +37,7 @@ import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
 import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
+
 
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
@@ -67,6 +69,7 @@ const PLUGIN_REGISTRY = [
     { class: AutoSprint, path: './highlite/plugins/AutoSprint' },
     { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
+    { class: ExtrAInfoBar, path: './highlite/plugins/ExtraInfoBar' },
 ];
 
 async function obtainGameClient() {
