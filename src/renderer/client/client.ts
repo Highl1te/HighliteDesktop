@@ -28,6 +28,7 @@ import { EntityHighlight } from './highlite/plugins/EntityHighlight';
 import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
 import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
+import { BetterChat } from './highlite/plugins/BetterChat';
 
 import '@iconify/iconify';
 import '@static/css/index.css';
@@ -44,8 +45,14 @@ const PLUGIN_REGISTRY = [
     { class: Lookup, path: './highlite/plugins/Lookup' },
     { class: Nameplates, path: './highlite/plugins/Nameplates' },
     { class: EnhancedHPBars, path: './highlite/plugins/EnhancedHPBars' },
-    { class: EnhancedLoginScreen, path: './highlite/plugins/EnhancedLoginScreen' },
-    { class: ContextMenuOptions, path: './highlite/plugins/ContextMenuOptions' },
+    {
+        class: EnhancedLoginScreen,
+        path: './highlite/plugins/EnhancedLoginScreen',
+    },
+    {
+        class: ContextMenuOptions,
+        path: './highlite/plugins/ContextMenuOptions',
+    },
     { class: TradeAlerts, path: './highlite/plugins/TradeAlerts' },
     { class: PMAlerts, path: './highlite/plugins/PMAlerts' },
     { class: CoinCounter, path: './highlite/plugins/CoinCounter' },
@@ -67,6 +74,7 @@ const PLUGIN_REGISTRY = [
     { class: AutoSprint, path: './highlite/plugins/AutoSprint' },
     { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
+    { class: BetterChat, path: './highlite/plugins/BetterChat' },
 ];
 
 async function obtainGameClient() {
