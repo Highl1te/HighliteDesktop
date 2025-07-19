@@ -102,6 +102,18 @@ export class Highlite {
             'SocketManager',
             '_handleInvokedInventoryItemActionPacket'
         );
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleForcedSkillCurrentLevelChangedPacket'
+        );
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleHealthRestoredPacket'
+        );
+        this.hookManager.registerClassHook(
+            'SocketManager',
+            '_handleRestoredStatsPacket'
+        );
         this.hookManager.registerClassHook('ScreenMask', 'initializeControls'); // When this fires, game UI is ready
         this.hookManager.registerClassHook('BankUIManager', 'showBankMenu');
         this.hookManager.registerClassHook(

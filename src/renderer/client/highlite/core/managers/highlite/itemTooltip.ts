@@ -143,8 +143,14 @@ export class ItemTooltip {
             itemDef._edibleEffects.forEach((effect: any) => {
                 const effectDiv = document.createElement('div');
                 effectDiv.className = 'hs-ui-item-tooltip-effect';
-                const sign = effect._amount > 0 ? '+' : '';
-                effectDiv.textContent = `• ${sign}${effect._amount} ${getSkillName(effect._skill)}`;
+                let sign = effect._amount > 0 ? '+' : '';
+                let valueDisplay = effect._amount;
+                // If not integer, show as percent
+                if (typeof effect._amount === 'number' && !Number.isInteger(effect._amount)) {
+                    valueDisplay = `${sign}${Math.round(effect._amount * 100)}%`;
+                    sign = '';
+                }
+                effectDiv.textContent = `• ${sign}${valueDisplay} ${getSkillName(effect._skill)}`;
                 edibleSection.appendChild(effectDiv);
             });
             this.element.appendChild(edibleSection);
