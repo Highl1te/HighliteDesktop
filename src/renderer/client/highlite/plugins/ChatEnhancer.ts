@@ -214,6 +214,13 @@ export class ChatEnhancer extends Plugin {
             value: this.CONFIG.DEFAULT_OPACITY * 100,
             callback: () => this.applyStyles(),
         };
+
+        this.settings.extendedBlockList = {
+            text: 'Extended Block List',
+            type: SettingsTypes.text,
+            value: "",
+            callback: () => this.applyFilters(),
+        };
     }
 
     start(): void {
@@ -852,6 +859,16 @@ export class ChatEnhancer extends Plugin {
 
             foundNewMessages = true;
             this.processedMessages.add(msgEl);
+
+            // Extended block list handling
+            const playerNameContainer = msgEl.querySelector(
+                '.hs-chat-menu__player-name'
+            ); 
+            const playerName = `${playerNameContainer?.textContent}`.replace("From ", "").replace(":", "").trim();
+            if(playerName && (this.settings.extendedBlockList.value as string).split(',').some((name) => name.toUpperCase() === playerName?.toUpperCase())) {
+                msgEl.style.display = 'none';
+                this.log("Blocking message from " + playerName);
+            }
 
             if (
                 !msgEl.dataset.toggleInjected &&
