@@ -93,7 +93,5 @@ export async function createClientWindow() {
         mainWindow.webContents.setZoomLevel(0);
     });
 
-    mainWindow.webContents.send('is-darwin', process.platform === 'darwin');
-
     return mainWindow;
 }
