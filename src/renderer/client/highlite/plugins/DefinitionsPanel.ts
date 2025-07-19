@@ -2479,6 +2479,7 @@ export class DefinitionsPanel extends Plugin {
                     'Bronze',
                     'Iron',
                     'Steel',
+                    'Silver',
                     'Palladium',
                     'Gold',
                     'Coronium',
