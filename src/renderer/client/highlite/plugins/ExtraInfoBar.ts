@@ -1,7 +1,7 @@
 import { Plugin } from '../core/interfaces/highlite/plugin/plugin.class';
 import { UIManager, UIManagerScope } from '../core/managers/highlite/uiManager';
 
-export class ExtrAInfoBar extends Plugin {
+export class ExtraInfoBar extends Plugin {
     pluginName = 'Extra Info Bar';
     author = 'Valsekamerplant';
     private uiManager = new UIManager();
