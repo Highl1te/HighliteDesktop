@@ -355,7 +355,7 @@ export class DefinitionsPanel extends Plugin {
         try {
             this.log('Loading loot data...');
             const response = await fetch(
-                'https://highspell.com:8887/static/npcloot.16.carbon'
+                'https://highspell.com:8887/static/npcloot.17.carbon'
             );
             if (!response.ok) {
                 throw new Error(
@@ -2479,6 +2479,7 @@ export class DefinitionsPanel extends Plugin {
                     'Bronze',
                     'Iron',
                     'Steel',
+                    'Silver',
                     'Palladium',
                     'Gold',
                     'Coronium',
