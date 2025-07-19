@@ -64,7 +64,7 @@ export class Highlite {
         // this.hookManager.registerClass("LF", "MainPlayer");
         this.hookManager.registerClass('eR', 'GameCameraManager'); // Tip to find: contains call initializeCamera(e ,t)
         this.hookManager.registerClass('xk', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
-        this.hookManager.registerClass('dB', 'NpcDefinitionManager');
+        this.hookManager.registerClass('bB', 'NpcDefinitionManager'); //Tip to find: _npcDefMap - 5 of these are found, but they are all located in the right class.
         this.hookManager.registerClass('RV', 'SpellDefinitionManager');
         this.hookManager.registerClass('sk', 'AppearanceUtils');
         this.hookManager.registerClass('CR', 'BlobLoader');
