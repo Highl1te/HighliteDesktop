@@ -15,4 +15,6 @@ export interface PluginSettings {
     hidden?: boolean;
     disabled?: boolean;
     onLoaded?: Function; // Optional callback called when this setting is loaded from storage
+    min?: number;
+    max?: number;
 }

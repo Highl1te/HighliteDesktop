@@ -56,12 +56,6 @@ console.warn = function (...args) {
         };
     }
 };
-setInterval(() => {
-    const titlebar = document.querySelector('#iconbar');
-    if (titlebar) {
-        titlebar.style.left = `calc(env(titlebar-area-width, 100%) - ${titlebar.offsetWidth}px - 10px)`;
-    }
-}, 100);
 
 // Obtain references to the minimize, maximize, and close buttons
 const minimizeButton = document.querySelector('#minimizeBtn');
@@ -79,12 +73,14 @@ closeButton.addEventListener('click', () => {
     window.electron.ipcRenderer.send('close-window');
 });
 
-window.electron.ipcRenderer.on('is-darwin', (event, isDarwin) => {
-    // Hide the window controls if the OS is Darwin (macOS)
-    closeButton.style.display = isDarwin ? 'none' : 'block';
-    minimizeButton.style.display = isDarwin ? 'none' : 'block';
-    maximizeButton.style.display = isDarwin ? 'none' : 'block';
-});
+const isDarwin = window.electron.process.platform === 'darwin';
+
+// Hide the window controls if the OS is Darwin (macOS)
+if(isDarwin) {
+    document.getElementById('window-controls').remove();
+} else {
+    document.getElementById('darwin-spacer').remove();
+}
 
 export function setTitle(title) {
     document.title = title;
