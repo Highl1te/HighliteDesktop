@@ -131,7 +131,7 @@ export class ExtraInfoBar extends Plugin {
     async SocketManager_handleInvokedInventoryItemActionPacket(...args) {
         if (!args[0][6] || args[0][0] == 19) return;
         const itemId = args[0][3];
-        const item = this.gameHooks.ItemDefMap.ItemDefMap.get(itemId);
+        const item = this.gameHooks.ItemDefinitionManager.ItemDefMap.get(itemId);
         if (item._edibleEffects) {
             const impactedSkills = item._edibleEffects.map(
                 skill => skill._skill

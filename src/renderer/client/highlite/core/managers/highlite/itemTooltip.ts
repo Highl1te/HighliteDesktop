@@ -38,7 +38,7 @@ export class ItemTooltip {
         let itemDef: any = null;
         try {
             itemDef =
-                document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(itemId);
+                document.highlite.gameHooks.ItemDefinitionManager.ItemDefMap.get(itemId);
         } catch (error) {
             console.warn(
                 `Error getting item definition for ID ${itemId}:`,
@@ -193,7 +193,7 @@ export class ItemTooltip {
                 const ingredientDiv = document.createElement('div');
                 ingredientDiv.className = 'hs-ui-item-tooltip-effect';
                 try {
-                    const ingredientDef = document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(ingredient._itemId);
+                    const ingredientDef = document.highlite.gameHooks.ItemDefinitionManager.ItemDefMap.get(ingredient._itemId);
                     const ingredientName = ingredientDef?._nameCapitalized || ingredientDef?._name || `Item ${ingredient._itemId}`;
                     ingredientDiv.textContent = `• ${ingredient._amount}x ${ingredientName}`;
                 } catch {
@@ -262,7 +262,7 @@ export class ItemTooltip {
             const resultDiv = document.createElement('div');
             resultDiv.className = 'hs-ui-item-tooltip-effect';
             try {
-                const resultDef = document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(itemDef._edibleResult._itemId);
+                const resultDef = document.highlite.gameHooks.ItemDefinitionManager.ItemDefMap.get(itemDef._edibleResult._itemId);
                 const resultName = resultDef?._nameCapitalized || resultDef?._name || `Item ${itemDef._edibleResult._itemId}`;
                 resultDiv.textContent = `• ${itemDef._edibleResult._amount}x ${resultName}`;
             } catch {

@@ -65,3 +65,7 @@ HighLite is split into two repositories [HighliteDesktop](https://github.com/Hig
 `yarn start`
 ### Package Build
 `yarn app:dist`
+
+
+## Game Hooks
+If you are building a plugin please read our guide on [how to make Game Hooks](https://github.com/Highl1te/Core/blob/main/docs/gamehooks.md).
