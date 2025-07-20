@@ -1,10 +1,9 @@
 import { parse, Node } from 'acorn';
 import * as walk from 'acorn-walk';
-import { IndexDBWrapper } from '../helpers/IndexDBWrapper';
-import { HookManager } from '../highlite/core/managers/highlite/hookManager';
-import { ClassInfo, EnumInfo, ClassSignature, EnumSignature, HookInfo } from './types';
+import { HighliteResources } from '../utilities/resources';
+import { HookManager } from '../managers/highlite/hookManager';
+import { ClassInfo, EnumInfo, ClassSignature, EnumSignature, HookMap, HookEntries } from './signatures';
 import { ClassSignatures, EnumSignatures } from './signatures';
-
 
 // Define the hook reflector for mapping classes and statements
 export class Reflector {
@@ -22,10 +21,10 @@ export class Reflector {
     private static enums: EnumInfo[] = [];
 
     // Define the class hooks
-    private static classHooks = new Map<string, string>();
+    private static classHooks: HookMap = new Map();
 
     // Define the enum hooks
-    private static enumHooks = new Map<string, string>();
+    private static enumHooks: HookMap = new Map();
 
     // Look the hooks from client source
     static async loadHooksFromSource(source : string): Promise<void> {
@@ -56,29 +55,29 @@ export class Reflector {
     static async loadHooksFromDB(): Promise<void> {
 
         // Link the database
-        const highliteDB = new IndexDBWrapper();
+        const highliteResources = new HighliteResources();
 
         // Initialise
-        await highliteDB.init();
+        await highliteResources.init();
         
         // Read from the client class hooks
-        const clientClassHooks = await highliteDB.getItem('clientClassHooks');
+        const clientClassHooks = await highliteResources.getItem<HookEntries>('clientClassHooks');
 
-        // Iterate through each of the enum hooks
-        for (const [name, hook] of clientClassHooks) {
+        // If we have stored enum hooks
+        if (Array.isArray(clientClassHooks)) {
 
-            // Bind it to the hooks
-            Reflector.classHooks.set(name, hook);
+            // Rehydrate
+            Reflector.classHooks = Reflector.deserializeHookEntries(clientClassHooks);
         }
 
         // Read from the client enum hooks
-        const clientEnumHooks = await highliteDB.getItem('clientEnumHooks');
+        const clientEnumHooks = await highliteResources.getItem<HookEnties>('clientEnumHooks');
 
-        // Iterate through each of the enum hooks
-        for (const [name, hook] of clientEnumHooks) {
+        // If we have stored enum hooks
+        if (Array.isArray(clientEnumHooks)) {
 
-            // Bind it to the hooks
-            Reflector.enumHooks.set(name, hook);
+            // Rehydrate
+            Reflector.enumHooks = Reflector.deserializeHookEntries(clientEnumHooks);
         }
     }
 
@@ -86,32 +85,32 @@ export class Reflector {
     private static async saveHooks(): Promise<void> {
 
         // Link the database
-        const highliteDB = new IndexDBWrapper();
+        const highliteResources = new HighliteResources();
 
         // Initialise
-        await highliteDB.init();
+        await highliteResources.init();
 
         // Save the class hooks
-        await highliteDB.setItem('clientClassHooks', Array.from(Reflector.classHooks.entries()));
+        await highliteResources.setItem('clientClassHooks', Reflector.serializeHookMap(Reflector.classHooks));
         
         // Save the enum hooks
-        await highliteDB.setItem('clientEnumHooks', Array.from(Reflector.enumHooks.entries()));
+        await highliteResources.setItem('clientEnumHooks', Reflector.serializeHookMap(Reflector.enumHooks));    
     }
 
     // Check if we have any previously saved hooks
     static async hasSavedHooks(): Promise<boolean> {
 
         // Link the database
-        const highliteDB = new IndexDBWrapper();
+        const highliteResources = new HighliteResources();
 
         // Initialise
-        await highliteDB.init();
+        await highliteResources.init();
 
         // Read the stored class hooks
-        const clientClassHooks = await highliteDB.getItem('clientClassHooks');
+        const clientClassHooks = await highliteResources.getItem<HookEntries>('clientClassHooks');
 
         // Read the stored enum hooks
-        const clientEnumHooks = await highliteDB.getItem('clientEnumHooks');
+        const clientEnumHooks = await highliteResources.getItem<HookEntries>('clientEnumHooks');
 
         // Return true if either collection has at least one entry
         const classCount = Array.isArray(clientClassHooks) ? clientClassHooks.length : 0;
@@ -228,9 +227,8 @@ export class Reflector {
 
                 // Log to console
                 console.log(`[Reflector] Successfully matched ${name} as ${hook.name}`);
-            } else {
-                console.error(`[Reflector] Unable to find ${name}`);
-            }
+                
+            } else console.error(`[Reflector] Unable to find ${name}`);
         }
 
         // Iterate through each of the enum hooks
@@ -248,8 +246,7 @@ export class Reflector {
                 // Log to console
                 console.log(`[Reflector] Successfully matched ${name} as ${hook.name}`);
 
-                // console.log(JSON.stringify(hook, null, 2))
-            }
+            } else console.error(`[Reflector] Unable to find ${name}`);
         }
     }
 
@@ -296,7 +293,7 @@ export class Reflector {
     static findEnumBySignature(signature: EnumSignature): EnumInfo | undefined {
 
         // Return the enum with the required signature
-        const result = Reflector.enums.find(e => {
+       return Reflector.enums.find(e => {
 
             // Return false if we can't find all the enum'sexpected fields
             if (!signature.includes.every(m => e.members.includes(m))) return false;
@@ -307,9 +304,6 @@ export class Reflector {
             // Return true if all checks pass
             return true;
         });
-        if (!result) console.error('Could not find' + signature);
-
-        return result;
     }
 
     // Get a hook from the registry
@@ -322,21 +316,11 @@ export class Reflector {
         return Reflector.enumHooks.get(name);
     }
 
-    // Register the hook in the registry
-    private static defineClassHook(name: string, hook: string): void {
-        return Reflector.classHooks.set(name, hook);
-    }
-
-    // Register the hook in the registry
-    private static defineEnumHook(name: string, hook: string): void {
-        return Reflector.enumHooks.set(name, hook);
-    }
-
     // Bind the class hooks to the hook manager
     static bindClassHooks(hookManager: HookManager) {
 
         // Iterate through all the class hooks
-        Array.from(Reflector.classHooks.entries()).forEach(([name, hook]) => {
+        Array.from(Reflector.classHooks.entries()).forEach(([name, hook] : [string, string]) => {
 
             console.log(name, hook)
 
@@ -349,10 +333,20 @@ export class Reflector {
     static bindEnumHooks(hookManager: HookManager) {
 
         // Iterate through all the enum hooks
-        Array.from(Reflector.enumHooks.entries()).forEach(([name, hook]) => {
+        Array.from(Reflector.enumHooks.entries()).forEach(([name, hook] : [string, string]) => {
 
             // Register the class hook on the manager
             hookManager.registerEnum(hook, name)
         });
+    }
+
+    // Convert a HookMap to its serializable tuple form
+    private static serializeHookMap(map: HookMap): HookEntries {
+        return Array.from(map.entries());
+    }
+
+    // Convert serialized entries back into a HookMap
+    private static deserializeHookEntries(entries: HookEntries | null | undefined): HookMap {
+        return new Map(entries ?? []);
     }
 }

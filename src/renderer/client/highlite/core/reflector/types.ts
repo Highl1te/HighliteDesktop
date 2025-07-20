@@ -35,5 +35,8 @@ export interface EnumSignature {
     excludes?: string[]
 }
 
-// Hook info class
-export type HookInfo = Map<string, string>;
+// Define a mapping between hook logical names and their obfuscated runtime identifiers
+export type HookMap = Map<string, string>;
+
+// Define the serialized representation of a HookMap (for IndexedDB storage)
+export type HookEntries = [string, string][];

@@ -7,7 +7,7 @@ import { UIManager } from './managers/highlite/uiManager';
 import { SettingsManager } from './managers/highlite/settingsManager';
 import { DatabaseManager } from './managers/highlite/databaseManager';
 import { SoundManager } from './managers/highlite/soundsManager';
-import { Reflector } from '../../reflector/reflector';
+import { Reflector } from './reflector/reflector';
 
 export class Highlite {
     hookManager: HookManager;

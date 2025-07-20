@@ -1,5 +1,8 @@
-import { IndexDBWrapper } from './helpers/IndexDBWrapper';
-import { Highlite } from './highlite/core/core';
+import { 
+    Highlite, 
+    HighliteResources,
+    Reflector
+} from './highlite/core';
 import { HPAlert } from './highlite/plugins/HPAlert';
 import { IdleAlert } from './highlite/plugins/IdleAlert/IdleAlert';
 import { Lookup } from './highlite/plugins/Lookup';
@@ -37,9 +40,6 @@ import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
 import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
-
-// Reflector
-import { Reflector } from './reflector/reflector';
 
 // Plugin registry - single source of truth for all plugins
 const PLUGIN_REGISTRY = [
@@ -82,11 +82,12 @@ const PLUGIN_REGISTRY = [
 
 async function obtainGameClient() {
     const highspellAssetsURL = 'https://highspell.com:3002/assetsClient';
-    const highliteDB = new IndexDBWrapper();
-    await highliteDB.init();
+
+    const highliteResources = new HighliteResources();
+    await highliteResources.init();
 
     // Check if clientLastVersion is set
-    const clientLastVersion = await highliteDB.getItem('clientLastVersion');
+    const clientLastVersion = await highliteResources.getItem('clientLastVersion');
 
     // Get Asset JSON to determine latest version
     const highSpellAssetJSON = await fetch(highspellAssetsURL).then(r => r.json());
@@ -137,8 +138,8 @@ async function obtainGameClient() {
             highSpellClient.substring(highSpellClient.length - 9);
 
         // Save latest version
-        await highliteDB.setItem('highSpellClient', highSpellClient);
-        await highliteDB.setItem('clientLastVersion', remoteLastVersion);
+        await highliteResources.setItem('highSpellClient', highSpellClient);
+        await highliteResources.setItem('clientLastVersion', remoteLastVersion);
         console.log(
             '[Highlite Loader] High Spell Client Version ' +
                 highSpellAssetJSON.data.latestClientVersion +
@@ -150,7 +151,7 @@ async function obtainGameClient() {
         );
 
         // Load the client from save db
-        highSpellClient = await highliteDB.getItem('highSpellClient');
+        highSpellClient = await highliteResources.getItem('highSpellClient');
 
         // Load the hooks from db
         await Reflector.loadHooksFromDB();
