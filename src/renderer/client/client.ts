@@ -28,7 +28,7 @@ import { EntityHighlight } from './highlite/plugins/EntityHighlight';
 import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
 import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
-import { WoodOrders } from './highlite/plugins/WoodOrders';
+import { ItemOrders } from './highlite/plugins/ItemOrders';
 
 import '@iconify/iconify';
 import '@static/css/index.css';
@@ -68,7 +68,7 @@ const PLUGIN_REGISTRY = [
     { class: AutoSprint, path: './highlite/plugins/AutoSprint' },
     { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
-    { class: WoodOrders, path: './highlite/plugins/WoodOrders' },
+    { class: ItemOrders, path: './highlite/plugins/ItemOrders' },
 ];
 
 async function obtainGameClient() {
