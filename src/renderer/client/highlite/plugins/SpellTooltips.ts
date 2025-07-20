@@ -231,7 +231,7 @@ export class SpellTooltips extends Plugin {
         if (!Array.isArray(items) || items.length < 1) return '';
         return items
             .map(itemID => {
-                const item = this.gameHooks?.ItemDefMap?.getDefById(itemID);
+                const item = this.gameHooks?.ItemDefinitionManager?.getDefById(itemID);
                 const backgroundPosition =
                     this.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(
                         itemID
@@ -280,7 +280,7 @@ export class SpellTooltips extends Plugin {
     ) {
         const ingredient =
             this.spellDef?.Recipe?.Ingredients?.[ingredientIndex];
-        const item = this.gameHooks?.ItemDefMap?.getDefById(ingredient?.ItemID);
+        const item = this.gameHooks?.ItemDefinitionManager?.getDefById(ingredient?.ItemID);
         const name = item.NameCapitalized ?? item.Name ?? '';
         const amount = ingredient.Amount;
         if (!ingredient) return '';
