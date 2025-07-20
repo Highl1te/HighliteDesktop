@@ -1,7 +1,25 @@
+import { TooltipConfig } from '../../interfaces/highlite/plugin/TooltipConfig.interface';
 import {
     getEquipmentTypeName,
     getSkillName,
 } from '../../utilities/lookupUtils';
+
+export const defaultTooltipConfig: TooltipConfig = {
+    showSprite: true,
+    showName: true,
+    showId: true,
+    showDescription: true,
+    showCost: true,
+    showRequirements: true,
+    showEffects: true,
+    showEdibleEffects: true,
+    showWeaponSpeed: true,
+    showEquipmentType: true,
+    showExpFromObtaining: true,
+    showRecipe: true,
+    showTags: true,
+    showEdibleResult: true,
+};
 
 export class ItemTooltip {
     private element: HTMLDivElement;
@@ -14,7 +32,7 @@ export class ItemTooltip {
         container.appendChild(this.element);
     }
 
-    show(itemId: number, x: number, y: number): { hide: () => void } {
+    show(itemId: number, x: number, y: number, tooltipConfig: TooltipConfig = defaultTooltipConfig): { hide: () => void } {
         this.currentItemId = itemId;
 
         let itemDef: any = null;
@@ -38,43 +56,42 @@ export class ItemTooltip {
         // Header with sprite and title
         const header = document.createElement('div');
         header.className = 'hs-ui-item-tooltip-header';
-
-        const spriteDiv = document.createElement('div');
-        spriteDiv.className = 'hs-ui-item-tooltip-sprite';
-
-        try {
-            const pos =
-                document.highlite.gameHooks.InventoryItemSpriteManager.getCSSBackgroundPositionForItem(
-                    itemId
-                );
-            if (pos) {
-                spriteDiv.style.backgroundPosition = pos;
+        if (tooltipConfig.showSprite) {
+            const spriteDiv = document.createElement('div');
+            spriteDiv.className = 'hs-ui-item-tooltip-sprite';
+            try {
+                const pos = document.highlite.gameHooks.InventoryItemSpriteManager.getCSSBackgroundPositionForItem(itemId);
+                if (pos) {
+                    spriteDiv.style.backgroundPosition = pos;
+                }
+            } catch (error) {
+                console.warn(`Error getting item sprite for ID ${itemId}:`, error);
             }
-        } catch (error) {
-            console.warn(`Error getting item sprite for ID ${itemId}:`, error);
+            header.appendChild(spriteDiv);
         }
-
-        header.appendChild(spriteDiv);
 
         const titleDiv = document.createElement('div');
         titleDiv.className = 'hs-ui-item-tooltip-title';
 
-        const nameDiv = document.createElement('div');
-        nameDiv.className = 'hs-ui-item-tooltip-name';
-        nameDiv.textContent =
-            itemDef._nameCapitalized || itemDef._name || `Item ${itemId}`;
-        titleDiv.appendChild(nameDiv);
+        if (tooltipConfig.showName) {
+            const nameDiv = document.createElement('div');
+            nameDiv.className = 'hs-ui-item-tooltip-name';
+            nameDiv.textContent = itemDef._nameCapitalized || itemDef._name || `Item ${itemId}`;
+            titleDiv.appendChild(nameDiv);
+        }
 
-        const idDiv = document.createElement('div');
-        idDiv.className = 'hs-ui-item-tooltip-id';
-        idDiv.textContent = `ID: ${itemId}`;
-        titleDiv.appendChild(idDiv);
+        if (tooltipConfig.showId) {
+            const idDiv = document.createElement('div');
+            idDiv.className = 'hs-ui-item-tooltip-id';
+            idDiv.textContent = `ID: ${itemId}`;
+            titleDiv.appendChild(idDiv);
+        }
 
         header.appendChild(titleDiv);
         this.element.appendChild(header);
 
         // Description
-        if (itemDef._description) {
+        if (tooltipConfig.showDescription && itemDef._description) {
             const descDiv = document.createElement('div');
             descDiv.className = 'hs-ui-item-tooltip-description';
             descDiv.textContent = itemDef._description;
@@ -82,7 +99,7 @@ export class ItemTooltip {
         }
 
         // Cost
-        if (itemDef._cost && itemDef._cost > 0) {
+        if (tooltipConfig.showCost && itemDef._cost && itemDef._cost > 0) {
             const costSection = document.createElement('div');
             costSection.className = 'hs-ui-item-tooltip-section';
             costSection.innerHTML = `<span class="hs-ui-item-tooltip-label">Cost:</span> <span class="hs-ui-item-tooltip-cost">${itemDef._cost.toLocaleString()} coins</span>`;
@@ -90,35 +107,24 @@ export class ItemTooltip {
         }
 
         // Requirements
-        if (
-            itemDef._equippableRequirements &&
-            itemDef._equippableRequirements.length > 0
-        ) {
+        if (tooltipConfig.showRequirements && itemDef._equippableRequirements && itemDef._equippableRequirements.length > 0) {
             const reqSection = document.createElement('div');
             reqSection.className = 'hs-ui-item-tooltip-section';
-            reqSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">Requirements:</span>';
-
+            reqSection.innerHTML = '<span class="hs-ui-item-tooltip-label">Requirements:</span>';
             itemDef._equippableRequirements.forEach((req: any) => {
                 const reqDiv = document.createElement('div');
                 reqDiv.className = 'hs-ui-item-tooltip-requirement';
                 reqDiv.textContent = `• Level ${req._amount} ${getSkillName(req._skill)}`;
                 reqSection.appendChild(reqDiv);
             });
-
             this.element.appendChild(reqSection);
         }
 
         // Equippable Effects
-        if (
-            itemDef._equippableEffects &&
-            itemDef._equippableEffects.length > 0
-        ) {
+        if (tooltipConfig.showEffects && itemDef._equippableEffects && itemDef._equippableEffects.length > 0) {
             const effectSection = document.createElement('div');
             effectSection.className = 'hs-ui-item-tooltip-section';
-            effectSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">Equipment Effects:</span>';
-
+            effectSection.innerHTML = '<span class="hs-ui-item-tooltip-label">Equipment Effects:</span>';
             itemDef._equippableEffects.forEach((effect: any) => {
                 const effectDiv = document.createElement('div');
                 effectDiv.className = 'hs-ui-item-tooltip-effect';
@@ -126,30 +132,32 @@ export class ItemTooltip {
                 effectDiv.textContent = `• ${sign}${effect._amount} ${getSkillName(effect._skill)}`;
                 effectSection.appendChild(effectDiv);
             });
-
             this.element.appendChild(effectSection);
         }
 
         // Edible Effects
-        if (itemDef._edibleEffects && itemDef._edibleEffects.length > 0) {
+        if (tooltipConfig.showEdibleEffects && itemDef._edibleEffects && itemDef._edibleEffects.length > 0) {
             const edibleSection = document.createElement('div');
             edibleSection.className = 'hs-ui-item-tooltip-section';
-            edibleSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">Edible Effects:</span>';
-
+            edibleSection.innerHTML = '<span class="hs-ui-item-tooltip-label">Edible Effects:</span>';
             itemDef._edibleEffects.forEach((effect: any) => {
                 const effectDiv = document.createElement('div');
                 effectDiv.className = 'hs-ui-item-tooltip-effect';
-                const sign = effect._amount > 0 ? '+' : '';
-                effectDiv.textContent = `• ${sign}${effect._amount} ${getSkillName(effect._skill)}`;
+                let sign = effect._amount > 0 ? '+' : '';
+                let valueDisplay = effect._amount;
+                // If not integer, show as percent
+                if (typeof effect._amount === 'number' && !Number.isInteger(effect._amount)) {
+                    valueDisplay = `${sign}${Math.round(effect._amount * 100)}%`;
+                    sign = '';
+                }
+                effectDiv.textContent = `• ${sign}${valueDisplay} ${getSkillName(effect._skill)}`;
                 edibleSection.appendChild(effectDiv);
             });
-
             this.element.appendChild(edibleSection);
         }
 
         // Weapon Speed
-        if (itemDef._weaponSpeed && itemDef._weaponSpeed > 0) {
+        if (tooltipConfig.showWeaponSpeed && itemDef._weaponSpeed && itemDef._weaponSpeed > 0) {
             const speedSection = document.createElement('div');
             speedSection.className = 'hs-ui-item-tooltip-section';
             speedSection.innerHTML = `<span class="hs-ui-item-tooltip-label">Attack Speed:</span> <span class="hs-ui-item-tooltip-value">${itemDef._weaponSpeed}</span>`;
@@ -157,10 +165,7 @@ export class ItemTooltip {
         }
 
         // Equipment Type
-        if (
-            itemDef._equipmentType !== null &&
-            itemDef._equipmentType !== undefined
-        ) {
+        if (tooltipConfig.showEquipmentType && itemDef._equipmentType !== null && itemDef._equipmentType !== undefined) {
             const typeSection = document.createElement('div');
             typeSection.className = 'hs-ui-item-tooltip-section';
             typeSection.innerHTML = `<span class="hs-ui-item-tooltip-label">Type:</span> <span class="hs-ui-item-tooltip-value">${getEquipmentTypeName(itemDef._equipmentType)}</span>`;
@@ -168,35 +173,22 @@ export class ItemTooltip {
         }
 
         // Experience from obtaining
-        if (
-            itemDef._expFromObtaining &&
-            itemDef._expFromObtaining._skill !== undefined &&
-            itemDef._expFromObtaining._amount > 0
-        ) {
+        if (tooltipConfig.showExpFromObtaining && itemDef._expFromObtaining && itemDef._expFromObtaining._skill !== undefined && itemDef._expFromObtaining._amount > 0) {
             const expSection = document.createElement('div');
             expSection.className = 'hs-ui-item-tooltip-section';
-            expSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">Experience Gained:</span>';
-
+            expSection.innerHTML = '<span class="hs-ui-item-tooltip-label">Experience Gained:</span>';
             const expDiv = document.createElement('div');
             expDiv.className = 'hs-ui-item-tooltip-effect';
             expDiv.textContent = `• ${itemDef._expFromObtaining._amount} ${getSkillName(itemDef._expFromObtaining._skill)} XP`;
             expSection.appendChild(expDiv);
-
             this.element.appendChild(expSection);
         }
 
         // Recipe (if item has crafting recipe)
-        if (
-            itemDef._recipe &&
-            itemDef._recipe._ingredients &&
-            itemDef._recipe._ingredients.length > 0
-        ) {
+        if (tooltipConfig.showRecipe && itemDef._recipe && itemDef._recipe._ingredients && itemDef._recipe._ingredients.length > 0) {
             const recipeSection = document.createElement('div');
             recipeSection.className = 'hs-ui-item-tooltip-section';
-            recipeSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">Recipe:</span>';
-
+            recipeSection.innerHTML = '<span class="hs-ui-item-tooltip-label">Recipe:</span>';
             itemDef._recipe._ingredients.forEach((ingredient: any) => {
                 const ingredientDiv = document.createElement('div');
                 ingredientDiv.className = 'hs-ui-item-tooltip-effect';
@@ -215,72 +207,64 @@ export class ItemTooltip {
                 }
                 recipeSection.appendChild(ingredientDiv);
             });
-
             this.element.appendChild(recipeSection);
         }
 
         // Tags
-        const tagsDiv = document.createElement('div');
-        tagsDiv.className = 'hs-ui-item-tooltip-tags';
-
-        if (itemDef._isMembers) {
-            const tag = document.createElement('span');
-            tag.className = 'hs-ui-item-tooltip-tag members';
-            tag.textContent = 'Members';
-            tagsDiv.appendChild(tag);
-        }
-
-        if (itemDef._isStackable) {
-            const tag = document.createElement('span');
-            tag.className = 'hs-ui-item-tooltip-tag stackable';
-            tag.textContent = 'Stackable';
-            tagsDiv.appendChild(tag);
-        }
-
-        if (itemDef._isTradeable) {
-            const tag = document.createElement('span');
-            tag.className = 'hs-ui-item-tooltip-tag tradeable';
-            tag.textContent = 'Tradeable';
-            tagsDiv.appendChild(tag);
-        }
-
-        if (itemDef._canIOU) {
-            const tag = document.createElement('span');
-            tag.className = 'hs-ui-item-tooltip-tag iou';
-            tag.textContent = 'IOU';
-            tagsDiv.appendChild(tag);
-        }
-
-        // Metal Type tag
-        if (itemDef._metalType !== null && itemDef._metalType !== undefined) {
-            const metalTypes = [
-                'Bronze',
-                'Iron',
-                'Steel',
-                'Palladium',
-                'Gold',
-                'Coronium',
-                'Celadium',
-            ];
-            const metalName =
-                metalTypes[itemDef._metalType] || `Metal ${itemDef._metalType}`;
-            const tag = document.createElement('span');
-            tag.className = 'hs-ui-item-tooltip-tag';
-            tag.textContent = metalName;
-            tagsDiv.appendChild(tag);
-        }
-
-        if (tagsDiv.children.length > 0) {
-            this.element.appendChild(tagsDiv);
+        if (tooltipConfig.showTags) {
+            const tagsDiv = document.createElement('div');
+            tagsDiv.className = 'hs-ui-item-tooltip-tags';
+            if (itemDef._isMembers) {
+                const tag = document.createElement('span');
+                tag.className = 'hs-ui-item-tooltip-tag members';
+                tag.textContent = 'Members';
+                tagsDiv.appendChild(tag);
+            }
+            if (itemDef._isStackable) {
+                const tag = document.createElement('span');
+                tag.className = 'hs-ui-item-tooltip-tag stackable';
+                tag.textContent = 'Stackable';
+                tagsDiv.appendChild(tag);
+            }
+            if (itemDef._isTradeable) {
+                const tag = document.createElement('span');
+                tag.className = 'hs-ui-item-tooltip-tag tradeable';
+                tag.textContent = 'Tradeable';
+                tagsDiv.appendChild(tag);
+            }
+            if (itemDef._canIOU) {
+                const tag = document.createElement('span');
+                tag.className = 'hs-ui-item-tooltip-tag iou';
+                tag.textContent = 'IOU';
+                tagsDiv.appendChild(tag);
+            }
+            // Metal Type tag
+            if (itemDef._metalType !== null && itemDef._metalType !== undefined) {
+                const metalTypes = [
+                    'Bronze',
+                    'Iron',
+                    'Steel',
+                    'Palladium',
+                    'Gold',
+                    'Coronium',
+                    'Celadium',
+                ];
+                const metalName = metalTypes[itemDef._metalType] || `Metal ${itemDef._metalType}`;
+                const tag = document.createElement('span');
+                tag.className = 'hs-ui-item-tooltip-tag';
+                tag.textContent = metalName;
+                tagsDiv.appendChild(tag);
+            }
+            if (tagsDiv.children.length > 0) {
+                this.element.appendChild(tagsDiv);
+            }
         }
 
         // Edible Result (what you get after eating)
-        if (itemDef._edibleResult) {
+        if (tooltipConfig.showEdibleResult && itemDef._edibleResult) {
             const resultSection = document.createElement('div');
             resultSection.className = 'hs-ui-item-tooltip-section';
-            resultSection.innerHTML =
-                '<span class="hs-ui-item-tooltip-label">After Eating:</span>';
-
+            resultSection.innerHTML = '<span class="hs-ui-item-tooltip-label">After Eating:</span>';
             const resultDiv = document.createElement('div');
             resultDiv.className = 'hs-ui-item-tooltip-effect';
             try {
@@ -297,7 +281,6 @@ export class ItemTooltip {
                 resultDiv.textContent = `• ${itemDef._edibleResult._amount}x Item ${itemDef._edibleResult._itemId}`;
             }
             resultSection.appendChild(resultDiv);
-
             this.element.appendChild(resultSection);
         }
 

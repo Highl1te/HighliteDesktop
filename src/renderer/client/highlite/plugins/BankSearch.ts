@@ -28,7 +28,8 @@ export class BankSearch extends Plugin {
         this.updateSearchBoxVisibility();
     }
 
-    init(): void {}
+    init(): void {
+    }
 
     stop(): void {
         this.destroy();
@@ -106,32 +107,29 @@ export class BankSearch extends Plugin {
         if (this.searchBox || document.getElementById('bank-helper-search-box'))
             return;
 
-        // Find the bank menu container to position relative to it
+        // Find the bank menu and header
         const bankMenu = document.getElementById('hs-bank-menu');
         if (!bankMenu) return;
+        const header = bankMenu.querySelector('.hs-menu-header');
+        if (!header) return;
 
         // Create the search box container
         const searchContainer = document.createElement('div');
         searchContainer.id = 'bank-helper-search-box';
-        searchContainer.classList.add('hs-menu');
         searchContainer.classList.add('bank-helper-search-container');
+        searchContainer.style.marginLeft = 'auto'; // Remove left margin
         this.searchBox = searchContainer;
-        searchContainer.style.position = 'fixed';
-        searchContainer.style.zIndex = '9999';
-        searchContainer.style.display = 'flex';
-        searchContainer.style.alignItems = 'center';
-        searchContainer.style.gap = '8px';
-        searchContainer.style.width = '300px';
-        searchContainer.style.boxSizing = 'border-box';
 
         // Create the input
         const input = document.createElement('input');
         input.type = 'text';
-        input.placeholder = 'Find bank item...';
+        input.placeholder = 'Search...';
         input.classList.add('bank-helper-search-input');
-        input.style.width = '180px';
+        input.classList.add('hs-text-input');
+        input.style.width = '160px'; // Slightly more compact
         input.style.outline = 'none';
-        input.value = this.settings.memory.value ? this.lastQuery : ''; // Set input value to last query
+        input.style.marginRight = '8px'; // Small space between input and close button
+        input.value = this.settings.memory.value ? this.lastQuery : '';
 
         // Prevent game from processing keystrokes while typing
         input.addEventListener('keydown', e => e.stopPropagation());
@@ -142,10 +140,6 @@ export class BankSearch extends Plugin {
         input.addEventListener('focus', e => {
             e.preventDefault();
             e.stopPropagation();
-            input.classList.add('bank-helper-search-input-focused');
-        });
-        input.addEventListener('blur', () => {
-            input.classList.remove('bank-helper-search-input-focused');
         });
 
         // Prevent focus stealing on mousedown
@@ -155,32 +149,17 @@ export class BankSearch extends Plugin {
             input.focus();
         });
 
-        // Add search icon
-        const icon = document.createElement('span');
-        icon.textContent = '🔍';
-        icon.classList.add('bank-helper-search-icon');
-
         searchContainer.appendChild(input);
-        searchContainer.appendChild(icon);
 
-        // Position the search box below the bank menu
-        this.positionSearchBox(searchContainer, bankMenu);
+        // Insert the search bar immediately before the close button
+        const closeBtn = header.querySelector('button');
+        if (closeBtn) {
+            header.insertBefore(searchContainer, closeBtn);
+        } else {
+            header.appendChild(searchContainer);
+        }
 
-        // Append to document body to avoid overflow clipping
-        document.body.appendChild(searchContainer);
-
-        // Add resize listener to reposition search box
-        this.resizeListener = () => {
-            if (this.searchBox) {
-                const bankMenu = document.getElementById('hs-bank-menu');
-                if (bankMenu) {
-                    this.positionSearchBox(this.searchBox, bankMenu);
-                }
-            }
-        };
-        window.addEventListener('resize', this.resizeListener);
-
-        // Add highlight style
+        // Add highlight style if not present
         if (!document.getElementById('bank-helper-highlight-style')) {
             const style = document.createElement('style');
             style.id = 'bank-helper-highlight-style';
@@ -188,26 +167,11 @@ export class BankSearch extends Plugin {
         .bank-helper-search-container {
           padding: 0px;
         }
-        
         .bank-helper-search-input {
           padding: 6px 10px;
-          border: 1px solid #555;
-          border-radius: 4px;
-          background: #222;
           color: #fff;
           font-size: 14px;
         }
-        
-        .bank-helper-search-input-focused {
-          border: 1px solid #4a9eff !important;
-          box-shadow: 0 0 0 2px rgba(74, 158, 255, 0.2) !important;
-        }
-
-        .bank-helper-search-icon {
-          font-size: 16px;
-          opacity: 0.7;
-        }
-        
         .bank-helper-greyed-out {
           opacity: 0.3 !important;
           filter: grayscale(100%) !important;
@@ -229,24 +193,11 @@ export class BankSearch extends Plugin {
         }
     }
 
-    positionSearchBox(searchContainer: HTMLElement, bankMenu: HTMLElement) {
-        const bankRect = bankMenu.getBoundingClientRect();
-
-        // Position the search box below the bank menu
-        searchContainer.style.left = `${bankRect.left}px`;
-        searchContainer.style.top = `${bankRect.bottom + 8}px`;
-    }
-
+    // In removeSearchBox, just remove from DOM (header) and cleanup
     removeSearchBox() {
-        // Remove all instances of the search box (in case of duplicates)
-        const existingSearchBoxes = document.querySelectorAll(
-            '#bank-helper-search-box'
-        );
+        const existingSearchBoxes = document.querySelectorAll('#bank-helper-search-box');
         existingSearchBoxes.forEach(box => box.remove());
-
         this.searchBox = null;
-
-        // Remove resize listener
         if (this.resizeListener) {
             window.removeEventListener('resize', this.resizeListener);
             this.resizeListener = null;
@@ -268,18 +219,22 @@ export class BankSearch extends Plugin {
             bankMenu.querySelectorAll('[data-slot]')
         );
 
-        // If query is empty, remove all grey-out effects
+        // If query is empty, show all items
         if (!query) {
             itemElements.forEach(el => {
-                el.classList.remove('bank-helper-greyed-out');
+                (el as HTMLElement).style.display = '';
             });
             return;
         }
 
-        // Loop through bank items and apply grey-out effect to non-matching items
-        for (let i = 0; i < bankItems.length; i++) {
+        // Loop through all itemElements (slots)
+        itemElements.forEach((el, i) => {
             const bankItem = bankItems[i];
-            if (!bankItem) continue; // Skip null/empty slots
+            if (!bankItem) {
+                // No item in this slot, always hide when searching
+                (el as HTMLElement).style.display = 'none';
+                return;
+            }
 
             // Get item definition
             const itemDef = document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap
@@ -295,20 +250,12 @@ export class BankSearch extends Plugin {
                   `Item ${bankItem._id}`
                 : `Item ${bankItem._id}`;
 
-            // Find the corresponding DOM element by data-slot value
-            const itemEl = itemElements.find(
-                el => el.getAttribute('data-slot') === i.toString()
-            );
-            if (itemEl) {
-                if (itemName.toLowerCase().includes(query)) {
-                    // Remove grey-out effect for matching items
-                    itemEl.classList.remove('bank-helper-greyed-out');
-                } else {
-                    // Add grey-out effect for non-matching items
-                    itemEl.classList.add('bank-helper-greyed-out');
-                }
+            if (itemName.toLowerCase().includes(query)) {
+                (el as HTMLElement).style.display = '';
+            } else {
+                (el as HTMLElement).style.display = 'none';
             }
-        }
+        });
     }
 
     // Cleanup method
@@ -335,7 +282,7 @@ export class BankSearch extends Plugin {
         );
 
         itemElements.forEach(el => {
-            el.classList.remove('bank-helper-greyed-out');
+            (el as HTMLElement).style.display = ''; // Ensure all items are visible on destroy
         });
 
         this.removeSearchBox();
