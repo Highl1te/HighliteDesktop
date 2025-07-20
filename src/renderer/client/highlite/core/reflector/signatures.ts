@@ -35,7 +35,9 @@ export const ClassSignatures: [string, ClassSignature][] = [
     ['HTMLUIManager', { methods: ['getGameContainer'] }],
     ['ScreenMask', { methods: ['getForceDesktopModeControl'] }],
     ['ContextMenuManager', { methods: ['createContextMenu', 'createContextMenuItem'] }],
-    ['TargetActionManager', { methods: ['getActionsAndEntitiesAtMousePointer'] }]
+    ['TargetActionManager', { methods: ['getActionsAndEntitiesAtMousePointer'] }],
+    ['MagicSkillManager', { methods: ['canCastSpellAtLevel'] }],
+    ['SpellMenuManager', { methods: ['_handleAutoCastChanged', '_handlePendingSpellChanged'] }],
 ];
 
 // Define the map of all class hook signatures
