@@ -332,6 +332,7 @@ export class SpellTooltips extends Plugin {
                 }
     
                 #hl-spell-tooltip-container {
+                    position: absolute;
                     height: 100%;
                     width: 100%;
                     container-type: inline-size;
