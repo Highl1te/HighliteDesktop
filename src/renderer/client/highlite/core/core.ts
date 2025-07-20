@@ -66,10 +66,13 @@ export class Highlite {
         this.hookManager.registerClass('xk', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
         this.hookManager.registerClass('bB', 'NpcDefinitionManager'); //Tip to find: _npcDefMap - 5 of these are found, but they are all located in the right class.
         this.hookManager.registerClass('RV', 'SpellDefinitionManager');
+        this.hookManager.registerClass('bM', 'QuestDefinitionManager');
         this.hookManager.registerClass('sk', 'AppearanceUtils');
         this.hookManager.registerClass('CR', 'BlobLoader');
         this.hookManager.registerClass('_q', 'HTMLUIManager'); // Tip to find: contains getGameContainer()
         this.hookManager.registerClass('nX', 'ScreenMask');
+        this.hookManager.registerClass('iB', 'MagicSkillManager'); // Tip to find: contains BLOOD_TELEPORT_ID
+        this.hookManager.registerClass('_z', 'SpellMenuManager'); // Tip to find: contains _handleSpellItemPointerOver
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook(
@@ -120,6 +123,14 @@ export class Highlite {
             'BankUIManager',
             '_handleCenterMenuWillBeRemoved'
         );
+        this.hookManager.registerClassHook(
+            'SpellMenuManager',
+            '_handleSpellItemPointerOver'
+        );
+        this.hookManager.registerClassHook(
+            'SpellMenuManager',
+            '_handleSpellItemPointerOut'
+        );
 
         // Needs Naming
         this.contextMenuManager.registerContextHook(
@@ -151,6 +162,9 @@ export class Highlite {
             document.client.get('RF');
         document.highlite.gameLookups['AppearanceTypes'] =
             document.client.get('YP');
+        document.highlite.gameLookups['RequirementTypes'] =
+            document.client.get('KA');
+        document.highlite.gameLookups['SpellTypes'] = document.client.get('JF');
     }
 
     async loginHooks(fnName: string, ...args: any[]) {

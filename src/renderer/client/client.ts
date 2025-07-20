@@ -29,6 +29,7 @@ import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
 import { QuickActionMouseTooltip } from './highlite/plugins/QuickActionMouseTooltip';
 import { ExtraInfoBar } from './highlite/plugins/ExtraInfoBar';
+import { SpellTooltips } from './highlite/plugins/SpellTooltips';
 
 import '@iconify/iconify';
 import '@static/css/index.css';
@@ -76,6 +77,7 @@ const PLUGIN_REGISTRY = [
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
     { class: QuickActionMouseTooltip, path: './highlite/plugins/QuickActionMouseTooltip' },
     { class: ExtraInfoBar, path: './highlite/plugins/ExtraInfoBar' },
+    { class: SpellTooltips, path: './highlite/plugins/SpellTooltips' },
 ];
 
 async function obtainGameClient() {
