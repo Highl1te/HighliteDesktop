@@ -42,10 +42,8 @@
     --vt-c-text-light-2: var(--theme-text-secondary);
     --vt-c-text-dark-1: var(--theme-text-primary);
     --vt-c-text-dark-2: var(--theme-text-secondary);
-    --titlebar-height: 28px
-}
+    --titlebar-height: 28px;
 
-:root {
     --color-background: var(--theme-background);
     --color-background-soft: var(--theme-background-soft);
     --color-background-mute: var(--theme-background-mute);
@@ -66,18 +64,16 @@ body {
     min-height: var(--titlebar-height);
     max-height: var(--titlebar-height);
     background: #141414;
-    width: 100vw;
-    min-width: 100vw;
-    max-width: 100vw;
     font-size: 14px;
     color: white;
     display: flex;
     align-items: center;
     font-family: 'Inter';
-    align-items: center;
+    justify-content: space-between;
     border-bottom: 1px solid #353535;
     /* Electron allow user to drag the window */
     -webkit-app-region: drag;
+    padding: 0 12px 0 5px;
 }
 
 .highlite_titlebar #logoText {

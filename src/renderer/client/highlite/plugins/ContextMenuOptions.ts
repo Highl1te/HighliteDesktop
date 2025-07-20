@@ -28,6 +28,14 @@ export class ContextMenuOptions extends Plugin {
             value: false,
             callback: this.enablePrioritizeAttackChanged,
         };
+
+        
+        this.settings.deprioritizeTalkTo = {
+            text: 'Deprioritize Talk To',
+            type: 0,
+            value: false,
+            callback: this.enableDeprioritizeTalkToChanged,
+        };
     }
 
     init(): void {
@@ -42,12 +50,32 @@ export class ContextMenuOptions extends Plugin {
         this.enablePrioritizePickpocketChanged(
             this.settings.prioritizePickpocket!.value as boolean
         );
+        this.enableDeprioritizeTalkToChanged(
+            this.settings.deprioritizeTalkTo!.value as boolean
+        );
     }
 
     stop(): void {
         this.log('Stopped');
         this.enablePrioritizeAttackChanged(false);
         this.enablePrioritizePickpocketChanged(false);
+        this.enableDeprioritizeTalkToChanged(false);
+    }
+
+    enableDeprioritizeTalkToChanged() {
+        if (
+            this.settings.deprioritizeTalkTo?.value &&
+            this.settings.enable?.value
+        ) {
+            this.contextMenuManager.SetGameWorldActionMenuPosition(
+                'Talk To',
+                100000
+            );
+        } else {
+            this.contextMenuManager.RemoveGameWorldActionMenuPosition(
+                'Talk To'
+            );
+        }
     }
 
     enablePrioritizePickpocketChanged() {
