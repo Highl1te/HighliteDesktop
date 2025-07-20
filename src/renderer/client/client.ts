@@ -28,8 +28,10 @@ import { InventoryTooltips } from './highlite/plugins/InventoryTooltips';
 import { PacketQueue } from './highlite/plugins/PacketQueue';
 import { ChatEnhancer } from './highlite/plugins/ChatEnhancer';
 import { ItemOrders } from './highlite/plugins/ItemOrders';
+import { CustomCursor } from './highlite/plugins/CustomCursor';
 import { QuickActionMouseTooltip } from './highlite/plugins/QuickActionMouseTooltip';
 import { ExtraInfoBar } from './highlite/plugins/ExtraInfoBar';
+import { SpellTooltips } from './highlite/plugins/SpellTooltips';
 
 import '@iconify/iconify';
 import '@static/css/index.css';
@@ -76,8 +78,10 @@ const PLUGIN_REGISTRY = [
     { class: InventoryTooltips, path: './highlite/plugins/InventoryTooltips' },
     { class: ChatEnhancer, path: './highlite/plugins/ChatEnhancer' },
     { class: ItemOrders, path: './highlite/plugins/ItemOrders' },
+    { class: CustomCursor, path: './highlite/plugins/CustomCursor' },
     { class: QuickActionMouseTooltip, path: './highlite/plugins/QuickActionMouseTooltip' },
     { class: ExtraInfoBar, path: './highlite/plugins/ExtraInfoBar' },
+    { class: SpellTooltips, path: './highlite/plugins/SpellTooltips' },
 ];
 
 async function obtainGameClient() {
