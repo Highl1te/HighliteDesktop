@@ -14,7 +14,6 @@ export class ExtraInfoBar extends Plugin {
     combatSkillIds = [0, 1, 2, 3, 4, 15];
     currentAmmo: number | null = null;
     pendingBoosts: [number, number, boolean][] = [];
-
     activeSkillBoosts: {
         [skillId: number]: {
             expiresAt: number; // ms timestamp
@@ -255,7 +254,7 @@ export class ExtraInfoBar extends Plugin {
         this.infoBarUI?.appendChild(this.infoBarWrapper);
         this.addPluginStyle();
     }
-
+    
     /**
      * Removes the tooltip and mousemove event listener.
      */

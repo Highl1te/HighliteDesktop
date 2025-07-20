@@ -1,4 +1,5 @@
-import { ItemTooltip } from './itemTooltip';
+import { TooltipConfig } from '../../interfaces/highlite/plugin/TooltipConfig.interface';
+import { defaultTooltipConfig, ItemTooltip } from './itemTooltip';
 
 export enum UIManagerScope {
     ClientRelative,
@@ -97,7 +98,8 @@ export class UIManager {
     drawItemTooltip(
         itemId: number,
         x: number,
-        y: number
+        y: number,
+        tooltipConfig: TooltipConfig = defaultTooltipConfig
     ): { hide: () => void } {
         this.ensureItemTooltip();
 
@@ -105,7 +107,7 @@ export class UIManager {
             return { hide: () => {} };
         }
 
-        return this.itemTooltip.show(itemId, x, y);
+        return this.itemTooltip.show(itemId, x, y, tooltipConfig);
     }
 
     /**
