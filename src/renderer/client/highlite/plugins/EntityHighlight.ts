@@ -107,6 +107,18 @@ export class EntityHighlight extends Plugin {
                 this.updateEntityPriorities();
             }
         });
+        window.addEventListener('blur', () => {
+            if (this.showAllEntities) {
+                this.showAllEntities = false;
+                this.updateEntityPriorities();
+            }
+        });
+
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden && this.showAllEntities) {
+                this.resetAltState();
+            }
+        });
     }
 
     private updatePriorityButtonsVisibility(): void {
