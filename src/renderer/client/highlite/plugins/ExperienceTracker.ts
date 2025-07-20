@@ -569,6 +569,8 @@ export class ExperienceTracker extends Plugin {
             return;
         }
 
+        console.log(this.gameHooks.EntityManager)
+
         const resourceSkills =
             this.gameHooks.EntityManager.Instance.MainPlayer.Skills._skills;
         resourceSkills.forEach(skill => {

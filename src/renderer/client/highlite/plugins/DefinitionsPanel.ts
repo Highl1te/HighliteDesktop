@@ -284,7 +284,7 @@ export class DefinitionsPanel extends Plugin {
 
         try {
             const itemDefMap =
-                document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap;
+                document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap;
             if (!itemDefMap) {
                 this.error('ItemDefMap not found');
                 return;
@@ -545,7 +545,7 @@ export class DefinitionsPanel extends Plugin {
     ): string {
         try {
             const itemDef =
-                document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                     item.itemId
                 );
             const itemName =
@@ -2194,7 +2194,7 @@ export class DefinitionsPanel extends Plugin {
     ): void {
         try {
             const itemDef =
-                document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                     itemId
                 );
             if (!itemDef) {
@@ -2328,7 +2328,7 @@ export class DefinitionsPanel extends Plugin {
                 itemDef._recipe._ingredients.forEach((ingredient: any) => {
                     try {
                         const ingredientDef =
-                            document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                            document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                                 ingredient._itemId
                             );
                         const ingredientName =
@@ -2379,7 +2379,7 @@ export class DefinitionsPanel extends Plugin {
                 `;
                 try {
                     const resultDef =
-                        document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                        document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                             itemDef._edibleResult._itemId
                         );
                     const resultName =
@@ -3240,7 +3240,7 @@ export class DefinitionsPanel extends Plugin {
                     equippedItems.forEach((item: any) => {
                         try {
                             const itemDef =
-                                document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                                document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                                     item._id
                                 );
                             const itemName =
@@ -3397,7 +3397,7 @@ export class DefinitionsPanel extends Plugin {
 
             //             equippedItems.forEach((item: any) => {
             //                 try {
-            //                     const itemDef = document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(item._id);
+            //                     const itemDef = document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(item._id);
             //                     const itemName = itemDef?._nameCapitalized || itemDef?._name || `Item ${item._id}`;
             //                     const itemPos = document.highlite?.gameHooks?.InventoryItemSpriteManager?.getCSSBackgroundPositionForItem(item._id);
             //                     const spriteStyle = itemPos ? `style="background-position: ${itemPos};"` : '';

@@ -20,7 +20,7 @@ export class ItemTooltip {
         let itemDef: any = null;
         try {
             itemDef =
-                document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(itemId);
+                document.highlite.gameHooks?.ItemDefinitionManager?.ItemDefMap.get(itemId);
         } catch (error) {
             console.warn(
                 `Error getting item definition for ID ${itemId}:`,
@@ -202,7 +202,7 @@ export class ItemTooltip {
                 ingredientDiv.className = 'hs-ui-item-tooltip-effect';
                 try {
                     const ingredientDef =
-                        document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(
+                        document.highlite.gameHooks?.ItemDefinitionManager?.ItemDefMap.get(
                             ingredient._itemId
                         );
                     const ingredientName =
@@ -285,7 +285,7 @@ export class ItemTooltip {
             resultDiv.className = 'hs-ui-item-tooltip-effect';
             try {
                 const resultDef =
-                    document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(
+                    document.highlite.gameHooks?.ItemDefinitionManager?.ItemDefMap.get(
                         itemDef._edibleResult._itemId
                     );
                 const resultName =

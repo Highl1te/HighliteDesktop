@@ -36,7 +36,7 @@ export class ContextMenuManager {
         actionState: ActionState = ActionState.Any,
         contextMenuType: ContextMenuTypes
     ): number {
-        const ContextMenuActions = document.client.get('QA');
+        const ContextMenuActions = document.highlite.gameLookups['InventoryActions'];
 
         let actionNumber = -1;
         if (ContextMenuActions[actionName] === undefined) {
@@ -429,7 +429,7 @@ export class ContextMenuManager {
         //ActionName should be converted to all lowercase and spaces replace with _s
         let lookupName = actionName.toLowerCase().replace(/ /g, '_');
 
-        const ContextMenuActions = document.client.get('VA');
+        const ContextMenuActions = document.highlite.gameLookups['GameWorldActions'];
         if (ContextMenuActions[lookupName] !== undefined) {
             this.gameWorldActionsSorting[ContextMenuActions[lookupName]] =
                 position;
@@ -440,14 +440,14 @@ export class ContextMenuManager {
         //ActionName should be converted to all lowercase and spaces replace with _s
         let lookupName = actionName.toLowerCase().replace(/ /g, '_');
 
-        const ContextMenuActions = document.client.get('VA');
+        const ContextMenuActions = document.highlite.gameLookups['GameWorldActions'];
         if (ContextMenuActions[lookupName] !== undefined) {
             delete this.gameWorldActionsSorting[ContextMenuActions[lookupName]];
         }
     }
 
     SetInventoryActionMenuPosition(actionName: string, position: number) {
-        const ContextMenuActions = document.client.get('QA');
+        const ContextMenuActions = document.highlite.gameLookups['InventoryActions'];
         if (ContextMenuActions[actionName] !== undefined) {
             this.inventoryActionsSorting[ContextMenuActions[actionName]] =
                 position;
@@ -455,7 +455,7 @@ export class ContextMenuManager {
     }
 
     RemoveInventoryActionMenuPosition(actionName: string) {
-        const ContextMenuActions = document.client.get('QA');
+        const ContextMenuActions = document.highlite.gameLookups['InventoryActions'];
         if (ContextMenuActions[actionName] !== undefined) {
             delete this.inventoryActionsSorting[ContextMenuActions[actionName]];
         }
@@ -467,7 +467,7 @@ export class ContextMenuManager {
         hookFn: Function
     ): boolean {
         const self = this;
-        const classObject = document.client.get(sourceClass).prototype;
+        const classObject = document.highlite.gameHooks[sourceClass].prototype;
 
         (function (originalFunction: any) {
             classObject[fnName] = function (...args: Array<unknown>) {
@@ -485,7 +485,7 @@ export class ContextMenuManager {
         hookFn = Function
     ): boolean {
         const self = this;
-        const classObject = document.client.get(sourceClass);
+        const classObject = document.highlite.gameHooks[sourceClass];
 
         if (!classObject) {
             console.warn(

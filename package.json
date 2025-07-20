@@ -95,6 +95,8 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "@iconify/iconify": "^3.1.1",
+    "acorn": "^8.15.0",
+    "acorn-walk": "^8.3.4",
     "electron-log": "^5.4.0",
     "electron-updater": "^6.3.9",
     "emoji-unicode": "^2.0.2",

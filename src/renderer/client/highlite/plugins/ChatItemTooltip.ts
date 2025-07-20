@@ -160,7 +160,7 @@ export class ChatItemTooltip extends Plugin {
 
                 try {
                     const itemDef =
-                        document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(
+                        document.highlite.gameHooks?.ItemDefinitionManager?.ItemDefMap.get(
                             id
                         );
                     if (itemDef && itemDef._name) {
@@ -458,7 +458,7 @@ export class ChatItemTooltip extends Plugin {
             const currentTooltipItemId = uiManager?.getCurrentItemTooltipId();
             if (currentTooltipItemId) {
                 const itemDef =
-                    document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap?.get(
+                    document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap?.get(
                         currentTooltipItemId
                     );
                 if (itemDef) {

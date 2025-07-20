@@ -282,9 +282,9 @@ export class BankSearch extends Plugin {
             if (!bankItem) continue; // Skip null/empty slots
 
             // Get item definition
-            const itemDef = document.highlite?.gameHooks?.ItemDefMap?.ItemDefMap
+            const itemDef = document.highlite?.gameHooks?.ItemDefinitionManager?.ItemDefMap
                 ?.get
-                ? document.highlite.gameHooks.ItemDefMap.ItemDefMap.get(
+                ? document.highlite.gameHooks.ItemDefinitionManager.ItemDefMap.get(
                       bankItem._id
                   )
                 : null;

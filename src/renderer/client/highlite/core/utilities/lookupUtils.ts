@@ -10,8 +10,9 @@ export function getSkillName(skillId: number): string {
 
 export function getEquipmentTypeName(typeId: number): string {
     try {
+        const types = ['helmet', 'chest', 'legs', 'shield', 'weapon', 'back', 'neck', 'gloves', 'boots', 'projectile'];
         return (
-            document.highlite.gameLookups.EquipmentTypes[typeId] ||
+            types[typeId] ||
             `Type ${typeId}`
         );
     } catch {

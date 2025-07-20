@@ -23,6 +23,20 @@ export class HookManager {
         return true;
     }
 
+    public registerEnum(enumName: string, mappedName: string): boolean {
+        const enumInstance = document.client.get(enumName);
+
+        if (!enumInstance) {
+            console.warn(
+                `[Highlite] ${enumName} (${mappedName}) is not defined in client.`
+            );
+            return false;
+        }
+
+        document.highlite.gameLookups[mappedName] = enumInstance;
+        return true;
+    }
+
     public registerClassHook(
         sourceClass: string,
         fnName: string,
@@ -90,7 +104,7 @@ export class HookManager {
         hookFn = this.hook
     ): boolean {
         const self = this;
-        const classObject = document.client.get(sourceClass);
+        const classObject = document.highlite.gameHooks[sourceClass];
 
         if (!classObject) {
             console.warn(

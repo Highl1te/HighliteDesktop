@@ -504,7 +504,7 @@ export class Nameplates extends Plugin {
         const GroundItems =
             this.gameHooks.GroundItemManager.Instance.GroundItems;
         const playerFriends = this.gameHooks.ChatManager.Instance._friends;
-        const BW = document.client.get('BW');
+        const BW = this.gameHooks.Nameplates;
 
         if (!this.settings.enable.value) {
             this.cleanupAllElements();
