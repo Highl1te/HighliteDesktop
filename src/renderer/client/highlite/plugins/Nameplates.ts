@@ -592,7 +592,6 @@ export class Nameplates extends Plugin {
         const GroundItems =
             this.gameHooks.GroundItemManager.Instance.GroundItems;
         const playerFriends = this.gameHooks.ChatManager.Instance._friends;
-        const BW = this.gameHooks.Nameplates;
 
         if (!this.settings.enable.value) {
             this.cleanupAllElements();
@@ -609,7 +608,7 @@ export class Nameplates extends Plugin {
         }
 
         this.cleanupStaleEntities(NPCS, Players, MainPlayer);
-        this.processNPCs(NPCS, MainPlayer, HW);
+        this.processNPCs(NPCS, MainPlayer);
         this.processPlayers(Players, MainPlayer, playerFriends);
         this.checkForNewPriorityItems(GroundItems);
         this.processGroundItems(GroundItems);
@@ -643,8 +642,7 @@ export class Nameplates extends Plugin {
 
     private processNPCs(
         NPCS: Map<number, any>,
-        MainPlayer: any,
-        HW: any
+        MainPlayer: any
     ): void {
         if (!this.settings.npcNameplates!.value) {
             this.cleanupElementCollection(this.NPCDomElements);
@@ -653,7 +651,7 @@ export class Nameplates extends Plugin {
 
         for (const [key, npc] of NPCS) {
             if (!this.NPCDomElements[key]) {
-                this.createNPCElement(key, npc, MainPlayer._combatLevel, HW);
+                this.createNPCElement(key, npc, MainPlayer._combatLevel);
             }
 
             // Update position for stacking calculation
@@ -863,8 +861,7 @@ export class Nameplates extends Plugin {
     private createNPCElement(
         key: number,
         npc: any,
-        playerCombatLevel: number,
-        HW: any
+        playerCombatLevel: number
     ): void {
         const element = document.createElement('div');
         element.id = `highlite-nameplates-npc-${key}`;
@@ -891,7 +888,7 @@ export class Nameplates extends Plugin {
             lvlSpan.style.fontSize = `${this.settings.npcNameplateSize!.value}px`;
             lvlSpan.innerText = `Lvl. ${npc._combatLevel}`;
             lvlSpan.className =
-                HW.getTextColorClassNameForCombatLevelDifference(
+                this.gameHooks.Nameplates.getTextColorClassNameForCombatLevelDifference(
                     playerCombatLevel,
                     npc._combatLevel
                 );
