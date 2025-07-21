@@ -32,7 +32,9 @@ export class ItemOrders extends Plugin {
 
     start(): void {
     	this.log('Item Orders Panel started');
-        this.loginStatusUpdateId = setInterval(() => {this.checkLoginStatus();}, 50);
+        if (!this.loginStatusUpdateId){
+            this.loginStatusUpdateId = setInterval(() => {this.checkLoginStatus();}, 50);
+        }
     }
 
     stop(): void {}
