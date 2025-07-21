@@ -32,7 +32,6 @@ export class ItemOrders extends Plugin {
 
     start(): void {
     	this.log('Item Orders Panel started');
-
         this.loginStatusUpdateId = setInterval(() => {this.checkLoginStatus();}, 50);
     }
 
@@ -968,7 +967,6 @@ export class ItemOrders extends Plugin {
             .item-panel-list-wrapper {
                 overflow: scroll;
             }
-
             .item-orders-panel {
                 width: 100% !important;
                 height: 100% !important;

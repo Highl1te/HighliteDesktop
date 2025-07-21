@@ -60,15 +60,17 @@ export class QuickActionMouseTooltip extends Plugin {
     start() {
         this.log('QuickActionMouseTooltip started');
 
-        this.addPluginStyle();
+        if(this.settings.enable.value) {
+            this.addPluginStyle();
 
-        // Mouse move handler to follow the mouse
-        this.mouseMoveHandler = (moveEvent: MouseEvent) => {            
-            this.updateTooltipPosition(moveEvent);
-            this.updateTooltipText();
-        };
+            // Mouse move handler to follow the mouse
+            this.mouseMoveHandler = (moveEvent: MouseEvent) => {            
+                this.updateTooltipPosition(moveEvent);
+                this.updateTooltipText();
+            };
 
-        document.addEventListener('mousemove', this.mouseMoveHandler);
+            document.addEventListener('mousemove', this.mouseMoveHandler);
+        }
     }
 
     /**
@@ -84,11 +86,20 @@ export class QuickActionMouseTooltip extends Plugin {
 
     // Need to update on game loop as well in case entities wander into our mouse without the mouse moving
     GameLoop_update(): void {
-        if(!this.quickActionText) {
-            this.quickActionText = document.querySelector('#hs-quick-action-text') as HTMLElement
-        }
+        if(this.settings.enable.value) {
+            if(!this.quickActionText) {
+                this.quickActionText = document.querySelector('#hs-quick-action-text') as HTMLElement
+            }
 
-        this.updateTooltipText();
+            this.updateTooltipText();
+        }
+        else {
+            this.removeTooltip();
+            if (this.mouseMoveHandler) {
+                document.removeEventListener('mousemove', this.mouseMoveHandler);
+                this.mouseMoveHandler = null;
+            }
+        }
     };
 
     /**

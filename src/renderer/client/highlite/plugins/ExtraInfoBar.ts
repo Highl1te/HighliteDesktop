@@ -19,6 +19,7 @@ export class ExtraInfoBar extends Plugin {
             expiresAt: number; // ms timestamp
             itemId: number; // what item caused this
             boostAmount: number; // optional: for display
+            isNewItem: boolean;
         };
     } = {};
 
@@ -81,7 +82,6 @@ export class ExtraInfoBar extends Plugin {
 
         this.pendingBoosts.push(args[0]);
         setTimeout(() => this.flushPendingBoosts(), 100); // Wait 1 tick (~50ms)
-
     }
 
     applySkillBoost(skillId: number) {
@@ -99,6 +99,10 @@ export class ExtraInfoBar extends Plugin {
         const boostAmount = Math.abs(skillObj._currentLevel - skillObj._level);
         if (boostAmount > 0) {
             let expiresAt;
+            const existingBoost = this.activeSkillBoosts[skillId];
+            const isNewItem =
+                !existingBoost ||
+                existingBoost.itemId !== this.lastUsedPotion.itemId;
             if (this.restoreCycleStart !== null) {
                 const now = Date.now();
                 const msIntoCycle =
@@ -117,6 +121,7 @@ export class ExtraInfoBar extends Plugin {
                 expiresAt,
                 itemId: this.lastUsedPotion.itemId,
                 boostAmount: skillObj._currentLevel - skillObj._level,
+                isNewItem
             };
         }
     }
@@ -174,8 +179,15 @@ export class ExtraInfoBar extends Plugin {
             const player = this.gameHooks.EntityManager.Instance._mainPlayer;
             const ammoSlot = player._loadout._items[9];
             if (player && ammoSlot) {
+                const changeIcon = this.currentAmmo == ammoSlot._id;
                 this.currentAmmo = ammoSlot._id;
-                this.drawIcon(this.currentAmmo, ammoSlot._amount, `ammoslot-9`);
+                this.drawIcon(
+                    this.currentAmmo,
+                    ammoSlot._amount,
+                    `ammoslot-9`,
+                    null,
+                    changeIcon
+                );
             } else {
                 const iconElement =
                     document.getElementById(`eib-item-ammoslot-9`);
@@ -209,7 +221,8 @@ export class ExtraInfoBar extends Plugin {
                         boost.itemId,
                         boost.boostAmount,
                         `boost-timer-${skillId}`,
-                        `${secondsLeft}`
+                        `${secondsLeft}`,
+                        boost.isNewItem
                     );
                 } else {
                     const iconElement = document.getElementById(
@@ -252,7 +265,13 @@ export class ExtraInfoBar extends Plugin {
         }
     }
 
-    drawIcon(itemId, value, iconId, timerValue: string | null = null) {
+    drawIcon(
+        itemId,
+        value,
+        iconId,
+        timerValue: string | null = null,
+        changeIcon: boolean = false
+    ) {
         const existingIcon = document.getElementById(`eib-item-${iconId}`);
         if (!existingIcon) {
             const iconWrapper = document.createElement('div');
@@ -288,6 +307,26 @@ export class ExtraInfoBar extends Plugin {
             iconWrapper!.querySelector('.eib-timer-value')!.innerHTML =
                 timerValue ?? '';
         } else {
+            if (changeIcon) {
+                try {
+                    const pos =
+                        this.gameHooks.InventoryItemSpriteManager.getCSSBackgroundPositionForItem(
+                            itemId
+                        );
+                    if (pos) {
+                        (
+                            existingIcon!.querySelector(
+                                '.eib-item-sprite'
+                            )! as HTMLElement
+                        ).style.backgroundPosition = pos;
+                    }
+                } catch (error) {
+                    console.warn(
+                        `Error getting item sprite for ID ${itemId}:`,
+                        error
+                    );
+                }
+            }
             existingIcon!.querySelector('.eib-item-sprite')!.innerHTML = value;
             existingIcon!.querySelector('.eib-timer-value')!.innerHTML =
                 timerValue ?? '';
