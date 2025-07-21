@@ -39,6 +39,7 @@ import '@static/css/item-tooltip.css';
 
 import './helpers/titlebarHelpers.js';
 import { setupWorldSelectorObserver } from './helpers/worldSelectHelper';
+import { ItemOrders } from './highlite/plugins/ItemOrders';
 
 
 // Plugin registry - single source of truth for all plugins
@@ -80,6 +81,7 @@ const PLUGIN_REGISTRY = [
     { class: QuickActionMouseTooltip, path: './highlite/plugins/QuickActionMouseTooltip' },
     { class: ExtraInfoBar, path: './highlite/plugins/ExtraInfoBar' },
     { class: SpellTooltips, path: './highlite/plugins/SpellTooltips' },
+    { class: ItemOrders, path: './highlite/plugins/ItemOrders' },
 ];
 
 async function obtainGameClient() {
