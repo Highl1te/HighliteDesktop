@@ -350,7 +350,6 @@ export class ItemOrders extends Plugin {
     }
 
     private updateOrderItemInput(): void {
-        console.log("TESTING");
         if (!this.orderInputCategory || !this.orderInputItem) return;
 
         switch (this.orderInputCategory.value) {
