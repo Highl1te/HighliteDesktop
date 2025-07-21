@@ -48,7 +48,6 @@ export class ItemOrders extends Plugin {
     }
 
     private checkLoginStatus(): void {
-        this.log("CHECK");
         if (!this.gameHooks.EntityManager.Instance.MainPlayer || !this.settings.enable.value || this.panelStarted) return;
         // Create the panel
         this.createPanel();
