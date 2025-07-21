@@ -6,6 +6,8 @@ export class ItemOrders extends Plugin {
 	pluginName = 'Item Orders';
     author = 'Yoyo2324';
     private panelManager: PanelManager = new PanelManager();
+    private panelStarted: boolean = false;
+    private loginStatusUpdateId: undefined | ReturnType<typeof setInterval>;
 
     private panelContent: HTMLElement | null = null;
     private itemListContainer: HTMLDivElement | null = null;
@@ -30,13 +32,9 @@ export class ItemOrders extends Plugin {
 
     start(): void {
     	this.log('Item Orders Panel started');
-        if (!this.settings.enable.value) {
-            return;
+        if (!this.loginStatusUpdateId){
+            this.loginStatusUpdateId = setInterval(() => {this.checkLoginStatus();}, 50);
         }
-
-        // Create the panel
-        this.createPanel();
-        this.addStyles();
     }
 
     stop(): void {}
@@ -46,8 +44,19 @@ export class ItemOrders extends Plugin {
     }
 
     SocketManager_loggedIn(): void {
+        this.start();
+    }
+
+    private checkLoginStatus(): void {
+        if (!this.gameHooks.EntityManager.Instance.MainPlayer || !this.settings.enable.value || this.panelStarted) return;
+        // Create the panel
+        this.createPanel();
+        this.addStyles();
+
         // Mark as logged in
+        clearInterval(this.loginStatusUpdateId);
         this.isLoggedIn = true;
+        this.panelStarted = true;
         this.buildPanelContent();
         this.addStyles();
         this.updateOrders();
@@ -68,6 +77,8 @@ export class ItemOrders extends Plugin {
         this.showLoadingState();
 
         clearInterval(this.updateId);
+        this.panelStarted = false;
+        this.loginStatusUpdateId = setInterval(() => {this.checkLoginStatus();}, 50);
     }
 
     private createPanel(): void {
@@ -339,7 +350,6 @@ export class ItemOrders extends Plugin {
     }
 
     private updateOrderItemInput(): void {
-        console.log("TESTING");
         if (!this.orderInputCategory || !this.orderInputItem) return;
 
         switch (this.orderInputCategory.value) {
@@ -911,7 +921,7 @@ export class ItemOrders extends Plugin {
             itemContainer.className = 'item-orders-order-container';
             itemContainer.innerHTML =  `
                 <span>Requested by: ` + results[index][1] + `</span><br>
-                <span>Type: ` + results[index][2] + `</span><br>
+                <span>Item: ` + results[index][4] + `</span><br>
                 <span>Amount: ` + results[index][6] + `/` + results[index][5] + `</span><br>
                 <span>Price per item: ` + results[index][7] + `</span><br>
                 <span>Location: X: ` + results[index][8] + ` Z: ` + results[index][10] + `</span><br>
@@ -954,6 +964,9 @@ export class ItemOrders extends Plugin {
         style.setAttribute('data-item-panel', 'true');
         style.textContent = `
             /* Panel Container */
+            .item-panel-list-wrapper {
+                overflow: scroll;
+            }
             .item-orders-panel {
                 width: 100% !important;
                 height: 100% !important;
