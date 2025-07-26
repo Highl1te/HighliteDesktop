@@ -115,6 +115,35 @@ export class HookManager {
         return true;
     }
 
+    public registerStaticClassWrapperHook(
+        sourceClass: string,
+        fnName: string,
+        hookFn = this.hook
+    ): boolean {
+        const self = this;
+        const classObject = document.client.get(sourceClass);
+
+        if (!classObject) {
+            console.warn(
+                `[Highlite] Attempted to register unknown static client class hook (${sourceClass}).`
+            );
+            return false;
+        }
+
+        let functionName = fnName;
+        if (functionName.startsWith('_')) {
+            functionName = functionName.substring(1);
+        }
+
+        const hookName = `${sourceClass}_${functionName}`;
+        (function (originalFunction: any) {
+            classObject[fnName] = function (...args: Array<unknown>) {
+                return hookFn.apply(self, [hookName, this, originalFunction, ...args]);
+            };
+        })(classObject[fnName]);
+        return true;
+    }
+
     private hook(fnName: string, ...args: any[]): void {
         for (const plugin of document.highlite.plugins) {
             if (typeof plugin[fnName] === 'function') {

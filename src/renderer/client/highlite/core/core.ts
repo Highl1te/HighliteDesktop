@@ -1,4 +1,5 @@
 import { ContextMenuManager } from './managers/game/contextMenuManager';
+import { InventoryManager } from './managers/game/inventoryManager';
 import { HookManager } from './managers/highlite/hookManager';
 import { NotificationManager } from './managers/highlite/notificationManager';
 import { PanelManager } from './managers/highlite/panelManager';
@@ -31,6 +32,7 @@ export class Highlite {
 
         this.hookManager = new HookManager();
         this.contextMenuManager = new ContextMenuManager();
+        this.inventoryManager = new InventoryManager();
         this.notificationManager = new NotificationManager();
         this.pluginManager = new PluginManager();
         this.uiManager = new UIManager();
@@ -61,7 +63,7 @@ export class Highlite {
         this.hookManager.registerClass('CH', 'InventoryItemSpriteManager');
         this.hookManager.registerClass('DP', 'ItemDefMap');
         this.hookManager.registerClass('Oz', 'BankUIManager');
-        // this.hookManager.registerClass("LF", "MainPlayer");
+        this.hookManager.registerClass("LF", "MainPlayer");
         this.hookManager.registerClass('eR', 'GameCameraManager'); // Tip to find: contains call initializeCamera(e ,t)
         this.hookManager.registerClass('xk', 'SpriteSheetManager'); //Tip to find: contains getter PlayerSpritesheetInfo
         this.hookManager.registerClass('bB', 'NpcDefinitionManager'); //Tip to find: _npcDefMap - 5 of these are found, but they are all located in the right class.
@@ -73,6 +75,7 @@ export class Highlite {
         this.hookManager.registerClass('nX', 'ScreenMask');
         this.hookManager.registerClass('iB', 'MagicSkillManager'); // Tip to find: contains BLOOD_TELEPORT_ID
         this.hookManager.registerClass('_z', 'SpellMenuManager'); // Tip to find: contains _handleSpellItemPointerOver
+        this.hookManager.registerClass('Fz', 'Fz');
 
         // Function Hook-ins
         this.hookManager.registerClassOverrideHook(
@@ -148,6 +151,15 @@ export class Highlite {
             'GV',
             'getActionsAndEntitiesAtMousePointer',
             this.contextMenuManager.ActionSorting
+        );
+
+        // TODO: We could also hook into the quicktext handling and wrap
+        // _handleHighSpellInventoryItemPointerOver or similar to give visual
+        // feedback when the user holds shift and has not clicked yet.
+        this.hookManager.registerStaticClassWrapperHook(
+            'Fz',
+            'handleInventoryItemLeftClicked',
+            this.inventoryManager.handleInventoryItemLeftClicked
         );
 
         // Lookup Table Mappings
