@@ -12,7 +12,7 @@ interface SkillTracker {
     trackerElement: HTMLElement;
     trackedActions: number;
     trackedXPGained: number;
-    trackerXPGainedWindows: XPWindow[];
+    trackerStartTime: number;
     previousXP: number;
     inXPPerHourMode?: boolean;
     domElements?: {
@@ -166,10 +166,6 @@ export class ExperienceTracker extends Plugin {
         [skillName: string]: SkillTracker;
     } = {};
 
-    private readonly WINDOW_DURATION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
-    private readonly MAX_WINDOWS = 12; // 12 windows = 60 minutes total
-    private readonly MINUTES_PER_HOUR = 60;
-    private readonly MINUTES_PER_WINDOW = 5;
 
     start(): void {
         if (!this.settings.enable.value) {
@@ -374,8 +370,8 @@ export class ExperienceTracker extends Plugin {
             trackerElement: skillTracker,
             trackedActions: 0,
             trackedXPGained: 0,
+            trackerStartTime: Date.now(),
             previousXP: skill._xp,
-            trackerXPGainedWindows: [],
             inXPPerHourMode: false,
             domElements: {
                 skillXPGainedValue: skillXPGainedValue,
@@ -402,18 +398,23 @@ export class ExperienceTracker extends Plugin {
             actionsDiv.style.flexDirection = 'column';
             skillTracker.appendChild(actionsDiv);
 
-            // Hide Button
-            const hideButton = document.createElement('div');
-            hideButton.textContent = 'Hide';
-            hideButton.id = 'hideSkillTrackerButton';
-            hideButton.style.backgroundColor = 'rgb(65 65 65)';
-            hideButton.style.padding = '5px 10px';
-            hideButton.style.borderRadius = '5px';
-            hideButton.style.cursor = 'pointer';
-            hideButton.addEventListener('click', () => {
+            // Reset Button
+            const resetButton = document.createElement('div');
+            resetButton.textContent = 'Reset';
+            resetButton.id = 'resetSkillTrackerButton';
+            resetButton.style.backgroundColor = 'rgb(65 65 65)';
+            resetButton.style.padding = '5px 10px';
+            resetButton.style.borderRadius = '5px';
+            resetButton.style.cursor = 'pointer';
+            resetButton.addEventListener('click', () => {
+                const currentSkillTracker = this.skillTrackers[skillName];
+                currentSkillTracker.trackedXPGained = 0;
+                currentSkillTracker.trackerStartTime = Date.now();
+                currentSkillTracker.trackedActions = 0;
                 skillTracker.style.display = 'none'; // Hide the tracker
+       
             });
-            actionsDiv.appendChild(hideButton);
+            actionsDiv.appendChild(resetButton);
 
             // Switch to XP per Hour Button
             const xpPerHourButton = document.createElement('div');
@@ -475,11 +476,11 @@ export class ExperienceTracker extends Plugin {
             if (!actionsDiv) {
                 return; // No actions div to remove
             }
-            const hideButton = skillTracker.querySelector(
-                '#hideSkillTrackerButton'
+            const resetButton = skillTracker.querySelector(
+                '#resetSkillTrackerButton'
             );
-            if (hideButton) {
-                actionsDiv.removeChild(hideButton);
+            if (resetButton) {
+                actionsDiv.removeChild(resetButton);
             }
 
             const xpPerHourButton =
@@ -513,7 +514,6 @@ export class ExperienceTracker extends Plugin {
         const xpGained = skill._xp - skillTracker.previousXP; // Also XP per Action
 
         // Update the XP tracking windows
-        this.updateXPWindows(skillTracker, xpGained);
 
         skillTracker.trackedXPGained += xpGained;
         skillTracker.trackedActions += 1;
@@ -592,66 +592,13 @@ export class ExperienceTracker extends Plugin {
         this.log(`Initialized`);
     }
 
-    private getCurrentWindowStart(): number {
-        const now = Date.now();
-        return (
-            Math.floor(now / this.WINDOW_DURATION_MS) * this.WINDOW_DURATION_MS
-        );
-    }
-
-    private updateXPWindows(
-        skillTracker: SkillTracker,
-        xpGained: number
-    ): void {
-        const currentWindowStart = this.getCurrentWindowStart();
-
-        // Find or create current window
-        let currentWindow = skillTracker.trackerXPGainedWindows.find(
-            window => window.windowStart === currentWindowStart
-        );
-
-        if (currentWindow) {
-            currentWindow.xpGained += xpGained;
-            currentWindow.actions += 1;
-        } else {
-            // Create new window
-            skillTracker.trackerXPGainedWindows.push({
-                xpGained: xpGained,
-                actions: 1,
-                windowStart: currentWindowStart,
-            });
-        }
-
-        // Remove old windows (keep only the last MAX_WINDOWS)
-        skillTracker.trackerXPGainedWindows =
-            skillTracker.trackerXPGainedWindows
-                .filter(
-                    window =>
-                        currentWindowStart - window.windowStart <
-                        this.MAX_WINDOWS * this.WINDOW_DURATION_MS
-                )
-                .sort((a, b) => b.windowStart - a.windowStart)
-                .slice(0, this.MAX_WINDOWS);
-    }
 
     private calculateXPPerHour(skillTracker: SkillTracker): number {
-        if (skillTracker.trackerXPGainedWindows.length === 0) {
-            return 0;
-        }
-
-        const totalXPGained = skillTracker.trackerXPGainedWindows.reduce(
-            (total, window) => {
-                return total + window.xpGained;
-            },
-            0
-        );
-
-        const totalWindowsUsed = skillTracker.trackerXPGainedWindows.length;
-        const totalTimeMinutes = totalWindowsUsed * this.MINUTES_PER_WINDOW;
-
-        // Calculate XP per hour: (total XP / total minutes) * 60
-        return totalTimeMinutes > 0
-            ? (totalXPGained / totalTimeMinutes) * this.MINUTES_PER_HOUR
-            : 0;
+        const totalXPGained = skillTracker.trackedXPGained;
+        const timePassedMillis = Date.now() - skillTracker.trackerStartTime;
+        //Start with 20 seconds elapsed so xprate doesn't get totally whacky (like millions)
+        const timePassedSeconds = Math.max(20, timePassedMillis / 1000);
+        const timeMultiplier = 1 / (timePassedSeconds / 3600);
+        return timeMultiplier * totalXPGained;
     }
 }
