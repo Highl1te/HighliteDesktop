@@ -9,6 +9,7 @@ export class EntityHighlight extends Plugin {
     DOMElement: HTMLDivElement | null = null;
 
     private uiManager: UIManager;
+    private entityInitialHeights: Map<number, number> = new Map();
 
     constructor() {
         super();
@@ -156,6 +157,7 @@ export class EntityHighlight extends Plugin {
         if (collection[key]?.element) {
             collection[key].element.remove();
             delete collection[key];
+            this.entityInitialHeights.delete(Number(key));
         }
     }
 
@@ -163,50 +165,71 @@ export class EntityHighlight extends Plugin {
         this.positionTracker.clear();
     }
 
-    private processWorldEntities(WorldEntities: any[]): void {
-            for (const entity of WorldEntities) {
-                try {
-                let entityName = entity[1]._name;
-                if(entityName.length <= 1) continue;
-                if (this.entitiesToHighlight.includes(entity[1]._name) || this.showAllEntities) {
-                    if (!this.EntityDOMElements[entity[1]._entityTypeId]) {
-                        this.createEntityElement(
-                            entity[1]._entityTypeId,
-                            entity[1]
-                        );
-                    }
-                    const entityTypeId = entity[1]._entityTypeId;
-                    const element = this.EntityDOMElements[entityTypeId].element;
-                    element.style.color = 'white';
+	private processWorldEntities(WorldEntities: any[]): void {
+		for (const entity of WorldEntities) {
+			try {
+				const instance = entity[1];
+				const entityName = instance._name;
+				if (!entityName || entityName.length <= 1) continue;
 
-                    this.applyEntityColors(element);
+				const entityTypeId = instance._entityTypeId;
+				if (
+					this.entitiesToHighlight.includes(entityName) ||
+					this.showAllEntities
+				) {
+					const worldPos = this.getEntityWorldPosition(instance);
+					if (worldPos) {
+						if (!this.entityInitialHeights.has(entityTypeId)) {
+							this.entityInitialHeights.set(
+								entityTypeId,
+								worldPos.y
+							);
+						} else {
+							const initialY = this.entityInitialHeights.get(
+								entityTypeId
+							)!;
+							if (worldPos.y < initialY) {
+								const entry =
+									this.EntityDOMElements[entityTypeId];
+								if (entry)
+									entry.element.style.visibility =
+										'hidden';
+								continue;
+							}
+						}
 
-                    const worldPos = this.getEntityWorldPosition(entity[1]);
-                    if (worldPos) {
-                        this.EntityDOMElements[entity[1]._entityTypeId].position =
-                            worldPos;
+						if (!this.EntityDOMElements[entityTypeId]) {
+							this.createEntityElement(
+								entityTypeId,
+								instance
+							);
+						}
+						const entry = this.EntityDOMElements[entityTypeId];
+						entry.element.style.color = 'white';
+						this.applyEntityColors(entry.element);
 
-                        const positionKey = this.getPositionKey(worldPos);
-                        const currentCount =
-                            this.positionTracker.get(positionKey) || 0;
-                        this.positionTracker.set(positionKey, currentCount + 1);
-                    }
+						const posKey = this.getPositionKey(worldPos);
+						const count =
+							this.positionTracker.get(posKey) || 0;
+						this.positionTracker.set(posKey, count + 1);
+						entry.position = worldPos;
 
-                    const entityMesh = entity[1]._appearance._bjsMeshes[0];
-                    try {
-                        this.updateElementPosition(
-                            entityMesh,
-                            this.EntityDOMElements[entity[1]._entityTypeId]
-                        );
-                    } catch (e) {
-                        this.log('Error updating entity element position: ', e);
-                    }
-                }
-            } catch (e) {
-                this.log("Error with entity: ", entity[0], entity[1]);
-            }
-        }
-    }
+						const mesh = instance._appearance._bjsMeshes[0];
+						try {
+							this.updateElementPosition(mesh, entry);
+						} catch (e) {
+							this.log(
+								'Error updating entity element position: ',
+								e
+							);
+						}
+					}
+				}
+			} catch (e) {
+				this.log('Error with entity: ', entity[0], entity[1]);
+			}
+		}
+	}
 
     private updateElementPosition(entityMesh: any, domElement: any): void {
         const translationCoordinates = Vector3.Project(
@@ -388,6 +411,7 @@ export class EntityHighlight extends Plugin {
             this.DOMElement.remove();
             this.DOMElement = null;
         }
+        this.entityInitialHeights.clear();
     }
 
     private setupAllElements(): void {
