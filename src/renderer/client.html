@@ -45,6 +45,12 @@
             #window-controls .window-control .iconify {
                 font-size: 14px;
             }
+
+            /* Screenshot Button Styles */
+            .titlebar-screenshot-btn:hover {
+                color: var(--theme-accent, #f9f449) !important;
+                transform: scale(1.1);
+            }
         </style>
     </head>
     <body>
@@ -69,6 +75,11 @@
                     rel="noopener noreferrer"
                 >
                     <i class="iconify" data-icon="simple-icons:discord"></i>
+                </a>
+                
+                <!-- Screenshot Button -->
+                <a id="screenshotButton" class="titlebar-screenshot-btn" title="Take Screenshot (Ctrl+Shift+S)" style="display: flex; align-items: center; justify-content: center; margin: 0 5px; color: #ffffff; text-decoration: none; transition: color 0.2s ease; cursor: pointer;">
+                    📸
                 </a>
                 <a style="display: none" id="warningIndicator" href="#"
                     ><i
@@ -111,5 +122,6 @@
             <source src="/media/login_screen.mp4" type="video/mp4" />
         </video>
         <script type="module" src="client/client.ts"></script>
+
     </body>
 </html>
