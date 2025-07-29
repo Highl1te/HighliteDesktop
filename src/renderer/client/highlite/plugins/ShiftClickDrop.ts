@@ -17,6 +17,6 @@ export class ShiftClickDrop extends Plugin {
     stop(): void { this.update(); }
 
     update() {
-        this.inventoryManager.shiftKeyDrops = this.settings.enable.value;
+        this.inventoryManager.shiftKeyDrops = this.settings.enable.value as boolean;
     }
 }

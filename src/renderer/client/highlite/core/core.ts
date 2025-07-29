@@ -12,6 +12,7 @@ import { SoundManager } from './managers/highlite/soundsManager';
 export class Highlite {
     hookManager: HookManager;
     contextMenuManager: ContextMenuManager;
+    inventoryManager: InventoryManager;
     notificationManager: NotificationManager;
     pluginManager: PluginManager;
     uiManager: UIManager;
