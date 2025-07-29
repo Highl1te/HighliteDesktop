@@ -6,6 +6,8 @@
     "paths": {
       "@static/*": ["static/*"]
     },
-    "composite": true
+    "composite": true,
+    "noUnusedParameters": false,
+    "noUnusedLocals": false
   }
 }

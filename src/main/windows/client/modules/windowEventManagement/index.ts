@@ -32,7 +32,7 @@ ipcMain.on('close-window', event => {
 // UI Ready Handling
 ipcMain.on('ui-ready', event => {
     const window = BrowserWindow.fromWebContents(event.sender);
-    window.show();
+    window!.show();
 });
 
 // Dev Tools Handling

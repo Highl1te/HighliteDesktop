@@ -199,7 +199,7 @@ export class ContextMenuManager {
             const contextMenuActionsContextSpecific =
                 this.inventoryActions[r][ActionState.Any];
             if (contextMenuActionsContextSpecific) {
-                for (const [actionName, actionInformation] of Object.entries(
+                for (const [actionName, actionInformation] of entries(
                     contextMenuActionsContextSpecific
                 )) {
                     output.push(
@@ -225,7 +225,7 @@ export class ContextMenuManager {
                     document.highlite.gameHooks.EntityManager.Instance._mainPlayer._currentState.getCurrentState()
                 ];
             if (contextMenuActionsContextSpecificActionSpecific) {
-                for (const [actionName, actionInformation] of Object.entries(
+                for (const [actionName, actionInformation] of entries(
                     contextMenuActionsContextSpecificActionSpecific
                 )) {
                     output.push(
@@ -252,7 +252,7 @@ export class ContextMenuManager {
             const contextMenuActions =
                 this.inventoryActions[ContextMenuTypes.Any][ActionState.Any];
             if (contextMenuActions) {
-                for (const [actionName, actionInformation] of Object.entries(
+                for (const [actionName, actionInformation] of entries(
                     contextMenuActions
                 )) {
                     output.push(
@@ -278,7 +278,7 @@ export class ContextMenuManager {
                     document.highlite.gameHooks.EntityManager.Instance._mainPlayer._currentState.getCurrentState()
                 ];
             if (contextMenuActionsActionSpecific) {
-                for (const [actionName, actionInformation] of Object.entries(
+                for (const [actionName, actionInformation] of entries(
                     contextMenuActionsActionSpecific
                 )) {
                     output.push(
@@ -324,8 +324,8 @@ export class ContextMenuManager {
         const actionsAndEntities = cG._actionsAndEntities;
 
         // Find 'unique' enities (where actionsAndEntities._entity is unique)
-        const uniqueEntities = [];
-        for (const actionInformation of Object.entries(actionsAndEntities)) {
+        const uniqueEntities: Array<any> = [];
+        for (const actionInformation of entries(actionsAndEntities)) {
             if (
                 actionInformation[1]._entity != null &&
                 !uniqueEntities.includes(actionInformation[1]._entity)
@@ -340,7 +340,7 @@ export class ContextMenuManager {
             const contextMenuActionsSpecific =
                 this.gameWorldActions[entity._entityType];
             if (contextMenuActionsSpecific) {
-                for (const [actionName, actionInfo] of Object.entries(
+                for (const [actionName, actionInfo] of entries(
                     contextMenuActionsSpecific
                 )) {
                     // TODO: Figure out if we ever need these nulls
@@ -363,7 +363,7 @@ export class ContextMenuManager {
             // EntityType.Any
             const contextMenuActionsAny = this.gameWorldActions[EntityType.Any];
             if (contextMenuActionsAny) {
-                for (const [actionName, actionInfo] of Object.entries(
+                for (const [actionName, actionInfo] of entries(
                     contextMenuActionsAny
                 )) {
                     // TODO: Figure out if we ever need these nulls
@@ -397,7 +397,7 @@ export class ContextMenuManager {
         const inventoryActions =
             this.inventoryActions[contextType][actionState];
         if (inventoryActions) {
-            for (const [actionName, actionInformation] of Object.entries(
+            for (const [actionName, actionInformation] of entries(
                 inventoryActions
             )) {
                 if (actionInformation.actionNumber == actionNumber) {
@@ -413,7 +413,7 @@ export class ContextMenuManager {
         // Loop over all the EntityTypes to find the actionNumber
         const entityActions = this.gameWorldActions[entityType];
         if (entityActions) {
-            for (const [actionName, actionInformation] of Object.entries(
+            for (const [actionName, actionInformation] of entries(
                 entityActions
             )) {
                 if (actionInformation.actionNumber == e.Action) {
@@ -559,4 +559,10 @@ export class ContextMenuManager {
         dG._mousePointActionsAndEntitiesResult._mainActionAndEntity =
             dG._mousePointActionsAndEntitiesResult._actionsAndEntities[0];
     }
+}
+
+// FIXME: this exists to remove the type check on the value type to clean up
+// type check errors, but it would be better to use stronger types.
+function entries(object: any): Array<[string, any]> {
+    return Object.entries(object);
 }

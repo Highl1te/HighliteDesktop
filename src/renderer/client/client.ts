@@ -277,8 +277,6 @@ async function generatePage() {
     let highlite = document.highlite?.core;
     if (!highlite) {
         highlite = new Highlite();
-        document.highlite = document.highlite || {};
-        document.highlite.core = highlite;
     }
 
     const plugins = PLUGIN_REGISTRY.map(p => ({ class: p.class }));

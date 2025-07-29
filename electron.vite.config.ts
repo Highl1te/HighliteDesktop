@@ -1,3 +1,5 @@
+// FIXME:
+// @ts-nocheck
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { resolve } from 'path'
 

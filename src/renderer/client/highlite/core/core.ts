@@ -27,6 +27,7 @@ export class Highlite {
             gameHooks: {},
             gameLookups: {},
             plugins: [],
+            core: this,
         };
 
         this.hookManager = new HookManager();

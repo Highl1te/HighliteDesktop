@@ -95,8 +95,9 @@ export class TreasureMapHelper extends Plugin {
             }
 
             const observer = new MutationObserver(() => {
-                if (document.querySelector(selector)) {
-                    resolve(document.querySelector(selector));
+                const element = document.querySelector(selector);
+                if (element) {
+                    resolve(element);
                     observer.disconnect();
                 }
             });

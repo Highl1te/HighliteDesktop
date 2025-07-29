@@ -29,7 +29,7 @@ export class ContextMenuOptions extends Plugin {
             callback: this.enablePrioritizeAttackChanged,
         };
 
-        
+
         this.settings.deprioritizeTalkTo = {
             text: 'Deprioritize Talk To',
             type: 0,
@@ -44,22 +44,18 @@ export class ContextMenuOptions extends Plugin {
 
     start(): void {
         this.log('Started');
-        this.enablePrioritizeAttackChanged(
-            this.settings.prioritizeAttack!.value as boolean
-        );
-        this.enablePrioritizePickpocketChanged(
-            this.settings.prioritizePickpocket!.value as boolean
-        );
-        this.enableDeprioritizeTalkToChanged(
-            this.settings.deprioritizeTalkTo!.value as boolean
-        );
+        this.update();
     }
 
     stop(): void {
         this.log('Stopped');
-        this.enablePrioritizeAttackChanged(false);
-        this.enablePrioritizePickpocketChanged(false);
-        this.enableDeprioritizeTalkToChanged(false);
+        this.update();
+    }
+
+    update(): void {
+        this.enablePrioritizeAttackChanged();
+        this.enablePrioritizePickpocketChanged();
+        this.enableDeprioritizeTalkToChanged();
     }
 
     enableDeprioritizeTalkToChanged() {

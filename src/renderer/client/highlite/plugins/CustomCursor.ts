@@ -92,8 +92,8 @@ export class CustomCursor extends Plugin {
       ]
 
     get_png_from_preset() {
-        if(this.images[this.settings.cursorImagePresets.value]) {
-            return `${this.images[this.settings.cursorImagePresets.value]}`;
+        if(this.images[this.settings.cursorImagePresets.value as number]) {
+            return `${this.images[this.settings.cursorImagePresets.value as number]}`;
         }
         return this.images[0];
     }

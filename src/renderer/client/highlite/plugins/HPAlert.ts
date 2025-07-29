@@ -88,7 +88,7 @@ export class HPAlert extends Plugin {
 
             this.log(`Testing custom sound: ${customSoundUrl}`);
             this.soundManager.playSound(customSoundUrl, volume);
-            
+
         } catch (error) {
             this.error(`Error testing custom sound: ${error}`);
             alert('Failed to play custom sound. Please check the URL and try again.');
@@ -133,6 +133,7 @@ export class HPAlert extends Plugin {
                         return true;
                     }
                 }
+                return false;
             });
 
             if (
