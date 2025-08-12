@@ -30,12 +30,22 @@ jobs:
         run: yarn install --frozen-lockfile
 
       # Sanity check: make sure yarn start runs successfully
-      - name: Test yarn start
+      - name: Test yarn start (Unix)
+        if: runner.os != 'Windows'
         run: |
           yarn start &
           APP_PID=$!
           sleep 10
           kill $APP_PID || true
+      
+      - name: Test yarn start (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Start-Process -FilePath "yarn" -ArgumentList "start"
+          Start-Sleep -Seconds 10
+          Get-Process -Name "electron" -ErrorAction SilentlyContinue | Stop-Process -Force
+
 
       # Dry run build (no upload, no publish)
       - name: Dry run Electron build
