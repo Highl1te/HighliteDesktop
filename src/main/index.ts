@@ -29,10 +29,17 @@ if (!gotTheLock) {
     app.quit();
 }
 
+// Keep a reference to the hidden console window so we can close it when no other windows remain
+let consoleWindowRef: BrowserWindow | null = null;
+
 app.whenReady().then(async () => {
     electronApp.setAppUserModelId('com.highlite.desktop');
     const updateWindow: BrowserWindow = await createUpdateWindow();
-    const consoleWindow: BrowserWindow = await createConsoleWindow();
+
+    consoleWindowRef = await createConsoleWindow();
+    consoleWindowRef.on('closed', () => {
+        consoleWindowRef = null;
+    });
 
     ipcMain.once('delay-update', async () => {
         await createClientWindow();
@@ -44,6 +51,20 @@ app.whenReady().then(async () => {
         updateWindow.close();
     });
 
+    // For any future windows created elsewhere, attach a closed handler
+    // to determine when only the console window is left.
+    app.on('browser-window-created', (_event, win) => {
+        if (win !== consoleWindowRef) {
+            win.on('closed', () => {
+                const others = BrowserWindow.getAllWindows().filter(w => w !== consoleWindowRef);
+                if (others.length === 0 && consoleWindowRef && !consoleWindowRef.isDestroyed()) {
+                    consoleWindowRef.close();
+                    consoleWindowRef = null;
+                }
+            });
+        }
+    });
+
     app.on('activate', () => {
         // On macOS it's common to re-create a window in the app when the
         // dock icon is clicked and there are no other windows open.
@@ -53,7 +74,7 @@ app.whenReady().then(async () => {
     });
 });
 
-app.on('second-instance', (event, argv, workingDirectory) => {
+app.on('second-instance', (_event, _argv, _workingDirectory) => {
     // Someone tried to run a second instance, open a new window in response.
     createClientWindow();
 });
