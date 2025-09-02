@@ -1,7 +1,7 @@
 {
   "name": "highlite",
   "productName": "HighLite",
-  "version": "2.2.0",
+  "version": "2.2.1-beta.1",
   "description": "A RuneLite-esque Client for the game High Spell",
   "homepage": "https://github.com/Highl1te/HighliteDesktop#readme",
   "engines": {
